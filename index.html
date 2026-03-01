@@ -96,13 +96,17 @@ body::before {
 .content-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; padding: 12px 14px 0; flex-shrink: 0; }
 .content-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--text-dark); line-height: 1; }
 .content-sub { font-size: 11px; color: var(--text-light); margin-top: 3px; font-family: 'Share Tech Mono', monospace; }
-.rating-filter { display: flex; align-items: center; gap: 6px; background: #1a1008; padding: 5px 10px; border-radius: 4px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+/* Single-line top bar for All Tracks view */
+.tracks-topbar { display: flex; align-items: center; gap: 10px; padding: 8px 14px 4px; flex-shrink: 0; flex-wrap: wrap; }
+.tracks-count { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 0.5px; flex-shrink: 0; }
+.tracks-topbar .sort-hint-inline { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); letter-spacing: 0.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rating-filter { display: flex; align-items: center; gap: 6px; background: #1a1008; padding: 4px 10px; border-radius: 4px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); flex-shrink: 0; }
 .rating-filter label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: #6a5040; letter-spacing: 1px; }
 .rf-star { font-size: 14px; color: #3a2818; cursor: pointer; transition: color 0.1s; }
 .rf-star.on { color: var(--orange-bright); text-shadow: 0 0 6px var(--orange); }
 
 /* SORT HINT */
-.sort-hint { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); padding: 2px 14px 6px; flex-shrink: 0; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+.sort-hint { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); padding: 2px 14px 4px; flex-shrink: 0; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
 .sort-clear-btn { background: linear-gradient(180deg,#d4c8a8,#b8aa88); border: 1px solid #8a7a58; border-bottom: 2px solid #6a5a38; border-radius: 3px; padding: 2px 8px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dark); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; display: none; }
 .sort-clear-btn.visible { display: inline-block; }
 
@@ -110,12 +114,12 @@ body::before {
 .track-table-wrap { flex: 1; overflow-y: auto; overflow-x: auto; padding: 0 14px 14px; }
 .track-table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
 .track-table-wrap::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 2px; }
-.track-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.track-table { width: 100%; border-collapse: collapse; font-size: 17px; }
 .track-table thead th {
   position: sticky; top: 0;
   background: linear-gradient(180deg, var(--panel-light), var(--panel-dark));
   font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1.5px;
-  font-weight: 700; text-transform: uppercase; color: var(--text-mid); padding: 9px 12px;
+  font-weight: 700; text-transform: uppercase; color: var(--text-mid); padding: 8px 12px;
   text-align: left; border-bottom: 2px solid #7a5c45;
   cursor: pointer; user-select: none; white-space: nowrap; z-index: 2;
 }
@@ -124,20 +128,29 @@ body::before {
 .track-table thead th.sort-desc::after { content: ' ▼'; color: var(--orange); }
 .sort-priority { display: inline-block; background: var(--orange); color: #fff; font-size: 10px; border-radius: 8px; padding: 0 5px; margin-left: 3px; vertical-align: middle; line-height: 16px; min-width: 16px; text-align: center; }
 .track-table tbody tr { cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.08); transition: background 0.1s; }
-.track-table tbody tr:hover { background: rgba(0,0,0,0.06); }
-.track-table tbody tr.playing { background: linear-gradient(90deg, rgba(212,98,26,0.14), rgba(212,98,26,0.03)); }
-.track-table tbody td { padding: 6px 12px; color: var(--text-dark); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; font-size: 15px; }
-.track-table tbody td.col-title { font-weight: 800; font-size: 16px; max-width: 240px; }
-.track-table tbody td.col-artist, .track-table tbody td.col-album, .track-table tbody td.col-genre { color: var(--text-mid); font-size: 15px; font-weight: 600; }
-.track-table tbody td.col-year, .track-table tbody td.col-dur { font-family: 'Share Tech Mono', monospace; font-size: 14px; font-weight: 700; color: var(--text-light); text-align: center; }
+.track-table tbody tr:hover { background: rgba(0,0,0,0.05); }
+.track-table tbody tr.playing { background: #ffe600 !important; }
+.track-table tbody tr.playing td { color: #1a1008 !important; }
+.track-table tbody td { padding: 3px 12px; color: var(--text-dark); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; font-size: 17px; line-height: 1.3; }
+.track-table tbody td.col-title { font-weight: 800; font-size: 17px; max-width: 240px; }
+.track-table tbody td.col-artist, .track-table tbody td.col-album, .track-table tbody td.col-genre { color: var(--text-mid); font-size: 16px; font-weight: 600; }
+.track-table tbody td.col-year, .track-table tbody td.col-dur { font-family: 'Share Tech Mono', monospace; font-size: 15px; font-weight: 700; color: var(--text-light); text-align: center; }
 .track-table tbody td.col-rating { text-align: center; white-space: nowrap; }
+.track-table tbody tr.playing td.col-artist,
+.track-table tbody tr.playing td.col-album,
+.track-table tbody tr.playing td.col-genre,
+.track-table tbody tr.playing td.col-year,
+.track-table tbody tr.playing td.col-dur { color: #3a2808 !important; }
 .eq-inline { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; vertical-align: middle; margin-right: 5px; }
-.eq-inline .eq-b { width: 3px; background: var(--orange); border-radius: 1px; animation: eqb 0.7s ease-in-out infinite alternate; }
+.eq-inline .eq-b { width: 3px; background: #1a1008; border-radius: 1px; animation: eqb 0.7s ease-in-out infinite alternate; }
 .eq-inline .eq-b:nth-child(2) { animation-delay: 0.15s; }
 .eq-inline .eq-b:nth-child(3) { animation-delay: 0.3s; }
 @keyframes eqb { from { height: 3px; } to { height: 13px; } }
-.t-star { font-size: 16px; color: #c0a878; cursor: pointer; transition: color 0.1s; }
+.t-star { font-size: 17px; color: #c0a878; cursor: pointer; transition: color 0.1s; }
 .t-star.on { color: var(--orange-bright); }
+/* Stars on playing row: bright yellow if lit, black if unlit */
+.track-table tbody tr.playing .t-star { color: #555 !important; }
+.track-table tbody tr.playing .t-star.on { color: #000 !important; text-shadow: 0 0 4px rgba(0,0,0,0.3); }
 
 /* GRID */
 .grid-wrap { flex: 1; overflow-y: auto; padding: 0 14px 14px; }
@@ -263,17 +276,14 @@ body::before {
 
       <!-- ALL TRACKS -->
       <div class="view active" id="view-all">
-        <div class="content-header">
-          <div>
-            <div class="content-title">All Tracks</div>
-            <div class="content-sub" id="sub-all">NO TRACKS LOADED</div>
-          </div>
+        <div class="tracks-topbar">
+          <span class="tracks-count" id="sub-all">0 TRACKS</span>
           <div class="rating-filter">
             <label>MIN</label>
             <div id="rf-stars"></div>
           </div>
+          <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
         </div>
-        <div class="sort-hint" id="sort-hint">TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
         <div class="track-table-wrap">
           <table class="track-table" id="track-table">
             <thead><tr>
@@ -498,14 +508,17 @@ function updateSortHeaders(){
     th.className='';const col=th.getAttribute('data-col');const s=sortCriteria.find(s=>s.col===col);
     if(s){th.classList.add(s.dir==='asc'?'sort-asc':'sort-desc');const existing=th.querySelector('.sort-priority');if(existing)existing.remove();if(sortCriteria.length>1){const b=document.createElement('span');b.className='sort-priority';b.textContent=sortCriteria.indexOf(s)+1;th.appendChild(b);}}
   });
-  const hint=document.getElementById('sort-hint');
   const clearBtn=document.getElementById('sort-clear-btn');
   if(clearBtn)clearBtn.classList.toggle('visible',sortCriteria.length>0);
+  const hint=document.getElementById('sort-hint');
   if(hint){
-    const textNode=hint.firstChild;
-    if(textNode&&textNode.nodeType===3){
-      if(sortCriteria.length>0){textNode.textContent='SORT: '+sortCriteria.map((s,i)=>`${i+1}:${s.col.toUpperCase()} ${s.dir==='asc'?'▲':'▼'}`).join('  ')+'  ';}
-      else{textNode.textContent='TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT  ';}
+    // Safely update the first text node, preserving the button child
+    let textNode=Array.from(hint.childNodes).find(n=>n.nodeType===3);
+    if(!textNode){textNode=document.createTextNode('');hint.insertBefore(textNode,hint.firstChild);}
+    if(sortCriteria.length>0){
+      textNode.textContent='SORT: '+sortCriteria.map((s,i)=>`${i+1}:${s.col.toUpperCase()} ${s.dir==='asc'?'▲':'▼'}`).join('  ')+'  ';
+    } else {
+      textNode.textContent='TAP HEADER TO SORT  ';
     }
   }
 }
