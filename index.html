@@ -102,39 +102,41 @@ body::before {
 .rf-star.on { color: var(--orange-bright); text-shadow: 0 0 6px var(--orange); }
 
 /* SORT HINT */
-.sort-hint { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); padding: 2px 14px 6px; flex-shrink: 0; letter-spacing: 0.5px; }
+.sort-hint { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); padding: 2px 14px 6px; flex-shrink: 0; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+.sort-clear-btn { background: linear-gradient(180deg,#d4c8a8,#b8aa88); border: 1px solid #8a7a58; border-bottom: 2px solid #6a5a38; border-radius: 3px; padding: 2px 8px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dark); cursor: pointer; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; display: none; }
+.sort-clear-btn.visible { display: inline-block; }
 
 /* TRACK TABLE */
 .track-table-wrap { flex: 1; overflow-y: auto; overflow-x: auto; padding: 0 14px 14px; }
 .track-table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
 .track-table-wrap::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 2px; }
-.track-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.track-table { width: 100%; border-collapse: collapse; font-size: 16px; }
 .track-table thead th {
   position: sticky; top: 0;
   background: linear-gradient(180deg, var(--panel-light), var(--panel-dark));
-  font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--text-mid); padding: 7px 10px;
+  font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1.5px;
+  font-weight: 700; text-transform: uppercase; color: var(--text-mid); padding: 9px 12px;
   text-align: left; border-bottom: 2px solid #7a5c45;
   cursor: pointer; user-select: none; white-space: nowrap; z-index: 2;
 }
 .track-table thead th:hover { color: var(--text-dark); }
 .track-table thead th.sort-asc::after { content: ' ▲'; color: var(--orange); }
 .track-table thead th.sort-desc::after { content: ' ▼'; color: var(--orange); }
-.sort-priority { display: inline-block; background: var(--orange); color: #fff; font-size: 8px; border-radius: 8px; padding: 0 4px; margin-left: 3px; vertical-align: middle; line-height: 14px; min-width: 14px; text-align: center; }
-.track-table tbody tr { cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.06); transition: background 0.1s; }
+.sort-priority { display: inline-block; background: var(--orange); color: #fff; font-size: 10px; border-radius: 8px; padding: 0 5px; margin-left: 3px; vertical-align: middle; line-height: 16px; min-width: 16px; text-align: center; }
+.track-table tbody tr { cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.08); transition: background 0.1s; }
 .track-table tbody tr:hover { background: rgba(0,0,0,0.06); }
 .track-table tbody tr.playing { background: linear-gradient(90deg, rgba(212,98,26,0.14), rgba(212,98,26,0.03)); }
-.track-table tbody td { padding: 4px 10px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-.track-table tbody td.col-title { font-weight: 700; font-size: 13px; max-width: 220px; }
-.track-table tbody td.col-artist, .track-table tbody td.col-album, .track-table tbody td.col-genre { color: var(--text-mid); font-size: 12px; }
-.track-table tbody td.col-year, .track-table tbody td.col-dur { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); text-align: center; }
+.track-table tbody td { padding: 6px 12px; color: var(--text-dark); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; font-size: 15px; }
+.track-table tbody td.col-title { font-weight: 800; font-size: 16px; max-width: 240px; }
+.track-table tbody td.col-artist, .track-table tbody td.col-album, .track-table tbody td.col-genre { color: var(--text-mid); font-size: 15px; font-weight: 600; }
+.track-table tbody td.col-year, .track-table tbody td.col-dur { font-family: 'Share Tech Mono', monospace; font-size: 14px; font-weight: 700; color: var(--text-light); text-align: center; }
 .track-table tbody td.col-rating { text-align: center; white-space: nowrap; }
-.eq-inline { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; vertical-align: middle; margin-right: 5px; }
-.eq-inline .eq-b { width: 2px; background: var(--orange); border-radius: 1px; animation: eqb 0.7s ease-in-out infinite alternate; }
+.eq-inline { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; vertical-align: middle; margin-right: 5px; }
+.eq-inline .eq-b { width: 3px; background: var(--orange); border-radius: 1px; animation: eqb 0.7s ease-in-out infinite alternate; }
 .eq-inline .eq-b:nth-child(2) { animation-delay: 0.15s; }
 .eq-inline .eq-b:nth-child(3) { animation-delay: 0.3s; }
-@keyframes eqb { from { height: 3px; } to { height: 11px; } }
-.t-star { font-size: 12px; color: #c0a878; cursor: pointer; transition: color 0.1s; }
+@keyframes eqb { from { height: 3px; } to { height: 13px; } }
+.t-star { font-size: 16px; color: #c0a878; cursor: pointer; transition: color 0.1s; }
 .t-star.on { color: var(--orange-bright); }
 
 /* GRID */
@@ -162,28 +164,28 @@ body::before {
 .empty-btn { margin-top: 20px; background: linear-gradient(180deg,var(--orange-bright),var(--orange-dark)); border: 1px solid var(--orange-dark); border-bottom: 2px solid #6a2808; color: #fff; padding: 10px 22px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
 
 /* PLAYER BAR */
-#player-bar { flex-shrink: 0; padding: 10px 16px 12px; }
-.player-inner { display: flex; flex-direction: column; gap: 8px; }
-.player-top { display: flex; align-items: center; gap: 12px; }
-.player-art { width: 48px; height: 48px; border-radius: 4px; background: #1a1008; border: 1px solid #0a0804; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6); }
+#player-bar { flex-shrink: 0; padding: 14px 20px 16px; }
+.player-inner { display: flex; flex-direction: column; gap: 10px; }
+.player-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.player-art { width: 72px; height: 72px; border-radius: 6px; background: #1a1008; border: 1px solid #0a0804; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; overflow: hidden; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6); }
 .player-art img { width: 100%; height: 100%; object-fit: cover; }
 .player-info { flex: 1; min-width: 0; }
-.player-title { font-size: 14px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.player-artist { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-light); margin-top: 2px; }
-.controls-group { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: linear-gradient(180deg,#b8a888,#a89870); border-radius: 4px; border: 1px solid #7a6848; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.3); }
-.ctrl { width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#c8b888,#8a7848); color: var(--text-dark); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; border: none; }
+.player-title { font-size: 18px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-artist { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--text-light); margin-top: 3px; }
+.controls-group { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: linear-gradient(180deg,#b8a888,#a89870); border-radius: 6px; border: 1px solid #7a6848; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 3px 6px rgba(0,0,0,0.3); }
+.ctrl { width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#c8b888,#8a7848); color: var(--text-dark); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 22px; box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; border: none; }
 .ctrl:active { transform: scale(0.94); }
-#play-btn { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 2px solid var(--orange-dark); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; box-shadow: 0 3px 8px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; }
+#play-btn { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 3px solid var(--orange-dark); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; box-shadow: 0 4px 12px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; }
 #play-btn:active { transform: scale(0.94); }
-.volume-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.vol-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); letter-spacing: 1px; }
-.vol-slider { -webkit-appearance: none; width: 80px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--orange) 0%, var(--orange) var(--vol-pct,80%), #3a2818 var(--vol-pct,80%)); outline: none; cursor: pointer; }
-.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#d8c898,#8a7848); border: 1px solid #6a5838; box-shadow: 0 1px 3px rgba(0,0,0,0.4); cursor: pointer; }
-.progress-row { display: flex; align-items: center; gap: 8px; }
-.time-lbl { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-light); min-width: 32px; }
+.volume-group { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.vol-label { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-light); letter-spacing: 1px; font-weight: 700; }
+.vol-slider { -webkit-appearance: none; width: 160px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--orange) 0%, var(--orange) var(--vol-pct,80%), #3a2818 var(--vol-pct,80%)); outline: none; cursor: pointer; }
+.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#d8c898,#8a7848); border: 2px solid #6a5838; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; }
+.progress-row { display: flex; align-items: center; gap: 10px; }
+.time-lbl { font-family: 'Share Tech Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-light); min-width: 40px; }
 .time-lbl.r { text-align: right; }
-.prog-track { flex: 1; height: 6px; background: #1a1008; border-radius: 3px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); cursor: pointer; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 3px; width: 0%; transition: width 0.2s linear; pointer-events: none; box-shadow: 0 0 6px rgba(240,112,48,0.6); }
+.prog-track { flex: 1; height: 10px; background: #1a1008; border-radius: 5px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); cursor: pointer; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 5px; width: 0%; transition: width 0.2s linear; pointer-events: none; box-shadow: 0 0 8px rgba(240,112,48,0.6); }
 
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -271,7 +273,7 @@ body::before {
             <div id="rf-stars"></div>
           </div>
         </div>
-        <div class="sort-hint" id="sort-hint">TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT · TWO-FINGER TAP ALBUM ART TO CLEAR</div>
+        <div class="sort-hint" id="sort-hint">TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
         <div class="track-table-wrap">
           <table class="track-table" id="track-table">
             <thead><tr>
@@ -480,14 +482,32 @@ function addSort(col,event){
   else sortCriteria.push({col,dir:'asc'});
   updateSortHeaders();renderAll();
 }
-function clearSort(){sortCriteria=[];updateSortHeaders();renderAll();showNotif('SORT CLEARED');}
+function clearSort(){
+  sortCriteria=[];
+  // Force full header reset
+  document.querySelectorAll('#track-table thead th[data-col]').forEach(th=>{
+    th.className='';
+    const b=th.querySelector('.sort-priority');if(b)b.remove();
+  });
+  updateSortHeaders();
+  renderAll();
+  showNotif('SORT CLEARED');
+}
 function updateSortHeaders(){
   document.querySelectorAll('#track-table thead th[data-col]').forEach(th=>{
     th.className='';const col=th.getAttribute('data-col');const s=sortCriteria.find(s=>s.col===col);
     if(s){th.classList.add(s.dir==='asc'?'sort-asc':'sort-desc');const existing=th.querySelector('.sort-priority');if(existing)existing.remove();if(sortCriteria.length>1){const b=document.createElement('span');b.className='sort-priority';b.textContent=sortCriteria.indexOf(s)+1;th.appendChild(b);}}
   });
   const hint=document.getElementById('sort-hint');
-  if(hint){if(sortCriteria.length>0){hint.textContent='SORT: '+sortCriteria.map((s,i)=>`${i+1}:${s.col.toUpperCase()} ${s.dir==='asc'?'▲':'▼'}`).join('  ')+'  |  TWO-FINGER TAP ALBUM ART TO CLEAR';}else{hint.textContent='TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT · TWO-FINGER TAP ALBUM ART TO CLEAR';}}
+  const clearBtn=document.getElementById('sort-clear-btn');
+  if(clearBtn)clearBtn.classList.toggle('visible',sortCriteria.length>0);
+  if(hint){
+    const textNode=hint.firstChild;
+    if(textNode&&textNode.nodeType===3){
+      if(sortCriteria.length>0){textNode.textContent='SORT: '+sortCriteria.map((s,i)=>`${i+1}:${s.col.toUpperCase()} ${s.dir==='asc'?'▲':'▼'}`).join('  ')+'  ';}
+      else{textNode.textContent='TAP COLUMN HEADER TO SORT · ADDITIONAL TAPS ADD MULTI-SORT  ';}
+    }
+  }
 }
 function getSorted(tracks){
   if(!sortCriteria.length)return tracks;
