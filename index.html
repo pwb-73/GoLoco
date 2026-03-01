@@ -60,6 +60,12 @@ body::before {
 .sel-btn:active { transform: translateY(1px); border-bottom-width: 1px; }
 .sel-btn.orange { background: linear-gradient(180deg, var(--orange-bright), var(--orange), var(--orange-dark)); border-color: var(--orange-dark); border-bottom-color: #6a2808; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 .sel-btn.active { background: linear-gradient(180deg, var(--orange), var(--orange-dark)); border-color: var(--orange-dark); color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.4); }
+/* Topbar action buttons: larger bold text */
+.topbar-btns .sel-btn { font-size: 13px; font-weight: 700; padding: 7px 14px; letter-spacing: 1.5px; }
+/* Fullscreen button: large icon */
+#fs-btn { font-size: 22px; padding: 4px 10px; line-height: 1; font-weight: 900; }
+/* Shuffle button: larger bold */
+#shuffle-btn { font-size: 14px; font-weight: 800; letter-spacing: 2px; padding: 8px 14px; width: 100%; text-align: center; }
 
 /* MAIN */
 #main { display: flex; flex: 1; gap: 10px; overflow: hidden; min-height: 0; }
@@ -69,8 +75,7 @@ body::before {
 .sidebar-unit { padding: 10px 10px 10px 14px; }
 #sidebar-art {
   width: calc(100% - 20px); margin: 10px; aspect-ratio: 1; border-radius: 6px;
-  background: #1a1008; border: 1px solid #0a0804;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+  background: #1a1008; border: none;
   display: flex; align-items: center; justify-content: center;
   font-size: 48px; overflow: hidden; flex-shrink: 0; transition: opacity 0.3s; cursor: default;
 }
@@ -193,7 +198,7 @@ body::before {
 #play-btn { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 3px solid var(--orange-dark); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 28px; box-shadow: 0 4px 12px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; }
 #play-btn:active { transform: scale(0.94); }
 /* Shuffle + Volume stacked vertically */
-.shuffle-vol-stack { display: flex; flex-direction: column; align-items: stretch; gap: 14px; flex-shrink: 0; }
+.shuffle-vol-stack { display: flex; flex-direction: column; align-items: stretch; gap: 28px; flex-shrink: 0; }
 .volume-group { display: flex; align-items: center; gap: 8px; }
 .vol-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 1px; font-weight: 700; flex-shrink: 0; }
 .vol-slider { -webkit-appearance: none; width: 150px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--orange) 0%, var(--orange) var(--vol-pct,80%), #3a2818 var(--vol-pct,80%)); outline: none; cursor: pointer; }
@@ -204,8 +209,7 @@ body::before {
 .time-lbl.r { text-align: right; }
 .prog-track { flex: 1; height: 10px; background: #1a1008; border-radius: 5px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); cursor: pointer; overflow: hidden; }
 .prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 5px; width: 0%; transition: width 0.2s linear; pointer-events: none; box-shadow: 0 0 8px rgba(240,112,48,0.6); }
-/* Fullscreen button */
-#fs-btn { font-size: 16px; padding: 5px 8px; line-height: 1; }
+
 
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -236,7 +240,7 @@ body::before {
 <div id="app">
 
   <div class="unit" id="topbar">
-    <div class="brand">Sound<span>Vault</span></div>
+    <div class="brand">Go <span>Loco</span></div>
     <div class="vu-meter">
       <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
       <div class="vu-row"><span class="vu-label">R</span><div class="vu-bars" id="vu-r"></div></div>
