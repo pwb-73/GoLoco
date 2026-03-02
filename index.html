@@ -417,13 +417,13 @@ body::before {
 <div class="modal-overlay" id="import-modal">
   <div class="modal">
     <div class="modal-title">Import Music</div>
-    <div class="modal-opt" onclick="closeModal();setTimeout(triggerFolderImport,80)">
-      <div class="modal-opt-icon">📂</div>
-      <div><strong>Entire Folder</strong><span>SELECT A FOLDER — ALL AUDIO FILES INSIDE LOADED</span></div>
-    </div>
     <div class="modal-opt" onclick="closeModal();setTimeout(triggerFileImport,80)">
       <div class="modal-opt-icon">🎵</div>
-      <div><strong>Individual Files</strong><span>SELECT ONE OR MORE AUDIO FILES</span></div>
+      <div><strong>Select Audio Files</strong><span>TAP TO PICK MP3 / WAV FILES FROM YOUR DEVICE</span></div>
+    </div>
+    <div class="modal-opt" style="cursor:default;opacity:0.6;">
+      <div class="modal-opt-icon">📂</div>
+      <div><strong>Whole Folder</strong><span>NOT SUPPORTED IN IOS SAFARI — SELECT FILES INDIVIDUALLY OR USE THE FILES APP TO SHARE MULTIPLE FILES AT ONCE</span></div>
     </div>
     <div class="modal-opt" onclick="importDropbox()">
       <div class="modal-opt-icon">📦</div>
@@ -583,6 +583,13 @@ function handleFolderFiles(e){
   // Accept anything audio-like; filter loosely so Safari doesn't drop files
   const files=all.filter(f=>/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name)||f.type.startsWith('audio/'));
   processFileList(files.length?files:all);
+}
+
+// Generate a stable ID from filename (simple hash)
+function filenameToId(name){
+  let h=0;
+  for(let i=0;i<name.length;i++){h=(Math.imul(31,h)+name.charCodeAt(i))|0;}
+  return String(h>>>0);
 }
 
 // Shared processing
