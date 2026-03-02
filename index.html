@@ -19,12 +19,13 @@
   --screw: #b8a888; --radius-sm: 3px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: #1a1008; font-family: 'DM Sans', sans-serif; color: var(--text-dark); overflow: hidden; }
+html { height: 100%; background: #1a1008; }
+body { height: 100%; background: #1a1008; font-family: 'DM Sans', sans-serif; color: var(--text-dark); overflow: hidden; }
 body::before {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.3;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
 }
-#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: linear-gradient(180deg,#2a1a08,#1a1008); padding: 12px; gap: 10px; overflow: hidden; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-height: 100dvh; background: linear-gradient(180deg,#2a1a08,#1a1008); padding: 12px; gap: 10px; overflow: hidden; box-sizing: border-box; }
 
 .unit {
   background: linear-gradient(180deg, var(--panel-light) 0%, var(--panel) 40%, var(--panel-dark) 100%);
@@ -158,7 +159,8 @@ body::before {
 .track-table tbody tr.playing td.col-album,
 .track-table tbody tr.playing td.col-genre,
 .track-table tbody tr.playing td.col-year,
-.track-table tbody tr.playing td.col-dur { color: #000000 !important; }
+.track-table tbody tr.playing td.col-dur,
+.track-table tbody tr.playing td.col-title { color: #000000 !important; }
 .eq-inline { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; vertical-align: middle; margin-right: 5px; }
 .eq-inline .eq-b { width: 3px; background: #1a1008; border-radius: 1px; animation: eqb 0.7s ease-in-out infinite alternate; }
 .eq-inline .eq-b:nth-child(2) { animation-delay: 0.15s; }
@@ -224,7 +226,36 @@ body::before {
 .prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 5px; width: 0%; transition: width 0.2s linear; pointer-events: none; box-shadow: 0 0 8px rgba(240,112,48,0.6); }
 
 
-/* MODAL */
+/* RESPONSIVE — scale down when viewport height is limited (browser chrome visible) */
+@media (max-height: 850px) {
+  .brand { font-size: 36px; }
+  #topbar { padding: 5px 16px; gap: 10px; }
+  .topbar-btns .sel-btn { font-size: 11px; padding: 5px 10px; }
+  #fs-btn { font-size: 18px; padding: 3px 8px; }
+  #player-bar { padding: 6px 12px 8px; }
+  .player-inner { gap: 5px; }
+  .ctrl { width: 44px; height: 44px; font-size: 18px; }
+  #play-btn { width: 56px; height: 56px; font-size: 22px; }
+  .player-art { width: 56px; height: 56px; font-size: 22px; }
+  .controls-group { gap: 7px; padding: 6px 10px; }
+  .shuffle-vol-stack { gap: 16px; }
+  #shuffle-btn { padding: 5px 10px; font-size: 12px; }
+  .vol-slider { width: 120px; }
+  .player-title { font-size: 15px; }
+  .player-artist { font-size: 11px; }
+  .progress-row { gap: 7px; }
+  .prog-track { height: 8px; }
+  #sidebar { width: 160px; }
+}
+@media (max-height: 700px) {
+  .brand { font-size: 28px; }
+  #topbar { padding: 4px 12px; }
+  .ctrl { width: 36px; height: 36px; font-size: 15px; }
+  #play-btn { width: 46px; height: 46px; font-size: 18px; }
+  .player-art { width: 46px; height: 46px; }
+  .shuffle-vol-stack { gap: 10px; }
+  #shuffle-btn { font-size: 11px; padding: 4px 8px; }
+}
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
 .modal { background: linear-gradient(180deg,var(--panel-light),var(--panel)); border: 1px solid var(--tan); border-radius: 8px; padding: 24px; max-width: 380px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
@@ -264,10 +295,10 @@ body::before {
     </div>
     <div class="topbar-btns">
       <button class="sel-btn" id="menu-btn" style="display:none" onclick="toggleSidebar()">MENU</button>
-      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <button class="sel-btn" onclick="saveLibrary()">💾 SAVE</button>
       <button class="sel-btn" onclick="triggerRestoreImport()">📂 RESTORE</button>
       <button class="sel-btn orange" onclick="openImportModal()">+ IMPORT</button>
+      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
     </div>
   </div>
 
