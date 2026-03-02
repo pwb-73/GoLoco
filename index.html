@@ -608,16 +608,42 @@ function fallbackFolderPicker(){
 // Shared processing for both file picker and folder picker
 function processFileList(files){
   if(!files.length)return;
-  let loaded=0,skipped=0;
-  showNotif(`LOADING ${files.length} FILE(S)...`);
+  let resolved=0,skipped=0;
+  const total=files.length;
+  showNotif(`LOADING ${total} FILE(S)...`);
+
+  // Render progress updates as tracks arrive, not just at the end
+  let renderPending=false;
+  function scheduleRender(){
+    if(renderPending)return;
+    renderPending=true;
+    setTimeout(()=>{renderPending=false;updateBadge();renderView();},120);
+  }
+
+  // Safety net: after 8 seconds, render whatever we have so far
+  const safetyTimer=setTimeout(()=>{
+    if(resolved<total){
+      const added=library.length;
+      showNotif(`✓ LOADED ${added} TRACK(S) — ${total-resolved} SKIPPED (UNREADABLE)`);
+      updateBadge();renderView();
+    }
+  },8000);
+
+  function done(){
+    resolved++;
+    scheduleRender();
+    if(resolved===total){
+      clearTimeout(safetyTimer);
+      const added=resolved-skipped;
+      showNotif(`✓ ADDED ${added} TRACK(S)${skipped?' ('+skipped+' ALREADY IN LIBRARY)':''}`);
+      updateBadge();renderView();
+    }
+  }
+
   files.forEach(file=>{
     const stableId=filenameToId(file.name);
     if(library.find(t=>t.id===stableId)){
-      loaded++;skipped++;
-      if(loaded===files.length){
-        showNotif(`✓ ADDED ${loaded-skipped} TRACK(S)${skipped?' ('+skipped+' SKIPPED)':''}`);
-        updateBadge();renderView();
-      }
+      skipped++;done();
       return;
     }
     const url=URL.createObjectURL(file);
@@ -625,11 +651,15 @@ function processFileList(files){
     const parts=t.name.split(' - ');
     if(parts.length>=2){t.artist=parts[0].trim();t.title=parts.slice(1).join(' - ').trim();}else t.title=t.name;
     matchRestoredMeta(t);
+    library.push(t); // add immediately so it shows up fast
     extractID3(file,t);
-    const tmp=new Audio(url);
-    tmp.addEventListener('loadedmetadata',()=>{t.duration=tmp.duration;done(t);});
-    tmp.addEventListener('error',()=>done(t));
-    function done(track){library.push(track);loaded++;if(loaded===files.length){showNotif(`✓ ADDED ${loaded-skipped} TRACK(S)${skipped?' ('+skipped+' SKIPPED)':''}`);updateBadge();renderView();}}
+    const tmp=new Audio();
+    tmp.preload='metadata';
+    // Give each file a 5s timeout for metadata
+    const metaTimer=setTimeout(()=>done(),5000);
+    tmp.addEventListener('loadedmetadata',()=>{clearTimeout(metaTimer);t.duration=tmp.duration;done();},{once:true});
+    tmp.addEventListener('error',()=>{clearTimeout(metaTimer);done();},{once:true});
+    tmp.src=url;
   });
 }
 
