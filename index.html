@@ -196,6 +196,86 @@ body::before {
 /* EMPTY */
 .empty-btn { margin-top: 20px; background: linear-gradient(180deg,var(--orange-bright),var(--orange-dark)); border: 1px solid var(--orange-dark); border-bottom: 2px solid #6a2808; color: #fff; padding: 10px 22px; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
 
+/* SWIPE TO DELETE */
+.track-table tbody tr { position: relative; overflow: hidden; }
+.track-table tbody tr td { transition: transform 0.18s ease, opacity 0.18s ease; }
+.track-table tbody tr.swiping td { pointer-events: none; }
+.swipe-delete-reveal {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 90px; background: #cc2200;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  letter-spacing: 1.5px; color: #fff; font-weight: 700;
+  opacity: 0; pointer-events: none; transition: opacity 0.18s ease;
+  border-left: 2px solid #991a00;
+  gap: 6px;
+}
+.track-table tbody tr.swipe-open .swipe-delete-reveal { opacity: 1; pointer-events: auto; }
+.track-table tbody tr.swipe-open td { transform: translateX(-90px); }
+.track-table tbody tr.swipe-deleting td { transform: translateX(-100%); opacity: 0; transition: transform 0.28s ease, opacity 0.28s ease; }
+
+/* NOW PLAYING OVERLAY */
+#np-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: #0d0804;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: env(safe-area-inset-top, 16px) 24px 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#np-overlay.open { opacity: 1; pointer-events: auto; }
+#np-close {
+  align-self: flex-end; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px; padding: 6px 16px; font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 1.5px; color: var(--cream); cursor: pointer;
+  margin-bottom: 20px; margin-top: 8px;
+}
+#np-art-wrap {
+  width: min(70vw, 380px); aspect-ratio: 1;
+  border-radius: 16px; overflow: hidden;
+  background: #1a1008;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px; flex-shrink: 0;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+}
+#np-art-wrap img { width: 100%; height: 100%; object-fit: contain; }
+#np-title {
+  margin-top: 28px; font-size: 22px; font-weight: 800;
+  color: #fff; text-align: center; letter-spacing: 0.5px;
+  max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#np-artist {
+  font-family: 'Share Tech Mono', monospace; font-size: 13px;
+  color: var(--text-light); margin-top: 6px; text-align: center;
+  max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.np-controls {
+  display: flex; align-items: center; gap: 18px; margin-top: 32px;
+}
+.np-ctrl {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c8b888, #8a7848);
+  border: none; color: var(--text-dark); font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  transition: transform 0.08s;
+}
+.np-ctrl:active { transform: scale(0.92); }
+#np-play-btn {
+  width: 72px; height: 72px; font-size: 28px;
+  background: radial-gradient(circle at 35% 35%, var(--orange-bright), var(--orange-dark));
+  color: #fff; border: 3px solid var(--orange-dark);
+  box-shadow: 0 6px 20px rgba(180,60,0,0.5);
+}
+.np-prog-row { display: flex; align-items: center; gap: 12px; width: min(70vw,380px); margin-top: 24px; }
+.np-prog-track {
+  flex: 1; height: 6px; background: #2a1a08; border-radius: 3px;
+  border: 1px solid #0a0804; cursor: pointer; overflow: hidden;
+}
+.np-prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 3px; width: 0%; transition: width 0.2s linear; pointer-events: none; }
+.np-time { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); min-width: 36px; }
+.np-time.r { text-align: right; }
+
 /* PLAYER BAR */
 #player-bar { flex-shrink: 0; padding: 10px 16px 12px; }
 .player-inner { display: flex; flex-direction: column; gap: 8px; }
@@ -414,7 +494,7 @@ body::before {
   <div class="unit" id="player-bar">
     <div class="player-inner">
       <div class="player-top">
-        <div class="player-art" id="player-art">♫</div>
+        <div class="player-art" id="player-art" onclick="openNowPlaying()" title="Now Playing" style="cursor:pointer;">♫</div>
         <div class="player-info">
           <div class="player-title" id="player-title">NO TRACK SELECTED</div>
           <div class="player-artist" id="player-artist">— SELECT A TRACK TO BEGIN —</div>
@@ -443,6 +523,24 @@ body::before {
     </div>
   </div>
 
+</div>
+
+<!-- NOW PLAYING OVERLAY -->
+<div id="np-overlay">
+  <button id="np-close" onclick="closeNowPlaying()">▾ CLOSE</button>
+  <div id="np-art-wrap">♫</div>
+  <div id="np-title">NO TRACK</div>
+  <div id="np-artist">—</div>
+  <div class="np-prog-row">
+    <span class="np-time" id="np-cur">0:00</span>
+    <div class="np-prog-track" onclick="npSeek(event)"><div class="np-prog-fill" id="np-prog-fill"></div></div>
+    <span class="np-time r" id="np-tot">0:00</span>
+  </div>
+  <div class="np-controls">
+    <button class="np-ctrl" onclick="prevTrack()">⏮</button>
+    <button class="np-ctrl" id="np-play-btn" onclick="togglePlay()">▶</button>
+    <button class="np-ctrl" onclick="nextTrack()">⏭</button>
+  </div>
 </div>
 
 <div class="modal-overlay" id="import-modal">
@@ -857,21 +955,14 @@ function updateArtDisplay(){
     sa.innerHTML='♫';
     pa.innerHTML='♫';
   }
+  updateNowPlayingOverlay();
 }
 
 // Two-finger tap on sidebar art to clear sort
 document.getElementById('sidebar-art').addEventListener('touchstart',function(e){if(e.touches.length===2){e.preventDefault();clearSort();}},{passive:false});
 
 // PLAYBACK
-function playTrack(idx){
-  if(idx<0||idx>=library.length)return;
-  currentIndex=idx;const t=library[idx];
-  audio.src=t.url;audio.volume=parseFloat(document.getElementById('vol-slider').value);
-  audio.play().then(()=>{isPlaying=true;updatePlayBtn();clearTimeout(vuAnimFrame);animateVU();}).catch(()=>{});
-  document.getElementById('player-title').textContent=(t.title||t.name).toUpperCase();
-  document.getElementById('player-artist').textContent=t.artist.toUpperCase()+(t.album!=='Unknown Album'?' — '+t.album.toUpperCase():'');
-  updateArtDisplay();renderView();
-}
+// playTrack defined below (after NP overlay code)
 function playGroup(type,name){const key=type==='albums'?'album':type==='artists'?'artist':'composer';queue=library.filter(t=>t[key]===name).map(t=>library.indexOf(t));if(queue.length)playTrack(queue[0]);showView('queue',null);}
 function togglePlay(){if(!audio.src&&library.length){playTrack(0);return;}if(isPlaying){audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();}else{audio.play();isPlaying=true;animateVU();}updatePlayBtn();}
 
@@ -894,12 +985,10 @@ function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!lib
 function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
 function setVolume(v){audio.volume=parseFloat(v);document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
-function updatePlayBtn(){document.getElementById('play-btn').textContent=isPlaying?'⏸':'▶';}
+// updatePlayBtn defined below with NP overlay sync
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
 audio.addEventListener('ended',()=>nextTrack());
-
-// RATINGS
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
@@ -922,6 +1011,175 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 // INIT
 initVU();initRF();updateBadge();renderAll();
+
+// NOW PLAYING OVERLAY
+function openNowPlaying(){
+  const ov=document.getElementById('np-overlay');
+  updateNowPlayingOverlay();
+  ov.classList.add('open');
+}
+function closeNowPlaying(){
+  document.getElementById('np-overlay').classList.remove('open');
+}
+function updateNowPlayingOverlay(){
+  if(!document.getElementById('np-overlay').classList.contains('open'))return;
+  const t=currentIndex>=0?library[currentIndex]:null;
+  const artWrap=document.getElementById('np-art-wrap');
+  artWrap.innerHTML=t&&t.art?`<img src="${t.art}">`:'♫';
+  document.getElementById('np-title').textContent=t?(t.title||t.name).toUpperCase():'NO TRACK';
+  document.getElementById('np-artist').textContent=t?t.artist.toUpperCase()+( t.album!=='Unknown Album'?' — '+t.album.toUpperCase():''):'—';
+  document.getElementById('np-play-btn').textContent=isPlaying?'⏸':'▶';
+}
+function npSeek(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
+
+// Sync NP overlay progress bar and play button with audio events
+audio.addEventListener('timeupdate',()=>{
+  if(!audio.duration)return;
+  const pct=(audio.currentTime/audio.duration)*100;
+  const npf=document.getElementById('np-prog-fill');
+  if(npf)npf.style.width=pct+'%';
+  const npCur=document.getElementById('np-cur');
+  const npTot=document.getElementById('np-tot');
+  if(npCur)npCur.textContent=fmtTime(audio.currentTime);
+  if(npTot)npTot.textContent=fmtTime(audio.duration);
+});
+
+// Override updatePlayBtn to also sync NP overlay button
+function updatePlayBtn(){
+  document.getElementById('play-btn').textContent=isPlaying?'⏸':'▶';
+  const npb=document.getElementById('np-play-btn');
+  if(npb)npb.textContent=isPlaying?'⏸':'▶';
+}
+
+// Swipe-down gesture on NP overlay to close
+(function(){
+  const ov=document.getElementById('np-overlay');
+  let startY=0,startX=0;
+  ov.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;startX=e.touches[0].clientX;},{passive:true});
+  ov.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-startY;
+    const dx=Math.abs(e.changedTouches[0].clientX-startX);
+    if(dy>60&&dx<60)closeNowPlaying();
+  },{passive:true});
+})();
+
+// SWIPE LEFT TO DELETE
+(function(){
+  let activeSwipeRow=null;
+
+  function attachSwipeToRow(tr){
+    if(tr._swipeAttached)return;
+    tr._swipeAttached=true;
+    let startX=0,startY=0,dx=0,locked=false,isOpen=false;
+
+    tr.addEventListener('touchstart',e=>{
+      // Close any other open row first
+      if(activeSwipeRow&&activeSwipeRow!==tr)closeSwipe(activeSwipeRow);
+      startX=e.touches[0].clientX;
+      startY=e.touches[0].clientY;
+      dx=0;locked=false;
+    },{passive:true});
+
+    tr.addEventListener('touchmove',e=>{
+      if(locked)return;
+      const curX=e.touches[0].clientX;
+      const curY=e.touches[0].clientY;
+      const adx=startX-curX;
+      const ady=Math.abs(curY-startY);
+      // If moving more vertically, let the scroll happen
+      if(!tr._dirLocked){if(ady>adx+4){locked=true;return;}if(adx>6)tr._dirLocked=true;}
+      if(!tr._dirLocked)return;
+      dx=Math.max(0,Math.min(90,startX-curX));
+      tr.classList.add('swiping');
+      // Move cells manually so we can interpolate
+      Array.from(tr.querySelectorAll('td')).forEach(td=>td.style.transform=`translateX(-${dx}px)`);
+      const rev=tr.querySelector('.swipe-delete-reveal');
+      if(rev)rev.style.opacity=dx/90;
+    },{passive:true});
+
+    tr.addEventListener('touchend',()=>{
+      tr._dirLocked=false;
+      tr.classList.remove('swiping');
+      Array.from(tr.querySelectorAll('td')).forEach(td=>td.style.transform='');
+      if(dx>44){openSwipe(tr);}else{closeSwipe(tr);}
+      dx=0;
+    },{passive:true});
+  }
+
+  function openSwipe(tr){
+    if(activeSwipeRow&&activeSwipeRow!==tr)closeSwipe(activeSwipeRow);
+    tr.classList.add('swipe-open');
+    activeSwipeRow=tr;
+  }
+
+  function closeSwipe(tr){
+    tr.classList.remove('swipe-open');
+    if(activeSwipeRow===tr)activeSwipeRow=null;
+  }
+
+  function deleteRow(tr){
+    const idx=parseInt(tr.getAttribute('data-lib-idx'));
+    if(isNaN(idx))return;
+    tr.classList.add('swipe-deleting');
+    setTimeout(()=>{
+      const t=library[idx];
+      if(!t)return;
+      // Revoke object URLs
+      if(t.url)URL.revokeObjectURL(t.url);
+      if(t.art)URL.revokeObjectURL(t.art);
+      // Adjust currentIndex
+      if(currentIndex===idx){audio.pause();audio.src='';isPlaying=false;currentIndex=-1;resetVU();updatePlayBtn();document.getElementById('player-title').textContent='NO TRACK SELECTED';document.getElementById('player-artist').textContent='— SELECT A TRACK TO BEGIN —';updateArtDisplay();}
+      else if(currentIndex>idx)currentIndex--;
+      // Adjust queue indices
+      queue=queue.filter(q=>q!==idx).map(q=>q>idx?q-1:q);
+      library.splice(idx,1);
+      updateBadge();renderView();showNotif('TRACK REMOVED');
+    },300);
+  }
+
+  // Re-attach swipe listeners after every render by observing tbody mutations
+  const tbodies=['track-tbody','tagged-tbody','queue-tbody'];
+  tbodies.forEach(id=>{
+    const tb=document.getElementById(id);
+    if(!tb)return;
+    const obs=new MutationObserver(()=>{
+      Array.from(tb.querySelectorAll('tr')).forEach((tr,i)=>{
+        // Inject delete button if not present
+        if(!tr.querySelector('.swipe-delete-reveal')){
+          const btn=document.createElement('td');
+          btn.className='swipe-delete-reveal';
+          btn.innerHTML='🗑 DELETE';
+          btn.addEventListener('click',e=>{e.stopPropagation();deleteRow(tr);});
+          tr.style.position='relative';
+          tr.style.overflow='hidden';
+          tr.appendChild(btn);
+        }
+        // Set data-lib-idx to the real library index from onclick
+        const onclick=tr.getAttribute('onclick')||'';
+        const m=onclick.match(/playTrack\((\d+)\)/);
+        if(m)tr.setAttribute('data-lib-idx',m[1]);
+        attachSwipeToRow(tr);
+      });
+    });
+    obs.observe(tb,{childList:true});
+  });
+
+  // Close open swipe row when tapping elsewhere
+  document.addEventListener('touchstart',e=>{
+    if(activeSwipeRow&&!activeSwipeRow.contains(e.target))closeSwipe(activeSwipeRow);
+  },{passive:true});
+})();
+
+// PLAYTRACK — full definition including NP overlay sync
+function playTrack(idx){
+  if(idx<0||idx>=library.length)return;const t=library[idx];
+  audio.src=t.url;audio.volume=parseFloat(document.getElementById('vol-slider').value);
+  audio.play().then(()=>{isPlaying=true;updatePlayBtn();clearTimeout(vuAnimFrame);animateVU();}).catch(()=>{});
+  document.getElementById('player-title').textContent=(t.title||t.name).toUpperCase();
+  document.getElementById('player-artist').textContent=t.artist.toUpperCase()+(t.album!=='Unknown Album'?' — '+t.album.toUpperCase():'');
+  updateArtDisplay();renderView();
+  updateNowPlayingOverlay();
+}
 
 document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();togglePlay();}if(e.code==='ArrowRight')nextTrack();if(e.code==='ArrowLeft')prevTrack();if(e.code==='KeyS')toggleShuffle();});
 
