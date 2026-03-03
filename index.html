@@ -25,7 +25,7 @@ body::before {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.3;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
 }
-#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-height: 100dvh; background: linear-gradient(180deg,#2a1a08,#1a1008); padding: 12px; gap: 10px; overflow: hidden; box-sizing: border-box; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-height: 100dvh; background: linear-gradient(180deg,#5a3e22,#3a2810); padding: 12px; gap: 10px; overflow: hidden; box-sizing: border-box; }
 
 .unit {
   background: linear-gradient(180deg, var(--panel-light) 0%, var(--panel) 40%, var(--panel-dark) 100%);
@@ -230,14 +230,18 @@ body::before {
 
 /* Art fills the entire screen */
 #np-bg {
-  position: absolute; inset: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
   background: #0d0804;
+  overflow: hidden;
 }
 #np-bg img {
+  position: absolute;
+  top: 0; left: 0;
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
-  filter: blur(0px);
 }
 /* Dark gradient so text is readable over any artwork */
 #np-overlay::after {
@@ -349,9 +353,24 @@ body::before {
 /* Right side: controls + shuffle/vol stacked */
 .player-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 .controls-group { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: linear-gradient(180deg,#b8a888,#a89870); border-radius: 6px; border: 1px solid #7a6848; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 3px 6px rgba(0,0,0,0.3); }
-.ctrl { width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#c8b888,#8a7848); color: var(--text-dark); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 34px; line-height: 1; padding: 0; box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; border: none; }
+.ctrl {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d8c898, #a89060) !important;
+  -webkit-appearance: none; appearance: none;
+  color: #1a0e04 !important; -webkit-text-fill-color: #1a0e04;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 28px; line-height: 56px;
+  width: 56px; height: 56px;
+  text-align: center;
+  padding: 0; margin: 0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.35);
+  transition: all 0.08s; flex-shrink: 0; border: none;
+  font-style: normal; font-variant: normal;
+  -webkit-font-smoothing: antialiased;
+}
 .ctrl:active { transform: scale(0.94); }
-#play-btn { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 3px solid var(--orange-dark); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 44px; line-height: 1; padding: 0; box-shadow: 0 4px 12px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; }
+#play-btn { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 3px solid var(--orange-dark); color: #fff; -webkit-text-fill-color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 36px; line-height: 72px; text-align: center; padding: 0; margin: 0; box-shadow: 0 4px 12px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; -webkit-appearance: none; appearance: none; }
 #play-btn:active { transform: scale(0.94); }
 /* Shuffle + Volume stacked vertically */
 .shuffle-vol-stack { display: flex; flex-direction: column; align-items: stretch; gap: 28px; flex-shrink: 0; }
@@ -375,8 +394,8 @@ body::before {
   #fs-btn { font-size: 18px; padding: 3px 8px; }
   #player-bar { padding: 6px 12px 8px; }
   .player-inner { gap: 5px; }
-  .ctrl { width: 44px; height: 44px; font-size: 26px; }
-  #play-btn { width: 56px; height: 56px; font-size: 34px; }
+  .ctrl { width: 44px; height: 44px; font-size: 36px; }
+  #play-btn { width: 56px; height: 56px; font-size: 44px; }
   .player-art { width: 56px; height: 56px; font-size: 22px; }
   .controls-group { gap: 7px; padding: 6px 10px; }
   .shuffle-vol-stack { gap: 16px; }
@@ -391,8 +410,8 @@ body::before {
 @media (max-height: 700px) {
   .brand { font-size: 28px; }
   #topbar { padding: 4px 12px; }
-  .ctrl { width: 36px; height: 36px; font-size: 21px; }
-  #play-btn { width: 46px; height: 46px; font-size: 27px; }
+  .ctrl { width: 36px; height: 36px; font-size: 29px; }
+  #play-btn { width: 46px; height: 46px; font-size: 36px; }
   .player-art { width: 46px; height: 46px; }
   .shuffle-vol-stack { gap: 10px; }
   #shuffle-btn { font-size: 11px; padding: 4px 8px; }
@@ -565,10 +584,10 @@ body::before {
         </div>
         <div class="player-right">
           <div class="controls-group">
-            <button class="ctrl" onclick="prevTrack()">⏮</button>
-            <button id="play-btn" onclick="togglePlay()">▶</button>
-            <button class="ctrl" onclick="nextTrack()">⏭</button>
-            <button class="ctrl" id="stop-btn" onclick="stopTrack()">⏹</button>
+            <div class="ctrl" onclick="prevTrack()" role="button">⏮</div>
+            <div id="play-btn" onclick="togglePlay()" role="button">▶</div>
+            <div class="ctrl" onclick="nextTrack()" role="button">⏭</div>
+            <div class="ctrl" id="stop-btn" onclick="stopTrack()" role="button">⏹</div>
           </div>
           <div class="shuffle-vol-stack">
             <button class="sel-btn" id="shuffle-btn" onclick="toggleShuffle()">⇀ SHUFFLE</button>
@@ -1032,6 +1051,7 @@ function updateArtDisplay(){
   const url=(currentIndex>=0&&library[currentIndex])?library[currentIndex].art:null;
   setArtEl(document.getElementById('sidebar-art'), url);
   setArtEl(document.getElementById('player-art'), url);
+  // Always refresh NP overlay — it checks internally if open
   updateNowPlayingOverlay();
 }
 
@@ -1093,22 +1113,23 @@ initVU();initRF();updateBadge();renderAll();
 function openNowPlaying(){
   const ov=document.getElementById('np-overlay');
   ov.classList.add('open');
-  updateNowPlayingOverlay();
+  // Update after open so layout is established before we render art
+  requestAnimationFrame(()=>updateNowPlayingOverlay());
 }
 function closeNowPlaying(){
   document.getElementById('np-overlay').classList.remove('open');
 }
 function updateNowPlayingOverlay(){
-  const ov=document.getElementById('np-overlay');
   const t=currentIndex>=0?library[currentIndex]:null;
   const bg=document.getElementById('np-bg');
+  // Always rebuild the background image — never reuse a stale img element
+  bg.innerHTML='';
   if(t&&t.art){
-    // Only update image if src changed
-    let img=bg.querySelector('img');
-    if(!img){img=document.createElement('img');bg.innerHTML='';bg.appendChild(img);}
-    if(img.src!==t.art)img.src=t.art;
+    const img=document.createElement('img');
+    img.setAttribute('src', t.art);
+    bg.appendChild(img);
+    bg.style.background='#0d0804';
   } else {
-    bg.innerHTML='';
     bg.style.background='#0d0804';
   }
   document.getElementById('np-title').textContent=t?(t.title||t.name).toUpperCase():'NO TRACK';
