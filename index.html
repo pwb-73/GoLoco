@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- INDEX33                                                      -->
+<!-- INDEX34                                                      -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX33</title>
+<title>SoundVault — Hi-Fi · INDEX34</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -501,7 +501,7 @@ body::before {
             <div id="rf-stars"></div>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;">INDEX33</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;">INDEX34</span>
         </div>
         <div class="track-table-wrap">
           <div id="swipe-delete-btn">🗑 DELETE</div>
@@ -912,8 +912,26 @@ function extractID3(file,obj){
             renderView();
           }
         }
-        const txt=(skip=1)=>{try{const a=new Uint8Array(buf,dstart+skip,Math.min(fsz-skip,512));return new TextDecoder('utf-8',{fatal:false}).decode(a).replace(/\0/g,'').trim();}catch(ex){return '';}};
-        if(fid==='TIT2'&&!obj._tt){obj.title=txt();obj._tt=true;}
+        const txt=(skip=1)=>{
+          try{
+            const encByte=view.getUint8(dstart); // 0=Latin-1, 1=UTF-16, 2=UTF-16BE, 3=UTF-8
+            const a=new Uint8Array(buf,dstart+skip,Math.min(fsz-skip,512));
+            let decoded='';
+            if(encByte===0x01||encByte===0x02){
+              // UTF-16 — detect BOM
+              const bom=a.length>=2?(a[0]<<8)|a[1]:0;
+              const enc=bom===0xFFFE?'utf-16le':bom===0xFEFF?'utf-16be':'utf-16le';
+              decoded=new TextDecoder(enc,{fatal:false}).decode(a);
+            } else if(encByte===0x00){
+              // Latin-1 / ISO-8859-1
+              decoded=new TextDecoder('iso-8859-1',{fatal:false}).decode(a);
+            } else {
+              // UTF-8 (encByte===0x03 or anything else)
+              decoded=new TextDecoder('utf-8',{fatal:false}).decode(a);
+            }
+            return decoded.replace(/\0/g,'').replace(/^\uFEFF/,'').trim();
+          }catch(ex){return '';}
+        };        if(fid==='TIT2'&&!obj._tt){obj.title=txt();obj._tt=true;}
         if(fid==='TPE1'){const v=txt();if(v)obj.artist=v;}
         if(fid==='TALB'){const v=txt();if(v)obj.album=v;}
         if(fid==='TCON'){const v=txt().replace(/^\(.*?\)/,'').trim();if(v)obj.genre=v;}
