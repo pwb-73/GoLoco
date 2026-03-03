@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- INDEX31                                                      -->
+<!-- INDEX32                                                      -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX31</title>
+<title>SoundVault — Hi-Fi · INDEX32</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -368,8 +368,8 @@ body::before {
   -webkit-user-select: none; user-select: none;
 }
 .ctrl:active { opacity: 0.5; }
-#play-btn { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,var(--orange-bright),var(--orange-dark)); border: 3px solid var(--orange-dark); color: #fff; -webkit-text-fill-color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 36px; line-height: 72px; text-align: center; padding: 0; margin: 0; box-shadow: 0 4px 12px rgba(180,60,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3); transition: all 0.08s; flex-shrink: 0; -webkit-appearance: none; appearance: none; }
-#play-btn:active { transform: scale(0.94); }
+#play-btn { width: 72px; height: 72px; background: none; border: none; border-radius: 0; color: #1a0e04; -webkit-text-fill-color: #1a0e04; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 52px; line-height: 1; text-align: center; padding: 0; margin: 0; box-shadow: none; transition: opacity 0.08s; flex-shrink: 0; -webkit-user-select: none; user-select: none; }
+#play-btn:active { opacity: 0.5; }
 /* Shuffle + Volume stacked vertically */
 .shuffle-vol-stack { display: flex; flex-direction: column; align-items: stretch; gap: 28px; flex-shrink: 0; }
 .volume-group { display: flex; align-items: center; gap: 8px; }
@@ -501,7 +501,7 @@ body::before {
             <div id="rf-stars"></div>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;">INDEX31</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;">INDEX32</span>
         </div>
         <div class="track-table-wrap">
           <div id="swipe-delete-btn">🗑 DELETE</div>
@@ -1116,7 +1116,14 @@ function openNowPlaying(){
   requestAnimationFrame(()=>updateNowPlayingOverlay());
 }
 function closeNowPlaying(){
-  document.getElementById('np-overlay').classList.remove('open');
+  const ov=document.getElementById('np-overlay');
+  ov.classList.remove('open');
+  // Force iOS to recalculate layout — prevents elements appearing too large after close
+  document.getElementById('app').style.display='none';
+  void document.getElementById('app').offsetHeight; // trigger reflow
+  document.getElementById('app').style.display='';
+  // Re-render in case library display was disrupted during overlay
+  renderView();
 }
 function updateNowPlayingOverlay(){
   const t=currentIndex>=0?library[currentIndex]:null;
