@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- INDEX41                                                      -->
+<!-- INDEX42                                                      -->
 <!-- Changes: 1) Removed Save/Restore buttons                     -->
 <!--          2) Removed Library+Extras sidebar sections;         -->
 <!--             Album art moved to RIGHT panel                   -->
@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX41</title>
+<title>SoundVault — Hi-Fi · INDEX42</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -82,8 +82,8 @@ body::before {
 .vu-seg.y { background: var(--vu-yellow); box-shadow: 0 0 4px var(--vu-yellow); }
 .vu-seg.r { background: var(--vu-red); box-shadow: 0 0 4px var(--vu-red); }
 #search-wrap { flex: 1; position: relative; }
-#search-bar { width: 100%; background: #1a1008; border: 1px solid #0a0804; border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--cream); outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); letter-spacing: 0.5px; }
-#search-bar::placeholder { color: #5a4030; } #search-bar:focus { border-color: var(--orange); }
+#search-bar { width: 100%; background: transparent; border: 1px solid rgba(0,0,0,0.6); border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-dark); outline: none; letter-spacing: 0.5px; }
+#search-bar::placeholder { color: var(--text-light); } #search-bar:focus { border-color: var(--orange); }
 .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #5a4030; pointer-events: none; }
 .topbar-btns { display: flex; gap: 6px; flex-shrink: 0; }
 .sel-btn {
@@ -183,9 +183,9 @@ body::before {
 .tracks-topbar { display: flex; align-items: center; gap: 10px; padding: 8px 14px 4px; flex-shrink: 0; flex-wrap: wrap; }
 .tracks-count { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 0.5px; flex-shrink: 0; }
 .tracks-topbar .sort-hint-inline { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); letter-spacing: 0.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rating-filter { display: flex; align-items: center; gap: 6px; background: #1a1008; padding: 4px 10px; border-radius: 4px; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); flex-shrink: 0; }
-.rating-filter label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: #6a5040; letter-spacing: 1px; }
-.rf-star { font-size: 14px; color: #3a2818; cursor: pointer; transition: color 0.1s; }
+.rating-filter { display: flex; align-items: center; gap: 6px; background: transparent; padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.4); flex-shrink: 0; }
+.rating-filter label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-mid); letter-spacing: 1px; }
+.rf-star { font-size: 14px; color: var(--text-mid); cursor: pointer; transition: color 0.1s; }
 .rf-star.on { color: var(--orange-bright); text-shadow: 0 0 6px var(--orange); }
 
 /* SORT HINT */
@@ -626,7 +626,7 @@ body::before {
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreLibrary(event)">
 
 <script>
-const APP_VERSION = 'INDEX41';
+const APP_VERSION = 'INDEX42';
 document.getElementById('version-label').textContent = APP_VERSION;
 document.title = 'SoundVault — Hi-Fi · ' + APP_VERSION;
 
