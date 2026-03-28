@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- INDEX36                                                      -->
+<!-- INDEX37                                                      -->
 <!-- Changes: 1) Removed Save/Restore buttons                     -->
 <!--          2) Removed Library+Extras sidebar sections;         -->
 <!--             Album art moved to RIGHT panel                   -->
@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX36</title>
+<title>SoundVault — Hi-Fi · INDEX37</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -80,7 +80,7 @@ body::before {
 .sel-btn.orange { background: linear-gradient(180deg, var(--orange-bright), var(--orange), var(--orange-dark)); border-color: var(--orange-dark); border-bottom-color: #6a2808; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 .sel-btn.active { background: linear-gradient(180deg, var(--orange), var(--orange-dark)); border-color: var(--orange-dark); color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.4); }
 .topbar-btns .sel-btn { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 900; padding: 10px 20px; letter-spacing: 1.5px; }
-#fs-btn { font-size: 22px; padding: 4px 10px; line-height: 1; font-weight: 900; }
+#fs-btn { font-size: 22px; padding: 10px 14px; line-height: 1; font-weight: 900; }
 
 /* MAIN — now has content + right panel */
 #main { display: flex; flex: 1; gap: 10px; overflow: hidden; min-height: 0; }
@@ -111,7 +111,9 @@ body::before {
   flex: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 14px; padding: 14px 10px 28px;
+  gap: 14px;
+  padding: 14px 10px 14px;
+  margin-bottom: 10px;  /* keeps stop btn clear of player bar */
 }
 .ctrl-v {
   width: 128px; height: 128px;
@@ -596,12 +598,13 @@ body::before {
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreLibrary(event)">
 
 <script>
-const APP_VERSION = 'INDEX36';
+const APP_VERSION = 'INDEX37';
 document.getElementById('version-label').textContent = APP_VERSION;
 document.title = 'SoundVault — Hi-Fi · ' + APP_VERSION;
 
-let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=false, minRating=0;
+let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
+let playedThisSession=new Set(); // tracks played indices — reset when all have played
 let tags=JSON.parse(localStorage.getItem('sv_tags')||'["Favorites","Workout","Chill","Study"]');
 let trackTags=JSON.parse(localStorage.getItem('sv_track_tags')||'{}');
 let ratings=JSON.parse(localStorage.getItem('sv_ratings')||'{}');
@@ -865,9 +868,35 @@ function stopTrack(){
   },50);
 }
 
-function nextTrack(){if(!library.length)return;let next;if(queue.length){const qi=queue.indexOf(currentIndex);next=isShuffle?queue[Math.floor(Math.random()*queue.length)]:queue[(qi+1)%queue.length];}else{next=isShuffle?Math.floor(Math.random()*library.length):(currentIndex+1)%library.length;}playTrack(next);}
+function nextTrack(){
+  if(!library.length)return;
+  let next;
+  if(queue.length){
+    const qi=queue.indexOf(currentIndex);
+    if(isShuffle){
+      // No-repeat within queue
+      const unplayed=queue.filter(i=>!playedThisSession.has(i));
+      const pool=unplayed.length?unplayed:queue; // if all played, reset
+      if(!unplayed.length)playedThisSession.clear();
+      next=pool[Math.floor(Math.random()*pool.length)];
+    } else {
+      next=queue[(qi+1)%queue.length];
+    }
+  } else {
+    if(isShuffle){
+      const allIdx=[...Array(library.length).keys()];
+      const unplayed=allIdx.filter(i=>!playedThisSession.has(i)&&i!==currentIndex);
+      const pool=unplayed.length?unplayed:allIdx.filter(i=>i!==currentIndex);
+      if(!unplayed.length)playedThisSession.clear();
+      next=pool.length?pool[Math.floor(Math.random()*pool.length)]:(currentIndex+1)%library.length;
+    } else {
+      next=(currentIndex+1)%library.length;
+    }
+  }
+  playTrack(next);
+}
 function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!library.length)return;let prev;if(queue.length){const qi=queue.indexOf(currentIndex);prev=qi>0?queue[qi-1]:queue[queue.length-1];}else prev=(currentIndex-1+library.length)%library.length;playTrack(prev);}
-function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
+function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);if(!isShuffle)playedThisSession.clear();showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
 function setVolume(v){audio.volume=parseFloat(v);document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
@@ -1042,6 +1071,8 @@ window.addEventListener('online',  () => { showNotif('NETWORK RESTORED — RESUM
 
 // INIT
 initVU();initRF();updateBadge();renderAll();
+// Shuffle is on by default — reflect in button state
+document.getElementById('shuffle-btn').classList.add('active');
 
 // NOW PLAYING OVERLAY
 function openNowPlaying(){const ov=document.getElementById('np-overlay');ov.classList.add('open');requestAnimationFrame(()=>updateNowPlayingOverlay());}
@@ -1114,7 +1145,8 @@ function updatePlayBtn(){
 // PLAYTRACK
 function playTrack(idx){
   if(idx<0||idx>=library.length)return;
-  currentIndex=idx;const t=library[idx];
+  currentIndex=idx; const t=library[idx];
+  playedThisSession.add(idx); // record as played for no-repeat shuffle
   audio.src=t.url;audio.volume=parseFloat(document.getElementById('vol-slider').value);
   audio.play().then(()=>{isPlaying=true;updatePlayBtn();clearTimeout(vuAnimFrame);animateVU();}).catch(()=>{});
   document.getElementById('player-title').textContent=(t.title||t.name).toUpperCase();
