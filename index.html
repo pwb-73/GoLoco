@@ -1,12 +1,14 @@
 <!-- ============================================================ -->
-<!-- INDEX35                                                      -->
+<!-- INDEX36                                                      -->
 <!-- Changes: 1) Removed Save/Restore buttons                     -->
 <!--          2) Removed Library+Extras sidebar sections;         -->
 <!--             Album art moved to RIGHT panel                   -->
-<!--          3) Transport controls on right, vertical, 2× size   -->
-<!--          4) Song title 2× larger, heavier font               -->
+<!--          3) Transport controls on right, vertical, 2x size   -->
+<!--          4) Song title 2x larger, heavier font               -->
 <!--          5) Currently playing row centred in viewport        -->
-<!--          6) Shuffle left of volume; volume 2× bigger         -->
+<!--          6) Shuffle left of volume; volume 2x bigger         -->
+<!--          7) MusicBrainz + Cover Art Archive art lookup       -->
+<!--             iTunes Search API as fallback                    -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +18,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX35</title>
+<title>SoundVault — Hi-Fi · INDEX36</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -109,7 +111,7 @@ body::before {
   flex: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 14px; padding: 14px 10px;
+  gap: 14px; padding: 14px 10px 28px;
 }
 .ctrl-v {
   width: 128px; height: 128px;
@@ -144,7 +146,9 @@ body::before {
 }
 #stop-btn-v:active { opacity: 0.5; transform: scale(0.95); }
 
-/* CONTENT */
+/* Art searching pulse */
+#right-art.searching { animation: artpulse 1.4s ease-in-out infinite; }
+@keyframes artpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 #content { flex: 1; overflow: hidden; min-width: 0; display: flex; flex-direction: column; padding: 0; }
 .view { display: none; flex-direction: column; flex: 1; overflow: hidden; }
 .view.active { display: flex; }
@@ -391,6 +395,7 @@ body::before {
   <!-- TOPBAR: Save/Restore buttons removed (change #1) -->
   <div class="unit" id="topbar">
     <div class="brand">Go <span>Loco</span></div>
+    <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
     <div class="vu-meter">
       <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
       <div class="vu-row"><span class="vu-label">R</span><div class="vu-bars" id="vu-r"></div></div>
@@ -401,7 +406,6 @@ body::before {
     </div>
     <div class="topbar-btns">
       <button class="sel-btn orange" onclick="openImportModal()">+ IMPORT</button>
-      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
     </div>
   </div>
 
@@ -592,7 +596,7 @@ body::before {
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreLibrary(event)">
 
 <script>
-const APP_VERSION = 'INDEX35';
+const APP_VERSION = 'INDEX36';
 document.getElementById('version-label').textContent = APP_VERSION;
 document.title = 'SoundVault — Hi-Fi · ' + APP_VERSION;
 
@@ -675,6 +679,8 @@ function processFileList(files){
     tmp.addEventListener('loadedmetadata',()=>{clearTimeout(tmo);t.duration=tmp.duration;done();},{once:true});
     tmp.addEventListener('error',()=>{clearTimeout(tmo);done();},{once:true});
     tmp.src=url;
+    // Queue online art lookup after a short delay so ID3 parse can finish first
+    setTimeout(()=>queueArtLookup(t), 1200);
   });
 }
 
@@ -887,6 +893,153 @@ function showNotif(msg){const n=document.getElementById('notif');n.textContent=m
 function fmtTime(s){if(!s||isNaN(s))return'0:00';return`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ─── ONLINE ART LOOKUP ───────────────────────────────────────────────────────
+// Strategy: MusicBrainz recording search → Cover Art Archive release image
+//           Falls back to iTunes Search API if MusicBrainz yields nothing.
+// Only fires when a track has no embedded art and has a real artist/title.
+// Results are cached in artCache so each unique key is only fetched once.
+
+const artCache = {};          // key → url string | 'none'
+const artFetchQueue = [];     // tracks waiting to be looked up
+let artFetchBusy = false;
+
+function isOnline() { return navigator.onLine; }
+
+function queueArtLookup(t) {
+  if (!isOnline()) return;                    // no network — skip entirely
+  if (t.art) return;                          // already has embedded art
+  if (t.artist === 'Unknown Artist') return;  // not enough info
+  const key = (t.artist + '|' + (t.album !== 'Unknown Album' ? t.album : t.title)).toLowerCase();
+  if (artCache[key] !== undefined) {
+    if (artCache[key] !== 'none') { t.art = artCache[key]; applyArt(t); }
+    return;
+  }
+  // Mark as in-flight so we don't queue duplicates
+  artCache[key] = 'pending';
+  artFetchQueue.push({ t, key });
+  drainArtQueue();
+}
+
+function drainArtQueue() {
+  if (!isOnline()) return;                    // wait until network returns
+  if (artFetchBusy || !artFetchQueue.length) return;
+  artFetchBusy = true;
+  const { t, key } = artFetchQueue.shift();
+  fetchArtForTrack(t, key).finally(() => {
+    artFetchBusy = false;
+    // Throttle: wait 300 ms between requests to respect MusicBrainz rate limit (1 req/s)
+    setTimeout(drainArtQueue, 300);
+  });
+}
+
+async function fetchArtForTrack(t, key) {
+  // Show searching pulse on art panel if this is the current track
+  const artEl = document.getElementById('right-art');
+  const isCurrent = () => library.indexOf(t) === currentIndex;
+  if (isCurrent() && artEl && !t.art) artEl.classList.add('searching');
+
+  const url = await fetchMusicBrainzArt(t) || await fetchItunesArt(t);
+  artCache[key] = url || 'none';
+
+  if (artEl) artEl.classList.remove('searching');
+  if (url) { t.art = url; applyArt(t); }
+}
+
+// Apply fetched art to any currently-visible UI elements
+function applyArt(t) {
+  const idx = library.indexOf(t);
+  if (idx === currentIndex) {
+    setArtEl(document.getElementById('right-art'), t.art);
+    setArtEl(document.getElementById('player-art'), t.art);
+    updateNowPlayingOverlay();
+  }
+  // Refresh the track row (for any future art column we might add)
+  renderView();
+}
+
+// ── MusicBrainz → Cover Art Archive ──────────────────────────────────────────
+async function fetchMusicBrainzArt(t) {
+  try {
+    // Search by artist + recording title; include releases so we get release IDs
+    const useAlbum = t.album && t.album !== 'Unknown Album';
+    let mbUrl;
+    if (useAlbum) {
+      // Search by artist + album (release) — more stable match
+      mbUrl = `https://musicbrainz.org/ws/2/release/?query=artist:"${encodeURIComponent(t.artist)}" AND release:"${encodeURIComponent(t.album)}"&limit=3&fmt=json`;
+    } else {
+      mbUrl = `https://musicbrainz.org/ws/2/recording/?query=artist:"${encodeURIComponent(t.artist)}" AND recording:"${encodeURIComponent(t.title||t.name)}"&limit=3&fmt=json`;
+    }
+
+    const res = await fetchWithTimeout(mbUrl, {
+      headers: { 'User-Agent': 'GoLocoApp/36 ( goloco@example.com )' }
+    }, 6000);
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    let releaseId = null;
+
+    if (useAlbum) {
+      releaseId = data.releases?.[0]?.id || null;
+    } else {
+      // Recording search — pick first release from the first recording
+      const releases = data.recordings?.[0]?.releases;
+      releaseId = releases?.[0]?.id || null;
+    }
+
+    if (!releaseId) return null;
+
+    // Ask Cover Art Archive for the front image
+    const caRes = await fetchWithTimeout(
+      `https://coverartarchive.org/release/${releaseId}/front-250`,
+      {}, 6000
+    );
+    // CAA redirects to the actual image; fetch follows redirects
+    if (!caRes.ok) return null;
+    const blob = await caRes.blob();
+    if (!blob.size) return null;
+    return URL.createObjectURL(blob);
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── iTunes Search API fallback ────────────────────────────────────────────────
+async function fetchItunesArt(t) {
+  try {
+    const q = encodeURIComponent(`${t.artist} ${t.title || t.name}`);
+    const res = await fetchWithTimeout(
+      `https://itunes.apple.com/search?term=${q}&media=music&limit=1&entity=song`,
+      {}, 6000
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const artUrl = data.results?.[0]?.artworkUrl100;
+    if (!artUrl) return null;
+    // Upgrade from 100px to 600px thumbnail
+    const bigUrl = artUrl.replace('100x100bb', '600x600bb');
+    const imgRes = await fetchWithTimeout(bigUrl, {}, 6000);
+    if (!imgRes.ok) return null;
+    const blob = await imgRes.blob();
+    if (!blob.size) return null;
+    return URL.createObjectURL(blob);
+  } catch (e) {
+    return null;
+  }
+}
+
+// Helper: fetch with a timeout
+function fetchWithTimeout(url, opts, ms) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...opts, signal: ctrl.signal })
+    .finally(() => clearTimeout(tid));
+}
+// Pause art fetching when offline, resume when back online
+window.addEventListener('offline', () => showNotif('NO NETWORK — ART LOOKUP PAUSED'));
+window.addEventListener('online',  () => { showNotif('NETWORK RESTORED — RESUMING ART LOOKUP'); drainArtQueue(); });
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // INIT
 initVU();initRF();updateBadge();renderAll();
 
@@ -968,6 +1121,8 @@ function playTrack(idx){
   document.getElementById('player-artist').textContent=t.artist.toUpperCase()+(t.album!=='Unknown Album'?' — '+t.album.toUpperCase():'');
   updateArtDisplay();renderView();
   updateNowPlayingOverlay();
+  // Queue online art lookup in case embedded art is missing
+  queueArtLookup(t);
   // [5] Centre the playing row after track changes
   setTimeout(()=>{if(currentIndex===idx){updateArtDisplay();scrollPlayingRowToCenter();}},800);
 }
