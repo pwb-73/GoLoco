@@ -1,14 +1,5 @@
 <!-- ============================================================ -->
-<!-- INDEX42                                                      -->
-<!-- Changes: 1) Removed Save/Restore buttons                     -->
-<!--          2) Removed Library+Extras sidebar sections;         -->
-<!--             Album art moved to RIGHT panel                   -->
-<!--          3) Transport controls on right, vertical, 2x size   -->
-<!--          4) Song title 2x larger, heavier font               -->
-<!--          5) Currently playing row centred in viewport        -->
-<!--          6) Shuffle left of volume; volume 2x bigger         -->
-<!--          7) MusicBrainz + Cover Art Archive art lookup       -->
-<!--             iTunes Search API as fallback                    -->
+<!-- GoLoco · INDEX43                                             -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -17,8 +8,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SoundVault">
-<title>SoundVault — Hi-Fi · INDEX42</title>
+<meta name="apple-mobile-web-app-title" content="GoLoco">
+<title>GoLoco · INDEX43</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -626,26 +617,33 @@ body::before {
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreLibrary(event)">
 
 <script>
-const APP_VERSION = 'INDEX42';
+const APP_VERSION = 'INDEX43';
 document.getElementById('version-label').textContent = APP_VERSION;
-document.title = 'SoundVault — Hi-Fi · ' + APP_VERSION;
+document.title = 'GoLoco · ' + APP_VERSION;
+
+// ── Migrate old sv_ localStorage keys to gl_ (one-time, silent) ──
+(function(){
+  [['sv_ratings','gl_ratings'],['sv_tags','gl_tags'],['sv_track_tags','gl_track_tags']].forEach(([o,n])=>{
+    if(localStorage.getItem(o)&&!localStorage.getItem(n)){localStorage.setItem(n,localStorage.getItem(o));localStorage.removeItem(o);}
+  });
+})();
 
 let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
 let playedThisSession=new Set(); // tracks played indices — reset when all have played
-let tags=JSON.parse(localStorage.getItem('sv_tags')||'["Favorites","Workout","Chill","Study"]');
-let trackTags=JSON.parse(localStorage.getItem('sv_track_tags')||'{}');
-let ratings=JSON.parse(localStorage.getItem('sv_ratings')||'{}');
+let tags=JSON.parse(localStorage.getItem('gl_tags')||'["Favorites","Workout","Chill","Study"]');
+let trackTags=JSON.parse(localStorage.getItem('gl_track_tags')||'{}');
+let ratings=JSON.parse(localStorage.getItem('gl_ratings')||'{}');
 const audio=new Audio();
 audio.volume=0.8;
 
-function save(){localStorage.setItem('sv_ratings',JSON.stringify(ratings));localStorage.setItem('sv_tags',JSON.stringify(tags));localStorage.setItem('sv_track_tags',JSON.stringify(trackTags));}
+function save(){localStorage.setItem('gl_ratings',JSON.stringify(ratings));localStorage.setItem('gl_tags',JSON.stringify(tags));localStorage.setItem('gl_track_tags',JSON.stringify(trackTags));}
 
 // SAVE / RESTORE (kept for internal use even though buttons removed)
 function saveLibrary(){
   const data={version:1,savedAt:new Date().toISOString(),ratings,tags,trackTags,tracks:library.map(t=>({id:String(t.id),name:t.name,title:t.title,artist:t.artist,album:t.album,composer:t.composer,genre:t.genre,year:t.year,format:t.format,duration:t.duration}))};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='soundvault-library-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);showNotif('✓ LIBRARY SAVED');
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='goloco-library-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);showNotif('✓ LIBRARY SAVED');
 }
 function triggerRestoreImport(){document.getElementById('restore-input').click();}
 function restoreLibrary(e){
