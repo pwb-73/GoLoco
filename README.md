@@ -2,7 +2,7 @@ The idea was to create an OFF-line music player/librarian using Safari on an ipa
 
 I couldn't find anything out there that did this. Perhaps I didn't look hard enough but everything seemed to have some "gotcha" quality to it. I wanted to play my MP3 collection and not pay for someone else's server or bandwidth, or subscription.
 
-Tried to keep it simple and legible without too much squinting. It is pretty basic but it is free to use - although if it breaks, snobody else is going to fix it.
+Tried to keep it simple and legible without too much squinting. It is pretty basic but it is free to use - although if it breaks, nobody else is going to fix it.
 
 
 Features to date:
