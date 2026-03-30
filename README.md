@@ -15,3 +15,7 @@ Tried to keep it simple and legible without too much squinting. It is pretty bas
 If you would like to support my project, please buy me a coffee and give me a way to contact you — I will update you with any changes, improvements, or fixes. If not, just check back occasionally.
 
 [![Buy Me a Coffee](https://storage.ko-fi.com/cdn/kofi6.png?v=6)](https://ko-fi.com/M4M11WWLDC)
+
+---
+
+**Disclaimer:** GoLoco is provided free of charge, as-is, with no warranty or guarantee of any kind. The developer is not responsible for any issues arising from its use. GoLoco does not include, distribute, or host any music or media content. Users are solely responsible for ensuring they have the legal right to play any files they import. Album art is fetched automatically from publicly available third-party sources (MusicBrainz, iTunes) for personal use only. This project is intended for personal, non-commercial use.
