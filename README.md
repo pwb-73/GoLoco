@@ -1,4 +1,4 @@
-The idea was to create an off-line music player/librarian using Safari on an iPad. The whole project was/is created using AI. I am not a programmer — just persistent. At this writing I am at version 43.
+The idea was to create an off-line music player/librarian using Safari on an iPad. The whole project was/is created using AI. I am not a programmer — just persistent.
 
 I couldn't find anything out there that did this. Perhaps I didn't look hard enough, but everything seemed to have some "gotcha" quality to it. I wanted to play my MP3 collection and not pay for someone else's server, bandwidth, or subscription.
 
