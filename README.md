@@ -8,7 +8,7 @@ Tried to keep it simple and legible without too much squinting. It is pretty bas
 
 **Advantages:** No download subscription. Not using Apple's program environment. No fees, easier creation.
 
-**Disadvantages:** You need your own MP3 library to start with. Also you will be storing whatever songs you have decided to listen to on your iPad locally. That takes up space. I rotate my library using about a gig on the iPad — so about 500 songs at a time. Sometimes slightly unpredictable — a little bit glitchy but has never crashed or frozen. You need to be running Safari to use it. I haven't tested it with anything else.
+**Disadvantages:** You need your own MP3 library to start with. Also you will be storing whatever songs you have decided to listen to on your iPad locally. That takes up space. I rotate my library using about a gig on the iPad — so about 500 songs at a time. Sometimes slightly unpredictable — a little bit glitchy but has never crashed or frozen. You need to be running Safari to use it. I haven't tested it with anything else. GoLoco was designed specifically for Safari on iPad and has not been tested on any other browser or device — it ~~may not~~ probably won't work correctly on Windows, Android, or other platforms.
 
 **To use GoLoco:** Open Safari on your iPad and go to [pwb-73.github.io/GoLoco](https://pwb-73.github.io/GoLoco). Then tap the Share button and select "Add to Home Screen" — this gives you an app-like icon on your iPad that always loads the latest version automatically. No download or installation needed.
 
