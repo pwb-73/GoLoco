@@ -12,4 +12,4 @@ Tried to keep it simple and legible without too much squinting. It is pretty bas
 
 If you would like to support my project, please buy me a coffee and give me a way to contact you — I will update you with any changes, improvements, or fixes. If not, just check back occasionally.
 
-<a href='https://ko-fi.com/M4M11WWLDC' target='_blank'><img height='108' style='border:0px;height:108px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+<a href="https://ko-fi.com/M4M11WWLDC"><img src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" height="108" alt="Buy Me a Coffee at ko-fi.com"></a>
