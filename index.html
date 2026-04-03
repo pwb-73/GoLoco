@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 57                                            -->
+<!-- GoLoco · INDEX 58                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -464,7 +464,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 57';
+const APP_VERSION = 'INDEX 58';
 </script>
 <div id="app">
 
@@ -859,7 +859,7 @@ function renderAll(){
   const tracks=getSorted(filteredTracks());
   document.getElementById('sub-all').textContent=`${tracks.length} TRACK${tracks.length!==1?'S':''}`;
   const tbody=document.getElementById('track-tbody');
-  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="padding:40px 20px;text-align:center;"><div style="font-size:36px;opacity:0.3;margin-bottom:8px;">♫</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--text-dark);margin-bottom:4px;">${library.length===0?'No Music Yet':'No Results'}</div><div style="font-size:12px;color:var(--text-light);">${library.length===0?'Import MP3 or WAV files to get started.':'Try a different search or lower the minimum rating.'}</div>${library.length===0?'<div style="margin-top:14px;"><button class="empty-btn" onclick="triggerFileImport()">ADD MUSIC FILES</button></div>':''}</td></tr>`;return;}
+  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="padding:40px 20px;text-align:center;">${library.length===0?'<div style="margin-top:14px;"><button class="empty-btn" onclick="triggerFileImport()">ADD MUSIC FILES</button></div>':'<div style="font-size:12px;color:var(--text-light);">Try a different search or lower the minimum rating.</div>'}</td></tr>`;return;}
   tbody.innerHTML=tracks.map(t=>rowHTML(t)).join('');
   // [5] After render, scroll playing row into centre
   requestAnimationFrame(()=>scrollPlayingRowToCenter());
