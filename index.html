@@ -1,4 +1,3 @@
-
 <!-- ============================================================ -->
 <!-- GoLoco · INDEX 70                                            -->
 <!-- ============================================================ -->
@@ -43,17 +42,15 @@ body::before {
 #topbar {
   padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; overflow: hidden;
   position: relative;
-  background: none !important;
+  background: url("topbar_bg.png") repeat-x 0 bottom / auto 100% !important;
+  animation: topbarScroll 4s linear infinite;
 }
-#topbar-gif-repeat {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  overflow: hidden; z-index: 0; pointer-events: none;
-  display: flex; align-items: stretch;
+@keyframes topbarScroll {
+  from { background-position: 0 bottom; }
+  to   { background-position: -696px bottom; }
 }
-#topbar-gif-repeat img {
-  height: 100%; width: auto; flex-shrink: 0; display: block;
-}
-#topbar > *:not(#topbar-gif-repeat) { position: relative; z-index: 1; }
+#topbar-gif-repeat { display: none; }
+#topbar > * { position: relative; z-index: 1; }
 .brand {
   font-family: 'DM Sans', sans-serif; font-size: 52px; font-weight: 900;
   letter-spacing: -1px; color: var(--text-dark);
@@ -507,9 +504,6 @@ const APP_VERSION = 'INDEX 70';
 
   <!-- TOPBAR: Save/Restore buttons removed (change #1) -->
   <div class="unit" id="topbar">
-    <div id="topbar-gif-repeat">
-      <img src="topbar_anim.gif" alt=""><img src="topbar_anim.gif" alt=""><img src="topbar_anim.gif" alt=""><img src="topbar_anim.gif" alt="">
-    </div>
     <div style="overflow:hidden; flex-shrink:0; width:160px; height:70px; display:flex; align-items:center;">
       <div class="brand">Go <span class="loco">Loco</span></div>
     </div>
