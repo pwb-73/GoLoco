@@ -39,30 +39,24 @@ body::before {
 .unit::before { top: 6px; left: 8px; } .unit::after { top: 6px; right: 8px; }
 
 /* TOPBAR */
+/* TOPBAR — GIF is a real <img> behind all controls */
 #topbar {
-  padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; overflow: hidden;
-  position: relative;
-  background-image: url("topbar_bg.png") !important;
-  background-repeat: repeat-x !important;
-  background-size: auto 100% !important;
-  background-position: 0 bottom !important;
-  background-color: transparent !important;
-  animation: topbarScroll 4s linear infinite;
+  padding: 0; display: flex; align-items: center; flex-shrink: 0;
+  position: relative; overflow: hidden;
+  background: none !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+  height: 90px;
 }
-/* Kill the .unit gradient on topbar */
-.unit#topbar {
-  background-image: url("topbar_bg.png") !important;
-  background-repeat: repeat-x !important;
-  background-size: auto 100% !important;
-  background-color: transparent !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.6);
+#topbar-gif {
+  position: absolute; top: 0; left: 0; height: 100%; width: auto;
+  display: block; pointer-events: none; z-index: 0;
 }
-@keyframes topbarScroll {
-  from { background-position: 0 bottom; }
-  to   { background-position: -696px bottom; }
+#topbar-controls {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 16px;
+  padding: 8px 24px; width: 100%;
 }
-#topbar-gif-repeat { display: none; }
-#topbar > * { position: relative; z-index: 1; }
 .brand {
   font-family: 'DM Sans', sans-serif; font-size: 52px; font-weight: 900;
   letter-spacing: -1px; color: var(--text-dark);
@@ -397,7 +391,7 @@ body::before {
 /* RESPONSIVE */
 @media (max-height: 850px) {
   .brand { font-size: 36px; }
-  #topbar { padding: 5px 16px; gap: 10px; }
+  #topbar-controls { padding: 5px 16px; gap: 10px; }
   .topbar-btns .sel-btn { font-size: 14px; padding: 7px 13px; }
   #fs-btn { font-size: 18px; padding: 7px 10px; }
   #player-bar { padding: 6px 12px 8px; }
@@ -412,7 +406,7 @@ body::before {
 }
 @media (max-height: 700px) {
   .brand { font-size: 28px; }
-  #topbar { padding: 4px 12px; }
+  #topbar-controls { padding: 4px 12px; }
   /* responsive handled by clamp */
   .player-title { font-size: 36px; }
   .player-artist { font-size: 12px; }
@@ -515,21 +509,26 @@ const APP_VERSION = 'INDEX 70';
 <div id="app">
 
   <!-- TOPBAR: Save/Restore buttons removed (change #1) -->
-  <div class="unit" id="topbar">
-    <div style="overflow:hidden; flex-shrink:0; width:160px; height:70px; display:flex; align-items:center;">
-      <div class="brand">Go <span class="loco">Loco</span></div>
-    </div>
-    <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-    <div class="vu-meter">
-      <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
-      <div class="vu-row"><span class="vu-label">R</span><div class="vu-bars" id="vu-r"></div></div>
-    </div>
-    <div id="search-wrap">
-      <span class="search-icon">⌕</span>
-      <input type="text" id="search-bar" placeholder="SEARCH LIBRARY..." oninput="onSearch(this.value)">
-    </div>
-    <div class="topbar-btns">
-      <button class="sel-btn orange" onclick="triggerFileImport()">+ IMPORT</button>
+  <div id="topbar">
+    <!-- Animated GIF sits behind everything as a real img -->
+    <img id="topbar-gif" src="topbar_anim.gif" alt="">
+    <!-- All controls float on top -->
+    <div id="topbar-controls">
+      <div style="overflow:hidden; flex-shrink:0; width:160px; height:70px; display:flex; align-items:center;">
+        <div class="brand">Go <span class="loco">Loco</span></div>
+      </div>
+      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
+      <div class="vu-meter">
+        <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
+        <div class="vu-row"><span class="vu-label">R</span><div class="vu-bars" id="vu-r"></div></div>
+      </div>
+      <div id="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-bar" placeholder="SEARCH LIBRARY..." oninput="onSearch(this.value)">
+      </div>
+      <div class="topbar-btns">
+        <button class="sel-btn orange" onclick="triggerFileImport()">+ IMPORT</button>
+      </div>
     </div>
   </div>
 
