@@ -41,16 +41,7 @@ body::before {
 /* TOPBAR */
 #topbar {
   padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; overflow: hidden;
-  background-image: url("topbar_anim.gif");
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: repeat-x;
-  /* Override .unit gradient so GIF shows through */
-  background-color: transparent;
-}
-/* Neutralise the .unit gradient on topbar so GIF is visible */
-#topbar.unit {
-  background: url("topbar_anim.gif") repeat-x center bottom / cover;
+  background: url("topbar_anim.gif") repeat-x center bottom / cover !important;
 }
 .brand {
   font-family: 'DM Sans', sans-serif; font-size: 52px; font-weight: 900;
