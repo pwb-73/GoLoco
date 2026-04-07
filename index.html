@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 74                                            -->
+<!-- GoLoco · INDEX 75                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 74</title>
+<title>GoLoco · INDEX 75</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -55,23 +55,25 @@ body::before {
 #topbar-controls {
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: 16px;
-  padding: 8px 16px 8px 140px; /* left padding clears the bike */
-  width: 100%;
+  padding: 0 16px 0 0; width: 100%; height: 100%;
+  box-sizing: border-box;
 }
+/* Spacer div sized by JS to exactly match bike width */
+#bike-spacer { flex-shrink: 0; }
 .brand {
-  font-family: 'DM Sans', sans-serif; font-size: 32px; font-weight: 900;
+  font-family: 'DM Sans', sans-serif; font-size: 28px; font-weight: 900;
   letter-spacing: -1px; color: var(--text-dark);
   flex-shrink: 0; display: inline-block;
-  line-height: 0.9; padding: 2px 4px;
-  transform-origin: right center;
+  line-height: 1; padding: 0 4px;
+  transform-origin: center center;
   animation: brandStretch 7s ease-in-out infinite;
 }
 .brand .loco { display: inline-block; color: var(--orange); }
 
 @keyframes brandStretch {
-  0%   { transform: rotate(-4deg) scaleX(1);   text-shadow: -3px 0 2px rgba(255,0,0,0.6), 3px 0 2px rgba(0,210,255,0.6); filter: brightness(1); }
-  50%  { transform: rotate(-4deg) scaleX(1.6); text-shadow: -20px 0 6px rgba(255,0,0,0.95), 20px 0 6px rgba(0,210,255,0.95); filter: brightness(1.25) contrast(1.15); }
-  100% { transform: rotate(-4deg) scaleX(1);   text-shadow: -3px 0 2px rgba(255,0,0,0.6), 3px 0 2px rgba(0,210,255,0.6); filter: brightness(1); }
+  0%   { transform: scaleX(1);    text-shadow: -2px 0 2px rgba(255,0,0,0.5), 2px 0 2px rgba(0,210,255,0.5); filter: brightness(1); }
+  50%  { transform: scaleX(1.15); text-shadow: -6px 0 4px rgba(255,0,0,0.8), 6px 0 4px rgba(0,210,255,0.8); filter: brightness(1.2) contrast(1.1); }
+  100% { transform: scaleX(1);    text-shadow: -2px 0 2px rgba(255,0,0,0.5), 2px 0 2px rgba(0,210,255,0.5); filter: brightness(1); }
 }
 
 /* When playing, layer a subtle groove pulse on top */
@@ -505,7 +507,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 74';
+const APP_VERSION = 'INDEX 75';
 </script>
 <div id="app">
 
@@ -514,6 +516,7 @@ const APP_VERSION = 'INDEX 74';
     <canvas id="topbar-canvas"></canvas>
     <!-- All controls float on top -->
     <div id="topbar-controls">
+      <div id="bike-spacer"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <div class="vu-meter">
         <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
@@ -1363,11 +1366,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 </script>
 
 <script>
-// Topbar — scrolling road (mirror-tiled, no visible seam) + stationary bouncing bike
-// INDEX 74: controls pushed right to clear bike; brand smaller on right
+// Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
+// INDEX 75: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
+  var spacer = document.getElementById('bike-spacer');
 
   var road = new Image();
   var bike = new Image();
@@ -1383,7 +1387,6 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var BOUNCE_FREQ = 0.09;
   var BOUNCE_AMP = 2.5;
 
-  // Layout — computed once on resize
   var cw = 0, ch = 0, tileW = 0;
   var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
 
@@ -1395,12 +1398,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     tileW = ROAD_NATURAL_W * (ch / ROAD_NATURAL_H);
     bikeH = ch * 0.90;
     bikeW = (728 / 576) * bikeH;
-    // Nudged left — sit flush at left edge with tiny margin
-    bikeX = Math.round(bikeW * 0.02);
+    bikeX = 4; // flush left, just 4px margin
     bikeCenterY = (ch - bikeH) / 2;
+    // Push the flex controls row to start after the bike
+    if(spacer) spacer.style.width = (bikeX + bikeW + 8) + 'px';
   }
 
-  // Draw one road tile. If mirrored=true, flip horizontally around its centre.
   function drawTile(x, mirrored){
     if(mirrored){
       ctx.save();
@@ -1416,25 +1419,21 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   function draw(){
     if(!roadLoaded || !bikeLoaded || cw === 0) return;
 
-    // Advance offset over a double-tile period (normal + mirror = seamless loop)
     var doubleTile = tileW * 2;
     roadOffset = (roadOffset + roadSpeed) % doubleTile;
 
     ctx.clearRect(0, 0, cw, ch);
 
-    // Find the starting tile index and position
     var startTileIndex = Math.floor(roadOffset / tileW);
     var startX = -(roadOffset % tileW);
     var tileIndex = startTileIndex;
     var x = startX;
-
     while(x < cw){
-      drawTile(x, tileIndex % 2 === 1); // odd tiles are mirrored
+      drawTile(x, tileIndex % 2 === 1);
       x += tileW;
       tileIndex++;
     }
 
-    // Bike — fixed X, only Y bounces
     bounceT += BOUNCE_FREQ;
     var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.8;
     ctx.drawImage(bike, bikeX, bikeCenterY + bobY, bikeW, bikeH);
