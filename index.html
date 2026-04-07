@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 70                                            -->
+<!-- GoLoco · INDEX 71                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 70</title>
+<title>GoLoco · INDEX 71</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -1365,44 +1365,77 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 </script>
 
 <script>
-// Topbar road scroll — draws GIF frames onto canvas, reliable on Safari/iOS
+// Topbar — scrolling road background + stationary bouncing motorcycle
+// INDEX 71: bike stays fixed horizontally, bobs vertically to simulate riding
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
-  var img = new Image();
-  var offset = 0;
-  var TILE_W = 626; // seamless loop width in GIF pixels
-  var GIF_H = 90;   // GIF natural height
-  var speed = 1.5;  // pixels per frame to scroll
+
+  var road = new Image();
+  var bike = new Image();
+
+  var roadLoaded = false;
+  var bikeLoaded = false;
+
+  // Road scroll state
+  var roadOffset = 0;
+  var ROAD_NATURAL_W = 1900;
+  var ROAD_NATURAL_H = 545;
+  var roadSpeed = 3.5;
+
+  // Bike bounce state
+  var bounceT = 0;
+  var BOUNCE_FREQ = 0.09;
+  var BOUNCE_AMP = 2.5;
+
+  // Cached layout — computed once on resize, never per frame
+  var cw = 0, ch = 0, tileW = 0;
+  var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
 
   function resize(){
-    canvas.width = canvas.offsetWidth;
+    canvas.width  = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+    cw = canvas.width;
+    ch = canvas.height;
+    tileW = ROAD_NATURAL_W * (ch / ROAD_NATURAL_H);
+    bikeH = ch * 0.90;
+    bikeW = (728 / 576) * bikeH;
+    bikeX = Math.round(cw * 0.08);  // fixed pixel — never changes between frames
+    bikeCenterY = (ch - bikeH) / 2;
   }
 
   function draw(){
-    if(!img.complete) return;
-    var cw = canvas.width, ch = canvas.height;
-    // Scale factor: fit GIF height to canvas height
-    var scale = ch / GIF_H;
-    var tileW = TILE_W * scale;
-    // Advance offset
-    offset = (offset + speed) % tileW;
+    if(!roadLoaded || !bikeLoaded || cw === 0) return;
+
+    // --- Road ---
+    roadOffset = (roadOffset + roadSpeed) % tileW;
     ctx.clearRect(0, 0, cw, ch);
-    // Draw enough tiles to fill canvas width
-    var x = -offset;
+    var x = -roadOffset;
     while(x < cw){
-      ctx.drawImage(img, x, 0, tileW, ch);
+      ctx.drawImage(road, x, 0, tileW, ch);
       x += tileW;
     }
+
+    // --- Bike — X is fixed, only Y varies with bounce ---
+    bounceT += BOUNCE_FREQ;
+    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.8;
+    ctx.drawImage(bike, bikeX, bikeCenterY + bobY, bikeW, bikeH);
   }
 
-  img.onload = function(){
-    resize();
-    setInterval(draw, 30); // ~33fps
-  };
-  img.src = 'topbar_anim.gif';
+  road.onload = function(){ roadLoaded = true; resize(); };
+  bike.onload = function(){ bikeLoaded = true; };
+
+  road.src = 'road.png';
+  bike.src = 'BIKEw.png';
+
   window.addEventListener('resize', resize);
+
+  // Use requestAnimationFrame for smooth rendering
+  function loop(){
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
