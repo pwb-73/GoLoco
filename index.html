@@ -856,14 +856,19 @@ function drawVUMeter(canvasId, ch) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
-  // Hi-DPI scaling for crisp text on retina
+  // Store logical (CSS) dimensions once from the original HTML attributes
+  // canvas.width gets overwritten by DPR scaling, so we use data- attributes as the source of truth
+  if (!canvas.dataset.lw) {
+    canvas.dataset.lw = canvas.getAttribute('width');
+    canvas.dataset.lh = canvas.getAttribute('height');
+  }
+  const CW = parseInt(canvas.dataset.lw), CH = parseInt(canvas.dataset.lh);
+
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  // Logical size always comes from the HTML attributes (CSS px)
-  const CW = parseInt(canvas.getAttribute('width')), CH = parseInt(canvas.getAttribute('height'));
-  // Pin the CSS display size so it never changes
+  // Pin CSS display size to logical dims
   canvas.style.width  = CW + 'px';
   canvas.style.height = CH + 'px';
-  // Only resize the backing store when DPR changes
+  // Only resize backing store when DPR changes
   if (canvas._dprSet !== DPR) {
     canvas.width  = Math.round(CW * DPR);
     canvas.height = Math.round(CH * DPR);
