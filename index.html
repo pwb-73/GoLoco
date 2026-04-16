@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 87                                            -->
+<!-- GoLoco · INDEX 88                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 87</title>
+<title>GoLoco · INDEX 88</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 87';
+const APP_VERSION = 'INDEX 88';
 </script>
 <div id="app">
 
@@ -1310,12 +1310,11 @@ function togglePlay(){if(!audio.src&&library.length){playTrack(0);return;}if(isP
 
 let fadeInterval=null;
 let fadeStartVol=1;
+let _fadeTimeout=null;
 function clearFade(){
-  if(fadeInterval){
-    clearInterval(fadeInterval);fadeInterval=null;
-  }
-  // Cancel any scheduled Web Audio ramp and restore gain
-  if(_masterGain){
+  if(fadeInterval){clearInterval(fadeInterval);fadeInterval=null;}
+  if(_fadeTimeout){clearTimeout(_fadeTimeout);_fadeTimeout=null;}
+  if(_masterGain && _audioCtx){
     _masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);
     _masterGain.gain.value=fadeStartVol;
   }
@@ -1325,54 +1324,47 @@ function clearFade(){
 function stopTrack(){
   if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';return;}
   clearFade();
-  fadeStartVol=_masterGain?_masterGain.gain.value:audio.volume;
+  fadeStartVol=(_masterGain && _audioCtx)?_masterGain.gain.value:audio.volume;
   const FADE_SEC=3.0;
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
 
-  if(_masterGain && _audioCtx){
-    // Sample-accurate fade via Web Audio scheduler — no clicks
-    const now=_audioCtx.currentTime;
-    _masterGain.gain.cancelScheduledValues(now);
-    _masterGain.gain.setValueAtTime(fadeStartVol, now);
-    _masterGain.gain.linearRampToValueAtTime(0, now+FADE_SEC);
-    // VU animation during fade
-    let step=0; const steps=60;
+  function doFade(){
+    if(_masterGain && _audioCtx && _audioCtx.state==='running'){
+      // Sample-accurate fade — only works when context is actually running
+      const now=_audioCtx.currentTime;
+      _masterGain.gain.cancelScheduledValues(now);
+      _masterGain.gain.setValueAtTime(fadeStartVol, now);
+      _masterGain.gain.linearRampToValueAtTime(0.0001, now+FADE_SEC);
+    }
+    // Always run a parallel JS fade on audio.volume as backup
+    const steps=60; let step=0;
     fadeInterval=setInterval(()=>{
-      step++;const pct=step/steps;
+      step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
+      audio.volume=vol;
+      if(_masterGain && _audioCtx && _audioCtx.state!=='running') _masterGain.gain.value=vol;
       if(step%3===0)updateVURow('vu-l',(1-pct)*0.6*Math.random());
       if(step%3===1)updateVURow('vu-r',(1-pct)*0.6*Math.random());
     },50);
-    // Pause after fade completes
-    setTimeout(()=>{
+    _fadeTimeout=setTimeout(()=>{
       clearInterval(fadeInterval);fadeInterval=null;
+      audio.volume=0;
+      if(_masterGain && _audioCtx){_masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);_masterGain.gain.value=0;}
       audio.pause();audio.currentTime=0;
-      _masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);
-      _masterGain.gain.value=fadeStartVol;
       audio.volume=fadeStartVol;
+      if(_masterGain && _audioCtx) _masterGain.gain.value=fadeStartVol;
       isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
       document.getElementById('prog-fill').style.width='0%';
       document.getElementById('t-cur').textContent='0:00';
       document.getElementById('stop-btn-v').style.opacity='1';
       showNotif('STOPPED');
-    }, FADE_SEC*1000+50);
+    }, FADE_SEC*1000);
+  }
+
+  // Resume AudioContext if suspended (iOS requirement), then fade
+  if(_audioCtx && _audioCtx.state==='suspended'){
+    _audioCtx.resume().then(doFade).catch(doFade);
   } else {
-    // Fallback: no Web Audio, use volume steps
-    const steps=60; let step=0;
-    fadeInterval=setInterval(()=>{
-      step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
-      audio.volume=vol;
-      if(step%3===0)updateVURow('vu-l',(1-pct)*0.6*Math.random());
-      if(step%3===1)updateVURow('vu-r',(1-pct)*0.6*Math.random());
-      if(step>=steps){
-        clearInterval(fadeInterval);fadeInterval=null;
-        audio.pause();audio.currentTime=0;audio.volume=fadeStartVol;
-        isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
-        document.getElementById('prog-fill').style.width='0%';
-        document.getElementById('t-cur').textContent='0:00';
-        document.getElementById('stop-btn-v').style.opacity='1';
-        showNotif('STOPPED');
-      }
-    },50);
+    doFade();
   }
 }
 
@@ -1763,7 +1755,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 87: spacer div sized by JS so controls always clear the bike
+// INDEX 88: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
