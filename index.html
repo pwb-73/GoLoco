@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 80</title>
+<title>GoLoco · INDEX 81</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -87,7 +87,8 @@ body::before {
 /* ANALOG VU METERS */
 #vu-analog-wrap {
   display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
-  align-items: center;
+  align-items: center; justify-content: center;
+  max-height: 100%;
 }
 .vu-analog-meters { display: flex; gap: 3px; }
 .vu-analog-canvas {
@@ -536,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 80';
+const APP_VERSION = 'INDEX 81';
 </script>
 <div id="app">
 
@@ -549,8 +550,8 @@ const APP_VERSION = 'INDEX 80';
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <div id="vu-analog-wrap">
         <div class="vu-analog-meters">
-          <canvas class="vu-analog-canvas" id="vu-canvas-l" width="160" height="80"></canvas>
-          <canvas class="vu-analog-canvas" id="vu-canvas-r" width="160" height="80"></canvas>
+          <canvas class="vu-analog-canvas" id="vu-canvas-l" width="107" height="41"></canvas>
+          <canvas class="vu-analog-canvas" id="vu-canvas-r" width="107" height="41"></canvas>
         </div>
         <div id="balance-row">
           <input type="range" id="balance-slider" min="-1" max="1" step="0.01" value="0" oninput="setBalance(this.value)">
@@ -882,7 +883,7 @@ function drawVUMeter(canvasId, ch) {
   const arcSpan    = endAngle - startAngle;
   const cx = w / 2;
   const R = (cx - MARGIN) / Math.abs(Math.cos(startAngle));
-  const cy = h + R * 0.10;
+  const cy = h + R * 0.42;
 
   const state = ch === 'L' ? VU.L : VU.R;
   const needlePct = Math.max(0, Math.min(1.02, state.needle));
