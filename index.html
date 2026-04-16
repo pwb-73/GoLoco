@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 82                                            -->
+<!-- GoLoco · INDEX 83                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 82</title>
+<title>GoLoco · INDEX 83</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 82';
+const APP_VERSION = 'INDEX 83';
 </script>
 <div id="app">
 
@@ -904,7 +904,7 @@ function drawVUMeter(canvasId, ch) {
   ctx.font = '900 ' + vuSize + 'px "Bebas Neue", "DM Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillStyle = inRed ? 'rgba(210,40,10,0.20)' : 'rgba(180,140,40,0.11)';
+  ctx.fillStyle = inRed ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.15)';
   ctx.fillText('VU', cx, h - 1);
   ctx.restore();
 
@@ -1696,7 +1696,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 82: spacer div sized by JS so controls always clear the bike
+// INDEX 83: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
