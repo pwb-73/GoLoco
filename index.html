@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 77                                            -->
+<!-- GoLoco · INDEX 79                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 77</title>
+<title>GoLoco · INDEX 79</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -84,14 +84,43 @@ body::before {
   0%,100% { filter: brightness(1); }
   50%     { filter: brightness(1.3) contrast(1.1); }
 }
-.vu-meter { display: flex; flex-direction: column; gap: 3px; padding: 6px 12px; background: #1a1008; border-radius: 4px; border: 1px solid #0a0804; box-shadow: inset 0 2px 6px rgba(0,0,0,0.8); flex-shrink: 0; }
-.vu-row { display: flex; gap: 2px; align-items: center; }
-.vu-label { font-family: 'Share Tech Mono', monospace; font-size: 8px; color: #5a4a30; width: 8px; }
-.vu-bars { display: flex; gap: 1px; }
-.vu-seg { width: 6px; height: 8px; border-radius: 1px; background: #0f0a04; transition: background 0.05s; }
-.vu-seg.g { background: var(--vu-green); box-shadow: 0 0 4px var(--vu-green); }
-.vu-seg.y { background: var(--vu-yellow); box-shadow: 0 0 4px var(--vu-yellow); }
-.vu-seg.r { background: var(--vu-red); box-shadow: 0 0 4px var(--vu-red); }
+/* ANALOG VU METERS */
+#vu-analog-wrap {
+  display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
+  align-items: center;
+}
+.vu-analog-meters { display: flex; gap: 3px; }
+.vu-analog-canvas {
+  display: block;
+  border-radius: 5px;
+  border: 1px solid #2a1a08;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,0.6);
+  background: #0d0804;
+}
+/* Balance slider */
+#balance-row {
+  display: flex; align-items: center; justify-content: center; width: 100%;
+  padding: 1px 0 0;
+}
+#balance-slider {
+  width: 50%;
+  -webkit-appearance: none;
+  height: 5px; border-radius: 3px;
+  background: linear-gradient(90deg, #c84010 0%, #3a2010 40%, #3a2010 60%, #8fcc44 100%);
+  outline: none; cursor: pointer;
+}
+#balance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 18px;
+  border-radius: 3px;
+  background: radial-gradient(ellipse at 35% 30%, #d8c898, #8a7848);
+  border: 1px solid #5a4028;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5); cursor: pointer;
+}
+#balance-slider::-moz-range-thumb {
+  width: 12px; height: 18px; border-radius: 3px;
+  background: radial-gradient(ellipse at 35% 30%, #d8c898, #8a7848);
+  border: 1px solid #5a4028; cursor: pointer;
+}
 #search-wrap { flex: 1; position: relative; }
 #search-bar { width: 100%; background: transparent; border: 1px solid rgba(0,0,0,0.6); border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-dark); outline: none; letter-spacing: 0.5px; }
 #search-bar::placeholder { color: var(--text-light); } #search-bar:focus { border-color: var(--orange); }
@@ -507,7 +536,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 77';
+const APP_VERSION = 'INDEX 79';
 </script>
 <div id="app">
 
@@ -518,9 +547,14 @@ const APP_VERSION = 'INDEX 77';
     <div id="topbar-controls">
       <div id="bike-spacer"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-      <div class="vu-meter">
-        <div class="vu-row"><span class="vu-label">L</span><div class="vu-bars" id="vu-l"></div></div>
-        <div class="vu-row"><span class="vu-label">R</span><div class="vu-bars" id="vu-r"></div></div>
+      <div id="vu-analog-wrap">
+        <div class="vu-analog-meters">
+          <canvas class="vu-analog-canvas" id="vu-canvas-l" width="110" height="36"></canvas>
+          <canvas class="vu-analog-canvas" id="vu-canvas-r" width="110" height="36"></canvas>
+        </div>
+        <div id="balance-row">
+          <input type="range" id="balance-slider" min="-1" max="1" step="0.01" value="0" oninput="setBalance(this.value)">
+        </div>
       </div>
       <div id="search-wrap">
         <span class="search-icon">⌕</span>
@@ -765,12 +799,290 @@ function toggleFullscreen(){
 document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
 document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
 
-// VU METER
 let vuAnimFrame;
-function initVU(){['vu-l','vu-r'].forEach(id=>{document.getElementById(id).innerHTML=Array(16).fill(0).map((_,i)=>`<div class="vu-seg" id="${id}-${i}"></div>`).join('');});}
-function animateVU(){if(!isPlaying){resetVU();return;}updateVURow('vu-l',0.3+Math.random()*0.7);updateVURow('vu-r',0.3+Math.random()*0.7);vuAnimFrame=setTimeout(animateVU,80);}
-function updateVURow(id,lvl){const a=Math.floor(lvl*16);for(let i=0;i<16;i++){const el=document.getElementById(`${id}-${i}`);if(!el)continue;el.className='vu-seg';if(i<a)el.classList.add(i<10?'g':i<13?'y':'r');}}
-function resetVU(){document.querySelectorAll('.vu-seg').forEach(el=>el.className='vu-seg');}
+// ── ANALOG VU METERS ────────────────────────────────────────────────────────
+// Physics: spring-damper needle like a real 300ms ballistic VU meter
+const VU = {
+  L: { level: 0, needle: 0, vel: 0, peak: 0, peakTimer: 0 },
+  R: { level: 0, needle: 0, vel: 0, peak: 0, peakTimer: 0 }
+};
+const VU_SPRING  = 0.30;
+const VU_DAMPING = 0.60;
+const VU_PEAK_HOLD = 50;
+let vuRaf = null;
+
+// Real audio analysis
+let _audioCtx = null, _analyserL = null, _analyserR = null;
+let _splitter = null, _panner = null;
+let _fftL = null, _fftR = null;
+
+function setupAudioAnalyser() {
+  if (_audioCtx) return;
+  try {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = _audioCtx.createMediaElementSource(audio);
+    _panner = _audioCtx.createStereoPanner();
+    const balVal = parseFloat(document.getElementById('balance-slider').value || '0');
+    _panner.pan.value = balVal;
+    _splitter = _audioCtx.createChannelSplitter(2);
+    _analyserL = _audioCtx.createAnalyser();
+    _analyserR = _audioCtx.createAnalyser();
+    _analyserL.fftSize = 256; _analyserR.fftSize = 256;
+    _analyserL.smoothingTimeConstant = 0.0;
+    _analyserR.smoothingTimeConstant = 0.0;
+    src.connect(_panner);
+    _panner.connect(_splitter);
+    _splitter.connect(_analyserL, 0);
+    _splitter.connect(_analyserR, 1);
+    _panner.connect(_audioCtx.destination);
+    _fftL = new Uint8Array(_analyserL.frequencyBinCount);
+    _fftR = new Uint8Array(_analyserR.frequencyBinCount);
+  } catch(e) { _audioCtx = null; }
+}
+
+function getRealLevel(analyser, fftBuf) {
+  if (!analyser) return null;
+  analyser.getByteTimeDomainData(fftBuf);
+  let sum = 0;
+  for (let i = 0; i < fftBuf.length; i++) {
+    const s = (fftBuf[i] - 128) / 128;
+    sum += s * s;
+  }
+  return Math.sqrt(sum / fftBuf.length); // RMS 0–1
+}
+
+function drawVUMeter(canvasId, ch) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // ── Layout ──────────────────────────────────────────────────────────────
+  // Header strip (black panel above arc with "dB")
+  const HEADER = Math.round(H * 0.22);
+  // Footer strip (black panel below arc with "VU")
+  const FOOTER = Math.round(H * 0.18);
+  const FACE_H = H - HEADER - FOOTER;  // arc drawing zone height
+
+  // Full background
+  ctx.fillStyle = '#0a0806';
+  ctx.beginPath(); ctx.roundRect(0, 0, W, H, 4); ctx.fill();
+
+  // Slightly lighter face panel
+  ctx.fillStyle = '#0f0c08';
+  ctx.fillRect(0, HEADER, W, FACE_H);
+
+  // "dB" label in header — centred, amber
+  ctx.font = `bold ${Math.max(5, Math.round(HEADER * 0.65))}px "Share Tech Mono", monospace`;
+  ctx.fillStyle = '#c89840';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('dB', W / 2, HEADER * 0.52);
+
+  // "VU" label in footer
+  ctx.font = `bold ${Math.max(5, Math.round(FOOTER * 0.65))}px "Share Tech Mono", monospace`;
+  ctx.fillStyle = '#c89840';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('VU', W / 2, H - FOOTER * 0.48);
+
+  // ── Arc geometry ─────────────────────────────────────────────────────────
+  // Pivot is below the face zone so the arc sweeps across the full width
+  // We want the arc to clip neatly into the face zone.
+  // Compute R so arc endpoints land at left/right edges of canvas.
+  const startAngle = Math.PI * 1.18;   // ~-54° from down-vertical = far left
+  const endAngle   = Math.PI * 1.82;   // mirror = far right
+  const arcSpan    = endAngle - startAngle;
+  const cx = W / 2;
+
+  // R chosen so arc tips hit x=2 and x=W-2
+  // cx + R*cos(startAngle) = 2  →  R = (cx-2)/|cos(startAngle)|
+  const R = (cx - 3) / Math.abs(Math.cos(startAngle));
+  // cy = bottom of face zone, adjusted so arc top sits in the face
+  const cy = HEADER + FACE_H + R * 0.06;
+
+  // Clip drawing to face zone so arc doesn't bleed into header/footer
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, HEADER, W, FACE_H);
+  ctx.clip();
+
+  // Dark backing track
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, startAngle, endAngle);
+  ctx.lineWidth = 6; ctx.strokeStyle = '#1a1208'; ctx.stroke();
+
+  // Green zone 0–70%
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, startAngle, startAngle + arcSpan * 0.70);
+  ctx.lineWidth = 4;
+  const gGrad = ctx.createLinearGradient(0, 0, W, 0);
+  gGrad.addColorStop(0, '#2a6008'); gGrad.addColorStop(1, '#7ac428');
+  ctx.strokeStyle = gGrad; ctx.stroke();
+
+  // Yellow zone 70–88%
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, startAngle + arcSpan * 0.70, startAngle + arcSpan * 0.88);
+  ctx.lineWidth = 4; ctx.strokeStyle = '#d4a800'; ctx.stroke();
+
+  // Red zone 88–100%
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, startAngle + arcSpan * 0.88, endAngle);
+  ctx.lineWidth = 4; ctx.strokeStyle = '#cc2808'; ctx.stroke();
+
+  // ── Tick marks & labels ──────────────────────────────────────────────────
+  const ticks = [
+    { pct:0.00, label:'-20', major:true },
+    { pct:0.10, label:'-15', major:false },
+    { pct:0.22, label:'-10', major:true },
+    { pct:0.36, label:'-7',  major:false },
+    { pct:0.50, label:'-5',  major:true },
+    { pct:0.63, label:'-3',  major:false },
+    { pct:0.73, label:'-1',  major:false },
+    { pct:0.82, label:'0',   major:true },
+    { pct:0.89, label:'+1',  major:false },
+    { pct:0.94, label:'+2',  major:false },
+    { pct:1.00, label:'+3',  major:true },
+  ];
+  const tickFont = Math.max(4, Math.round(FACE_H * 0.16));
+  ticks.forEach(({ pct, label, major }) => {
+    const angle = startAngle + arcSpan * pct;
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const outerR = R + 1;
+    const innerR = R - (major ? Math.round(FACE_H*0.14) : Math.round(FACE_H*0.09));
+    const isRed  = pct >= 0.88;
+    const col    = isRed ? '#dd3010' : pct >= 0.70 ? '#c8a800' : '#7a6030';
+    ctx.beginPath();
+    ctx.moveTo(cx + cos*innerR, cy + sin*innerR);
+    ctx.lineTo(cx + cos*outerR, cy + sin*outerR);
+    ctx.lineWidth = major ? 1.4 : 0.9;
+    ctx.strokeStyle = col; ctx.stroke();
+
+    if (major || pct === 0.82) {
+      const labelR = innerR - Math.round(FACE_H * 0.14);
+      ctx.save();
+      ctx.translate(cx + cos*labelR, cy + sin*labelR);
+      ctx.rotate(angle + Math.PI/2);
+      ctx.font = `bold ${tickFont}px "Share Tech Mono", monospace`;
+      ctx.fillStyle = isRed ? '#e84820' : '#8a7040';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
+    }
+  });
+
+  // ── Needle ───────────────────────────────────────────────────────────────
+  const state = ch === 'L' ? VU.L : VU.R;
+  const needlePct = Math.max(0, Math.min(1.02, state.needle));
+  const needleAngle = startAngle + arcSpan * needlePct;
+  const ncos = Math.cos(needleAngle), nsin = Math.sin(needleAngle);
+  const needleLen = R - 2;
+  const nBX = cx + ncos*4, nBY = cy + nsin*4;
+  const nTX = cx + ncos*needleLen, nTY = cy + nsin*needleLen;
+
+  if (needlePct > 0.88) { ctx.shadowColor='#ff4010'; ctx.shadowBlur=6; }
+  ctx.beginPath();
+  ctx.moveTo(nBX+0.8, nBY+0.8); ctx.lineTo(nTX+0.8, nTY+0.8);
+  ctx.lineWidth=1.2; ctx.strokeStyle='rgba(0,0,0,0.45)'; ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.beginPath();
+  ctx.moveTo(nBX, nBY); ctx.lineTo(nTX, nTY);
+  ctx.lineWidth=1.2; ctx.strokeStyle='#e8e4c8'; ctx.stroke();
+
+  // Pivot
+  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2);
+  const pg = ctx.createRadialGradient(cx-0.5,cy-0.5,0,cx,cy,2.5);
+  pg.addColorStop(0,'#d0c090'); pg.addColorStop(1,'#4a3818');
+  ctx.fillStyle=pg; ctx.fill();
+
+  // Peak dot
+  if (state.peak > 0 && state.peakTimer > 0) {
+    const pa = startAngle + arcSpan * Math.min(1.0, state.peak);
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(pa)*(R-3), cy+Math.sin(pa)*(R-3), 1.8, 0, Math.PI*2);
+    ctx.fillStyle = state.peak>0.88?'#ff3008':state.peak>0.70?'#ffcc00':'#88dd22';
+    ctx.fill();
+  }
+
+  ctx.restore(); // end clip
+}
+
+function updateVUPhysics() {
+  ['L','R'].forEach(ch => {
+    const s = VU[ch];
+    const accel = (s.level - s.needle) * VU_SPRING;
+    s.vel = s.vel * VU_DAMPING + accel;
+    s.needle = Math.max(0, Math.min(1.05, s.needle + s.vel));
+    if (s.needle > s.peak) { s.peak = s.needle; s.peakTimer = VU_PEAK_HOLD; }
+    else if (s.peakTimer > 0) { s.peakTimer--; }
+    else { s.peak = Math.max(0, s.peak - 0.006); }
+  });
+}
+
+function animateVU() {
+  if (!isPlaying) { resetVU(); return; }
+
+  // Use real audio levels if analyser is ready, else simulate
+  const rmsL = getRealLevel(_analyserL, _fftL);
+  const rmsR = getRealLevel(_analyserR, _fftR);
+  if (rmsL !== null && rmsR !== null) {
+    // Map RMS (typically 0–0.5 for music) to 0–1 VU scale with headroom
+    const scale = 2.2;
+    VU.L.level = Math.min(1.05, rmsL * scale) * balanceLGain;
+    VU.R.level = Math.min(1.05, rmsR * scale) * balanceRGain;
+  } else {
+    // Simulated fallback: correlated stereo with occasional transients
+    const base = 0.32 + Math.random() * 0.42;
+    const lBoost = Math.random() > 0.75 ? Math.random() * 0.28 : 0;
+    const rBoost = Math.random() > 0.75 ? Math.random() * 0.28 : 0;
+    VU.L.level = Math.min(1.05, base + lBoost) * balanceLGain;
+    VU.R.level = Math.min(1.05, base + rBoost) * balanceRGain;
+  }
+
+  updateVUPhysics();
+  drawVUMeter('vu-canvas-l', 'L');
+  drawVUMeter('vu-canvas-r', 'R');
+  vuAnimFrame = setTimeout(animateVU, 33);
+}
+
+function resetVU() {
+  VU.L.level = 0; VU.R.level = 0;
+  let frames = 0;
+  function settle() {
+    updateVUPhysics();
+    drawVUMeter('vu-canvas-l', 'L');
+    drawVUMeter('vu-canvas-r', 'R');
+    if ((Math.abs(VU.L.needle) > 0.004 || Math.abs(VU.R.needle) > 0.004) && frames++ < 100)
+      setTimeout(settle, 33);
+  }
+  settle();
+}
+
+function initVU() {
+  drawVUMeter('vu-canvas-l', 'L');
+  drawVUMeter('vu-canvas-r', 'R');
+}
+
+function updateVURow(id, lvl) {
+  if (id === 'vu-l') VU.L.level = lvl;
+  else if (id === 'vu-r') VU.R.level = lvl;
+}
+
+// Balance control
+let balanceLGain = 1.0, balanceRGain = 1.0;
+function setBalance(v) {
+  v = parseFloat(v);
+  balanceLGain = v <= 0 ? 1.0 : 1.0 - v;
+  balanceRGain = v >= 0 ? 1.0 : 1.0 + v;
+  if (_panner) _panner.pan.value = v;
+}
+
+// Set up real audio analysis on first play
+audio.addEventListener('play', () => {
+  setupAudioAnalyser();
+}, { once: true });
+
 
 // VIEW (no sidebar nav, but queue/tags/etc still reachable via grid cards)
 function showView(view,el){currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+view).classList.add('active');renderView();}
@@ -1367,7 +1679,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 77: spacer div sized by JS so controls always clear the bike
+// INDEX 79: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
@@ -1381,7 +1693,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var roadOffset = 0;
   var ROAD_NATURAL_W = 1900;
   var ROAD_NATURAL_H = 545;
-  var roadSpeed = .75;  // was 2.3 — slowed by ~1/3
+  var roadSpeed = 1.53;  // was 2.3 — slowed by ~1/3
 
   var bounceT = 0;
   var BOUNCE_FREQ = 0.09;
