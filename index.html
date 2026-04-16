@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 84                                            -->
+<!-- GoLoco · INDEX 85                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 84</title>
+<title>GoLoco · INDEX 85</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 84';
+const APP_VERSION = 'INDEX 85';
 </script>
 <div id="app">
 
@@ -814,7 +814,7 @@ let vuRaf = null;
 
 // Real audio analysis
 let _audioCtx = null, _analyserL = null, _analyserR = null;
-let _splitter = null, _panner = null;
+let _splitter = null, _panner = null, _masterGain = null;
 let _fftL = null, _fftR = null;
 
 function setupAudioAnalyser() {
@@ -831,7 +831,12 @@ function setupAudioAnalyser() {
     _analyserL.fftSize = 256; _analyserR.fftSize = 256;
     _analyserL.smoothingTimeConstant = 0.0;
     _analyserR.smoothingTimeConstant = 0.0;
-    src.connect(_panner);
+    // Master gain node — used for fade and volume since audio.volume
+    // is unreliable once createMediaElementSource() takes over routing
+    _masterGain = _audioCtx.createGain();
+    _masterGain.gain.value = audio.volume;
+    src.connect(_masterGain);
+    _masterGain.connect(_panner);
     _panner.connect(_splitter);
     _splitter.connect(_analyserL, 0);
     _splitter.connect(_analyserR, 1);
@@ -1301,22 +1306,23 @@ function updateArtDisplay(){
 
 // PLAYBACK
 function playGroup(type,name){const key=type==='albums'?'album':type==='artists'?'artist':'composer';queue=library.filter(t=>t[key]===name).map(t=>library.indexOf(t));if(queue.length)playTrack(queue[0]);showView('queue',null);}
-function togglePlay(){if(!audio.src&&library.length){playTrack(0);return;}if(isPlaying){audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();}else{audio.play();isPlaying=true;animateVU();}updatePlayBtn();}
+function togglePlay(){if(!audio.src&&library.length){playTrack(0);return;}if(isPlaying){clearFade();audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();}else{audio.play();isPlaying=true;animateVU();}updatePlayBtn();}
 
 let fadeInterval=null;
 let fadeStartVol=1;
 function clearFade(){
-  if(fadeInterval){clearInterval(fadeInterval);fadeInterval=null;audio.volume=fadeStartVol;document.getElementById('stop-btn-v').style.opacity='1';}
+  if(fadeInterval){clearInterval(fadeInterval);fadeInterval=null;audio.volume=fadeStartVol;if(_masterGain)_masterGain.gain.value=fadeStartVol;document.getElementById('stop-btn-v').style.opacity='1';}
 }
 function stopTrack(){
   if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';return;}
-  clearFade();fadeStartVol=audio.volume;const steps=60;let step=0;
+  clearFade();fadeStartVol=_masterGain?_masterGain.gain.value:audio.volume;const steps=60;let step=0;
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
   fadeInterval=setInterval(()=>{
-    step++;const pct=step/steps;audio.volume=Math.max(0,fadeStartVol*(1-pct));
+    step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
+    audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;
     if(step%3===0)updateVURow('vu-l',(1-pct)*0.6*Math.random());
     if(step%3===1)updateVURow('vu-r',(1-pct)*0.6*Math.random());
-    if(step>=steps){clearInterval(fadeInterval);fadeInterval=null;audio.pause();audio.currentTime=0;audio.volume=fadeStartVol;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';document.getElementById('stop-btn-v').style.opacity='1';showNotif('STOPPED');}
+    if(step>=steps){clearInterval(fadeInterval);fadeInterval=null;audio.pause();audio.currentTime=0;audio.volume=fadeStartVol;if(_masterGain)_masterGain.gain.value=fadeStartVol;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';document.getElementById('stop-btn-v').style.opacity='1';showNotif('STOPPED');}
   },50);
 }
 
@@ -1349,7 +1355,7 @@ function nextTrack(){
 }
 function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!library.length)return;let prev;if(queue.length){const qi=queue.indexOf(currentIndex);prev=qi>0?queue[qi-1]:queue[queue.length-1];}else prev=(currentIndex-1+library.length)%library.length;playTrack(prev);}
 function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);if(!isShuffle)playedThisSession.clear();showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
-function setVolume(v){audio.volume=parseFloat(v);document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
+function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
@@ -1665,23 +1671,29 @@ function playTrack(idx){
   currentIndex=idx; const t=library[idx];
   playedThisSession.add(idx);
   audio.src=t.url;
-  audio.volume=parseFloat(document.getElementById('vol-slider').value);
+  const vol=parseFloat(document.getElementById('vol-slider').value);
+  audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;
   document.getElementById('player-title').textContent=(t.title||t.name).toUpperCase();
   document.getElementById('player-artist').textContent=t.artist.toUpperCase()+(t.album!=='Unknown Album'?' — '+t.album.toUpperCase():'');
   updateArtDisplay(); renderView(); updateNowPlayingOverlay();
   queueArtLookup(t);
 
   // Attempt play with up to 3 retries on failure (fixes grey flicker with large libraries)
+  // playToken guards against stale retries firing after track has changed
+  const playToken = {}; playTrack._token = playToken;
   let attempts = 0;
   function attemptPlay(){
+    if(playTrack._token !== playToken) return; // stale retry, abort
     attempts++;
     audio.play().then(()=>{
+      if(playTrack._token !== playToken) return; // track changed while awaiting
       isPlaying=true; updatePlayBtn(); clearTimeout(vuAnimFrame); animateVU();
       // Only auto-scroll if user is not manually browsing
       setTimeout(()=>{
         if(currentIndex===idx){ updateArtDisplay(); if(!userIsScrolling) scrollPlayingRowToCenter(); }
       }, 800);
     }).catch(err=>{
+      if(playTrack._token !== playToken) return;
       if(attempts < 3){
         setTimeout(attemptPlay, 300 * attempts); // 300ms, 600ms
       } else {
@@ -1701,7 +1713,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 84: spacer div sized by JS so controls always clear the bike
+// INDEX 85: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
