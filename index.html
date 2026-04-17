@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 90                                            -->
+<!-- GoLoco · INDEX 91                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 90</title>
+<title>GoLoco · INDEX 91</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 90';
+const APP_VERSION = 'INDEX 91';
 </script>
 <div id="app">
 
@@ -1311,7 +1311,9 @@ function togglePlay(){if(!audio.src&&library.length){playTrack(0);return;}if(isP
 let fadeInterval=null;
 let fadeStartVol=1;
 let _fadeTimeout=null;
+let isFading=false; // true during Stop fade — blocks the ended auto-remove handler
 function clearFade(){
+  isFading=false;
   if(fadeInterval){clearInterval(fadeInterval);fadeInterval=null;}
   if(_fadeTimeout){clearTimeout(_fadeTimeout);_fadeTimeout=null;}
   if(_masterGain && _audioCtx){
@@ -1324,6 +1326,7 @@ function clearFade(){
 function stopTrack(){
   if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';return;}
   clearFade();
+  isFading=true;
   fadeStartVol=(_masterGain && _audioCtx)?_masterGain.gain.value:audio.volume;
   const FADE_SEC=3.0;
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
@@ -1356,6 +1359,7 @@ function stopTrack(){
       document.getElementById('prog-fill').style.width='0%';
       document.getElementById('t-cur').textContent='0:00';
       document.getElementById('stop-btn-v').style.opacity='1';
+      isFading=false;
       showNotif('STOPPED');
     }, FADE_SEC*1000);
   }
@@ -1401,8 +1405,10 @@ function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_m
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
-// INDEX 90: Auto-remove played track from library, then advance
+// INDEX 91: Auto-remove played track from library, then advance
+// isFading guard prevents this firing during a Stop fade-out
 audio.addEventListener('ended', () => {
+  if (isFading) return; // Stop button fade — ignore spurious ended event
   const idx = currentIndex;
   if (idx < 0 || idx >= library.length) { nextTrack(); return; }
 
@@ -1826,7 +1832,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 90: spacer div sized by JS so controls always clear the bike
+// INDEX 91: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
