@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 92                                            -->
+<!-- GoLoco · INDEX 94                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 92</title>
+<title>GoLoco · INDEX 94</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -84,20 +84,27 @@ body::before {
   0%,100% { filter: brightness(1); }
   50%     { filter: brightness(1.3) contrast(1.1); }
 }
-/* ANALOG VU METERS */
+/* LED BAR VU METERS */
 #vu-analog-wrap {
-  display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 3px; flex-shrink: 0;
   align-items: center; justify-content: center;
   max-height: 100%;
 }
-.vu-analog-meters { display: flex; gap: 3px; }
-.vu-analog-canvas {
-  display: block;
-  border-radius: 5px;
+.vu-row {
+  display: flex; gap: 2px; align-items: center;
+  background: #0d0804; border-radius: 3px;
+  padding: 3px 4px;
   border: 1px solid #2a1a08;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,0.6);
-  background: #0d0804;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
 }
+.vu-led {
+  width: 5px; height: 9px; border-radius: 1px;
+  background: #080c14;
+  transition: background 0.05s;
+}
+.vu-led.on-blue  { background: #1050d8; box-shadow: 0 0 3px #1050d8; }
+.vu-led.on-lblue { background: #3080ff; box-shadow: 0 0 4px #3080ff; }
+.vu-led.on-red   { background: #ffffff; box-shadow: 0 0 6px #aaccff; }
 /* Balance slider */
 #balance-row {
   display: flex; align-items: center; justify-content: center; width: 100%;
@@ -537,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 92';
+const APP_VERSION = 'INDEX 94';
 </script>
 <div id="app">
 
@@ -549,10 +556,8 @@ const APP_VERSION = 'INDEX 92';
       <div id="bike-spacer"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <div id="vu-analog-wrap">
-        <div class="vu-analog-meters">
-          <canvas class="vu-analog-canvas" id="vu-canvas-l" width="107" height="41"></canvas>
-          <canvas class="vu-analog-canvas" id="vu-canvas-r" width="107" height="41"></canvas>
-        </div>
+        <div class="vu-row" id="vu-l"></div>
+        <div class="vu-row" id="vu-r"></div>
         <div id="balance-row">
           <input type="range" id="balance-slider" min="-1" max="1" step="0.01" value="0" oninput="setBalance(this.value)">
         </div>
@@ -801,16 +806,13 @@ document.addEventListener('fullscreenchange',()=>{const btn=document.getElementB
 document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
 
 let vuAnimFrame;
-// ── ANALOG VU METERS ────────────────────────────────────────────────────────
-// Physics: spring-damper needle like a real 300ms ballistic VU meter
-const VU = {
-  L: { level: 0, needle: 0, vel: 0, peak: 0, peakTimer: 0 },
-  R: { level: 0, needle: 0, vel: 0, peak: 0, peakTimer: 0 }
-};
-const VU_SPRING  = 0.30;
-const VU_DAMPING = 0.60;
-const VU_PEAK_HOLD = 50;
-let vuRaf = null;
+// ── LED BAR VU METERS ────────────────────────────────────────────────────────
+// 16 LEDs per channel. 0-12 = deep blue, 13-14 = bright blue, 15 = red
+const VU_LEDS = 16;
+const VU_RED_THRESH  = 15; // last LED = red
+const VU_LBLUE_THRESH = 13; // last 2 before red = bright blue
+
+let _vuL = 0, _vuR = 0; // smoothed level 0-1
 
 // Real audio analysis
 let _audioCtx = null, _analyserL = null, _analyserR = null;
@@ -829,10 +831,8 @@ function setupAudioAnalyser() {
     _analyserL = _audioCtx.createAnalyser();
     _analyserR = _audioCtx.createAnalyser();
     _analyserL.fftSize = 256; _analyserR.fftSize = 256;
-    _analyserL.smoothingTimeConstant = 0.0;
-    _analyserR.smoothingTimeConstant = 0.0;
-    // Master gain node — used for fade and volume since audio.volume
-    // is unreliable once createMediaElementSource() takes over routing
+    _analyserL.smoothingTimeConstant = 0.15;
+    _analyserR.smoothingTimeConstant = 0.15;
     _masterGain = _audioCtx.createGain();
     _masterGain.gain.value = audio.volume;
     src.connect(_masterGain);
@@ -854,241 +854,65 @@ function getRealLevel(analyser, fftBuf) {
     const s = (fftBuf[i] - 128) / 128;
     sum += s * s;
   }
-  return Math.sqrt(sum / fftBuf.length); // RMS 0–1
+  return Math.sqrt(sum / fftBuf.length);
 }
 
-function drawVUMeter(canvasId, ch) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-
-  // Store logical (CSS) dimensions once from the original HTML attributes
-  // canvas.width gets overwritten by DPR scaling, so we use data- attributes as the source of truth
-  if (!canvas.dataset.lw) {
-    canvas.dataset.lw = canvas.getAttribute('width');
-    canvas.dataset.lh = canvas.getAttribute('height');
-  }
-  const CW = parseInt(canvas.dataset.lw), CH = parseInt(canvas.dataset.lh);
-
-  const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  // Pin CSS display size to logical dims
-  canvas.style.width  = CW + 'px';
-  canvas.style.height = CH + 'px';
-  // Only resize backing store when DPR changes
-  if (canvas._dprSet !== DPR) {
-    canvas.width  = Math.round(CW * DPR);
-    canvas.height = Math.round(CH * DPR);
-    canvas._dprSet = DPR;
-  }
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  // All drawing uses logical (CSS) pixel coordinates
-  const w = CW, h = CH;
-
-  ctx.clearRect(0, 0, w, h);
-
-  // Background
-  ctx.fillStyle = '#0a0806';
-  ctx.beginPath(); ctx.roundRect(0, 0, w, h, 3); ctx.fill();
-
-  // Arc geometry — wide sweep filling full canvas width
-  const MARGIN = 3;
-  const startAngle = Math.PI * 1.17;
-  const endAngle   = Math.PI * 1.83;
-  const arcSpan    = endAngle - startAngle;
-  const cx = w / 2;
-  const R = (cx - MARGIN) / Math.abs(Math.cos(startAngle));
-  const cy = h + R * 0.42;
-
-  const state = ch === 'L' ? VU.L : VU.R;
-  const needlePct = Math.max(0, Math.min(1.02, state.needle));
-  const inRed = needlePct > 0.88;
-
-  // Large "VU" watermark behind everything
-  ctx.save();
-  const vuSize = Math.round(h * 0.56);
-  ctx.font = '900 ' + vuSize + 'px "Bebas Neue", "DM Sans", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillStyle = inRed ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.15)';
-  ctx.fillText('VU', cx, h - 1);
-  ctx.restore();
-
-  // Red zone background glow when needle is in red
-  if (inRed) {
-    ctx.save();
-    const redStart = startAngle + arcSpan * 0.88;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R + 6, redStart, endAngle);
-    ctx.arc(cx, cy, R - 16, endAngle, redStart, true);
-    ctx.closePath();
-    const rg = ctx.createRadialGradient(cx, cy, R - 16, cx, cy, R + 6);
-    rg.addColorStop(0, 'rgba(255,50,10,0.0)');
-    rg.addColorStop(0.35, 'rgba(255,50,10,0.38)');
-    rg.addColorStop(1, 'rgba(255,90,20,0.60)');
-    ctx.fillStyle = rg;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // Arc track base
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, startAngle, endAngle);
-  ctx.lineWidth = 7; ctx.strokeStyle = '#181008'; ctx.stroke();
-
-  // Green zone 0–70%
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, startAngle, startAngle + arcSpan * 0.70);
-  ctx.lineWidth = 4;
-  const gGrad = ctx.createLinearGradient(MARGIN, 0, w - MARGIN, 0);
-  gGrad.addColorStop(0, '#1e5006'); gGrad.addColorStop(1, '#72c020');
-  ctx.strokeStyle = gGrad; ctx.stroke();
-
-  // Yellow zone 70–88%
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, startAngle + arcSpan * 0.70, startAngle + arcSpan * 0.88);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = inRed ? '#ffcc00' : '#c8a200'; ctx.stroke();
-
-  // Red zone 88–100%
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, startAngle + arcSpan * 0.88, endAngle);
-  ctx.lineWidth = 4;
-  if (inRed) { ctx.shadowColor = '#ff3000'; ctx.shadowBlur = 8; ctx.strokeStyle = '#ff3808'; }
-  else { ctx.strokeStyle = '#882010'; }
-  ctx.stroke(); ctx.shadowBlur = 0;
-
-  // Tick marks and dB labels
-  const ticks = [
-    { pct:0.00, label:'-20', major:true  },
-    { pct:0.14, label:'-10', major:true  },
-    { pct:0.22, label:'-7',  major:false },
-    { pct:0.30, label:'-5',  major:true  },
-    { pct:0.44, label:'-3',  major:true  },
-    { pct:0.60, label:'-1',  major:false },
-    { pct:0.72, label:'0',   major:true  },
-    { pct:0.82, label:'+1',  major:false },
-    { pct:0.88, label:'+2',  major:false },
-    { pct:0.93, label:'+3',  major:true  },
-    { pct:1.00, label:'+5',  major:true  },
-  ];
-  const majorTick = Math.round(h * 0.17);
-  const minorTick = Math.round(h * 0.10);
-  const labelSize = Math.max(7, Math.round(h * 0.118));
-
-  ticks.forEach(function(t) {
-    const pct = t.pct, label = t.label, major = t.major;
-    const angle = startAngle + arcSpan * pct;
-    const cos = Math.cos(angle), sin = Math.sin(angle);
-    const innerR = R - (major ? majorTick : minorTick);
-    const isRed  = pct >= 0.88;
-    const col    = isRed ? (inRed ? '#ff5530' : '#993020') : pct >= 0.70 ? '#c8a200' : '#9a8050';
-
-    ctx.beginPath();
-    ctx.moveTo(cx + cos * innerR, cy + sin * innerR);
-    ctx.lineTo(cx + cos * (R + 1), cy + sin * (R + 1));
-    ctx.lineWidth = major ? 1.8 : 1.1;
-    ctx.strokeStyle = col; ctx.stroke();
-
-    if (major) {
-      const labelR = innerR - labelSize * 0.78;
-      ctx.save();
-      ctx.translate(cx + cos * labelR, cy + sin * labelR);
-      ctx.rotate(angle + Math.PI / 2);
-      ctx.font = 'bold ' + labelSize + 'px "Share Tech Mono", monospace';
-      ctx.fillStyle = isRed ? (inRed ? '#ff6640' : '#aa4020') : '#a08848';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(label, 0, 0);
-      ctx.restore();
+function drawLEDs(rowId, level) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  // Build LEDs on first call
+  if (!row._built) {
+    row.innerHTML = '';
+    for (let i = 0; i < VU_LEDS; i++) {
+      const d = document.createElement('div');
+      d.className = 'vu-led';
+      row.appendChild(d);
     }
-  });
-
-  // Needle
-  const needleAngle = startAngle + arcSpan * needlePct;
-  const ncos = Math.cos(needleAngle), nsin = Math.sin(needleAngle);
-  const nBX = cx + ncos * 5, nBY = cy + nsin * 5;
-  const nTX = cx + ncos * (R - 2), nTY = cy + nsin * (R - 2);
-
-  // Shadow
-  ctx.beginPath();
-  ctx.moveTo(nBX + 1.2, nBY + 1.2); ctx.lineTo(nTX + 1.2, nTY + 1.2);
-  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.40)';
-  ctx.lineCap = 'round'; ctx.stroke();
-
-  // Needle body — thick bright
-  if (inRed) { ctx.shadowColor = '#ff4010'; ctx.shadowBlur = 10; }
-  ctx.beginPath();
-  ctx.moveTo(nBX, nBY); ctx.lineTo(nTX, nTY);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = inRed ? '#ffddcc' : '#f0ece0';
-  ctx.lineCap = 'round'; ctx.stroke();
-  ctx.shadowBlur = 0; ctx.lineCap = 'butt';
-
-  // Pivot cap
-  ctx.beginPath(); ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
-  const pg = ctx.createRadialGradient(cx - 1.2, cy - 1.2, 0, cx, cy, 4.5);
-  pg.addColorStop(0, '#d8c898'); pg.addColorStop(1, '#3a2808');
-  ctx.fillStyle = pg; ctx.fill();
-}
-
-function updateVUPhysics() {
-  ['L','R'].forEach(ch => {
-    const s = VU[ch];
-    const accel = (s.level - s.needle) * VU_SPRING;
-    s.vel = s.vel * VU_DAMPING + accel;
-    s.needle = Math.max(0, Math.min(1.05, s.needle + s.vel));
-    if (s.needle > s.peak) { s.peak = s.needle; s.peakTimer = VU_PEAK_HOLD; }
-    else if (s.peakTimer > 0) { s.peakTimer--; }
-    else { s.peak = Math.max(0, s.peak - 0.006); }
-  });
+    row._built = true;
+  }
+  const lit = Math.round(level * VU_LEDS);
+  const leds = row.children;
+  for (let i = 0; i < VU_LEDS; i++) {
+    const on = i < lit;
+    if (on) {
+      if (i >= VU_RED_THRESH)       leds[i].className = 'vu-led on-red';
+      else if (i >= VU_LBLUE_THRESH) leds[i].className = 'vu-led on-lblue';
+      else                           leds[i].className = 'vu-led on-blue';
+    } else {
+      leds[i].className = 'vu-led';
+    }
+  }
 }
 
 function animateVU() {
   if (!isPlaying) { resetVU(); return; }
-
-  // Use real audio levels if analyser is ready, else simulate
   const rmsL = getRealLevel(_analyserL, _fftL);
   const rmsR = getRealLevel(_analyserR, _fftR);
   if (rmsL !== null && rmsR !== null) {
-    // Map RMS (typically 0–0.5 for music) to 0–1 VU scale with headroom
-    const scale = 2.2;
-    VU.L.level = Math.min(1.05, rmsL * scale) * balanceLGain;
-    VU.R.level = Math.min(1.05, rmsR * scale) * balanceRGain;
+    const scale = 2.4;
+    _vuL += (Math.min(1, rmsL * scale) * balanceLGain - _vuL) * 0.4;
+    _vuR += (Math.min(1, rmsR * scale) * balanceRGain - _vuR) * 0.4;
   } else {
-    // Simulated fallback: correlated stereo with occasional transients
-    const base = 0.32 + Math.random() * 0.42;
-    const lBoost = Math.random() > 0.75 ? Math.random() * 0.28 : 0;
-    const rBoost = Math.random() > 0.75 ? Math.random() * 0.28 : 0;
-    VU.L.level = Math.min(1.05, base + lBoost) * balanceLGain;
-    VU.R.level = Math.min(1.05, base + rBoost) * balanceRGain;
+    const base = 0.3 + Math.random() * 0.4;
+    _vuL += (base * balanceLGain - _vuL) * 0.4;
+    _vuR += (base * balanceRGain - _vuR) * 0.4;
   }
-
-  updateVUPhysics();
-  drawVUMeter('vu-canvas-l', 'L');
-  drawVUMeter('vu-canvas-r', 'R');
-  vuAnimFrame = setTimeout(animateVU, 33);
+  drawLEDs('vu-l', _vuL);
+  drawLEDs('vu-r', _vuR);
+  vuAnimFrame = setTimeout(animateVU, 50);
 }
 
 function resetVU() {
-  VU.L.level = 0; VU.R.level = 0;
-  let frames = 0;
-  function settle() {
-    updateVUPhysics();
-    drawVUMeter('vu-canvas-l', 'L');
-    drawVUMeter('vu-canvas-r', 'R');
-    if ((Math.abs(VU.L.needle) > 0.004 || Math.abs(VU.R.needle) > 0.004) && frames++ < 100)
-      setTimeout(settle, 33);
-  }
-  settle();
+  _vuL = 0; _vuR = 0;
+  drawLEDs('vu-l', 0);
+  drawLEDs('vu-r', 0);
 }
 
-function initVU() {
-  drawVUMeter('vu-canvas-l', 'L');
-  drawVUMeter('vu-canvas-r', 'R');
-}
+function initVU() { resetVU(); }
 
 function updateVURow(id, lvl) {
-  if (id === 'vu-l') VU.L.level = lvl;
-  else if (id === 'vu-r') VU.R.level = lvl;
+  if (id === 'vu-l') _vuL = lvl;
+  else if (id === 'vu-r') _vuR = lvl;
 }
 
 // Balance control
@@ -1409,80 +1233,7 @@ function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_m
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
-// INDEX 92: Auto-remove played track from library, then advance
-// isFading guard prevents this firing during a Stop fade-out
-audio.addEventListener('ended', () => {
-  if (isFading) return; // Stop button fade — ignore spurious ended event
-  const idx = currentIndex;
-  if (idx < 0 || idx >= library.length) { nextTrack(); return; }
-
-  // 1. Clean up the finished track's resources
-  const t = library[idx];
-  if (t) {
-    if (t.url) URL.revokeObjectURL(t.url);
-    if (t.art) URL.revokeObjectURL(t.art);
-  }
-
-  // 2. Remove from library
-  library.splice(idx, 1);
-
-  // 3. Fix up queue: drop the removed index, shift all higher indices down
-  queue = queue.filter(q => q !== idx).map(q => q > idx ? q - 1 : q);
-
-  // 4. Fix up playedThisSession: drop removed idx, shift higher entries down
-  const updatedPlayed = new Set();
-  playedThisSession.forEach(i => {
-    if (i === idx) return;
-    updatedPlayed.add(i > idx ? i - 1 : i);
-  });
-  playedThisSession = updatedPlayed;
-
-  // 5. Reset currentIndex so renderView() doesn't highlight a stale row
-  currentIndex = -1;
-  updateBadge();
-
-  // 6. If nothing left, show completion state
-  if (!library.length) {
-    audio.src = '';
-    isPlaying = false;
-    resetVU();
-    updatePlayBtn();
-    document.getElementById('player-title').textContent = 'PLAYLIST COMPLETE';
-    document.getElementById('player-artist').textContent = '— ALL TRACKS PLAYED —';
-    updateArtDisplay();
-    renderView();
-    showNotif('ALL TRACKS PLAYED');
-    return;
-  }
-
-  // 7. Pick next track from the now-spliced library
-  // After splice: what was at idx+1 is now at idx, last item wraps to 0
-  let next;
-  if (queue.length) {
-    if (isShuffle) {
-      const unplayed = queue.filter(i => !playedThisSession.has(i));
-      const pool = unplayed.length ? unplayed : queue;
-      if (!unplayed.length) playedThisSession.clear();
-      next = pool[Math.floor(Math.random() * pool.length)];
-    } else {
-      // Play whatever is now at the position idx occupied (or wrap to start)
-      next = queue[Math.min(idx, queue.length - 1)];
-    }
-  } else {
-    if (isShuffle) {
-      const all = [...Array(library.length).keys()];
-      const unplayed = all.filter(i => !playedThisSession.has(i));
-      const pool = unplayed.length ? unplayed : all;
-      if (!unplayed.length) playedThisSession.clear();
-      next = pool[Math.floor(Math.random() * pool.length)];
-    } else {
-      // idx now points to what was the next track (or wrap to 0 if we were at the end)
-      next = idx < library.length ? idx : 0;
-    }
-  }
-
-  playTrack(next);
-});
+audio.addEventListener('ended', () => nextTrack());
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
@@ -1857,7 +1608,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 92: spacer div sized by JS so controls always clear the bike
+// INDEX 94: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
