@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 91                                            -->
+<!-- GoLoco · INDEX 92                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 91</title>
+<title>GoLoco · INDEX 92</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -537,7 +537,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 91';
+const APP_VERSION = 'INDEX 92';
 </script>
 <div id="app">
 
@@ -1333,13 +1333,13 @@ function stopTrack(){
 
   function doFade(){
     if(_masterGain && _audioCtx && _audioCtx.state==='running'){
-      // Sample-accurate fade — only works when context is actually running
       const now=_audioCtx.currentTime;
       _masterGain.gain.cancelScheduledValues(now);
       _masterGain.gain.setValueAtTime(fadeStartVol, now);
-      _masterGain.gain.linearRampToValueAtTime(0.0001, now+FADE_SEC);
+      // Ramp all the way to true 0 (not 0.0001) to eliminate end-of-fade click
+      _masterGain.gain.linearRampToValueAtTime(0, now+FADE_SEC);
     }
-    // Always run a parallel JS fade on audio.volume as backup
+    // Parallel JS fade on audio.volume as backup
     const steps=60; let step=0;
     fadeInterval=setInterval(()=>{
       step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
@@ -1352,15 +1352,19 @@ function stopTrack(){
       clearInterval(fadeInterval);fadeInterval=null;
       audio.volume=0;
       if(_masterGain && _audioCtx){_masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);_masterGain.gain.value=0;}
-      audio.pause();audio.currentTime=0;
-      audio.volume=fadeStartVol;
-      if(_masterGain && _audioCtx) _masterGain.gain.value=fadeStartVol;
-      isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
-      document.getElementById('prog-fill').style.width='0%';
-      document.getElementById('t-cur').textContent='0:00';
-      document.getElementById('stop-btn-v').style.opacity='1';
-      isFading=false;
-      showNotif('STOPPED');
+      // Extra 150ms drain: lets AudioContext fully silence before the hard pause
+      // This eliminates the audible click/pop at the end of the fade
+      setTimeout(()=>{
+        audio.pause();audio.currentTime=0;
+        audio.volume=fadeStartVol;
+        if(_masterGain && _audioCtx) _masterGain.gain.value=fadeStartVol;
+        isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
+        document.getElementById('prog-fill').style.width='0%';
+        document.getElementById('t-cur').textContent='0:00';
+        document.getElementById('stop-btn-v').style.opacity='1';
+        isFading=false;
+        showNotif('STOPPED');
+      }, 150);
     }, FADE_SEC*1000);
   }
 
@@ -1405,7 +1409,7 @@ function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_m
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
-// INDEX 91: Auto-remove played track from library, then advance
+// INDEX 92: Auto-remove played track from library, then advance
 // isFading guard prevents this firing during a Stop fade-out
 audio.addEventListener('ended', () => {
   if (isFading) return; // Stop button fade — ignore spurious ended event
@@ -1826,13 +1830,34 @@ function playTrack(idx){
 
 document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();togglePlay();}if(e.code==='ArrowRight')nextTrack();if(e.code==='ArrowLeft')prevTrack();if(e.code==='KeyS')toggleShuffle();});
 
+// iOS background/foreground handling
+// When the user switches away and back, Safari suspends the AudioContext.
+// visibilitychange fires when the app returns to foreground — resume the
+// context so playback and VU meters work again without needing a page reload.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      _audioCtx.resume().then(() => {
+        if (isPlaying) animateVU();
+      }).catch(() => {});
+    }
+    // Re-sync play button state in case iOS killed the audio element
+    if (isPlaying && audio.paused) {
+      audio.play().catch(() => { isPlaying=false; updatePlayBtn(); });
+    }
+  } else {
+    // Going to background — stop VU animation to save battery
+    clearTimeout(vuAnimFrame);
+  }
+});
+
 document.getElementById('app').addEventListener('touchmove',function(e){let el=e.target;while(el&&el!==document.body){if(el.scrollHeight>el.clientHeight||el.scrollWidth>el.clientWidth){return;}el=el.parentElement;}e.preventDefault();},{passive:false});
 document.body.addEventListener('touchmove',function(e){if(e.target===document.body)e.preventDefault();},{passive:false});
 </script>
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 91: spacer div sized by JS so controls always clear the bike
+// INDEX 92: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
