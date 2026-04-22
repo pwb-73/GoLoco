@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 106                                            -->
+<!-- GoLoco · INDEX 107                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 106</title>
+<title>GoLoco · INDEX 107</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -544,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 106';
+const APP_VERSION = 'INDEX 107';
 </script>
 <div id="app">
 
@@ -1803,7 +1803,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike + wind particles
-// INDEX 106: spacer div sized by JS so controls always clear the bike
+// INDEX 107: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
@@ -1827,16 +1827,28 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
 
   // ── Wind particle system ─────────────────────────────────────────────────
-  // Spawn points sit right on the left edge of the rider/bike silhouette.
-  // Particles spawn touching the body and immediately travel leftward,
-  // so they appear to peel off the back of the rider naturally.
+  // BIKEw.png: bike faces RIGHT. LEFT side of image = back of rider + rear wheel.
+  // Image is 728px wide x 576px tall.
+  //
+  // Rider's back (left edge of body silhouette):
+  //   Back of head:   ~fx=0.38, fy=0.13
+  //   Neck/shoulder:  ~fx=0.36, fy=0.20
+  //   Upper back:     ~fx=0.34, fy=0.28
+  //   Mid back:       ~fx=0.33, fy=0.36
+  //   Lower back:     ~fx=0.33, fy=0.44
+  // Rear wheel (left side of image, bottom):
+  //   Rear wheel top: ~fx=0.20, fy=0.52
+  //   Rear wheel mid: ~fx=0.16, fy=0.62
+  //   Rear wheel bot: ~fx=0.18, fy=0.74
   var SPAWN_PTS = [
-    { fx: 0.490, fy: 0.120, weight: 3 },  // back of head
-    { fx: 0.472, fy: 0.165, weight: 3 },  // head lower back
-    { fx: 0.455, fy: 0.215, weight: 2 },  // neck
-    { fx: 0.435, fy: 0.265, weight: 2 },  // upper back
-    { fx: 0.418, fy: 0.330, weight: 1 },  // mid back
-    { fx: 0.405, fy: 0.400, weight: 1 },  // lower back
+    { fx: 0.38, fy: 0.13, weight: 3 },  // back of head
+    { fx: 0.36, fy: 0.20, weight: 3 },  // neck / top of back
+    { fx: 0.34, fy: 0.28, weight: 2 },  // upper back
+    { fx: 0.33, fy: 0.36, weight: 2 },  // mid back
+    { fx: 0.33, fy: 0.44, weight: 1 },  // lower back / seat
+    { fx: 0.20, fy: 0.52, weight: 2 },  // rear wheel top
+    { fx: 0.16, fy: 0.62, weight: 2 },  // rear wheel mid
+    { fx: 0.18, fy: 0.74, weight: 1 },  // rear wheel bottom
   ];
 
   // Build weighted pool for natural spawn distribution
