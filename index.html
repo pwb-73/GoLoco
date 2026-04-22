@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 107                                            -->
+<!-- GoLoco · INDEX 108                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 107</title>
+<title>GoLoco · INDEX 108</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -544,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 107';
+const APP_VERSION = 'INDEX 108';
 </script>
 <div id="app">
 
@@ -1803,7 +1803,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike + wind particles
-// INDEX 107: spacer div sized by JS so controls always clear the bike
+// INDEX 108: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
@@ -1867,7 +1867,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     var sp = spawnPool[Math.floor(Math.random() * spawnPool.length)];
     var sx = o.x + sp.fx * bikeW;
     var sy = o.y + sp.fy * bikeH;
-    var speed = 2.5 + Math.random() * 3.5;
+    var speed = 0.8 + Math.random() * 1.2;
     streaks.push({
       x:     sx,
       y:     sy + (Math.random() - 0.5) * 3,
@@ -1889,7 +1889,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
       x:     sx,
       y:     sy + (Math.random() - 0.5) * 4,
       r:     3 + Math.random() * 6,
-      vx:    -(1.8 + Math.random() * 4.0),
+      vx:    -(0.5 + Math.random() * 1.2),
       vy:    (Math.random() - 0.3) * 1.0,
       alpha: 0.45 + Math.random() * 0.35,
       life:  1.0,
