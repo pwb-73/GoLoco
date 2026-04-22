@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 98                                            -->
+<!-- GoLoco · INDEX 100                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 98</title>
+<title>GoLoco · INDEX 100</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -544,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 98';
+const APP_VERSION = 'INDEX 100';
 </script>
 <div id="app">
 
@@ -772,6 +772,11 @@ let trackTags=JSON.parse(localStorage.getItem('gl_track_tags')||'{}');
 let ratings=JSON.parse(localStorage.getItem('gl_ratings')||'{}');
 const audio=new Audio();
 audio.volume=0.8;
+audio.preload='auto';
+// These attributes are critical for iOS background playback
+audio.setAttribute('playsinline','');
+audio.setAttribute('webkit-playsinline','');
+audio.setAttribute('x-webkit-airplay','allow');
 
 function save(){localStorage.setItem('gl_ratings',JSON.stringify(ratings));localStorage.setItem('gl_tags',JSON.stringify(tags));localStorage.setItem('gl_track_tags',JSON.stringify(trackTags));}
 
@@ -956,6 +961,73 @@ function setBalance(v) {
 audio.addEventListener('play', () => {
   setupAudioAnalyser();
 });
+
+// ── Media Session API ────────────────────────────────────────────────────────
+// This is the KEY to background playback on iOS Safari.
+// It registers GoLoco as an active media player with the OS, which:
+//   - Prevents iOS from suspending audio when Safari is backgrounded
+//   - Shows track info + controls on the lock screen and Control Centre
+//   - Lets hardware buttons (play/pause, skip) work from lock screen
+function updateMediaSession(t) {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title:  t ? (t.title || t.name) : 'GoLoco',
+    artist: t ? t.artist : '',
+    album:  t ? (t.album !== 'Unknown Album' ? t.album : '') : '',
+    artwork: t && t.art ? [{ src: t.art, sizes: '512x512', type: 'image/jpeg' }] : []
+  });
+  navigator.mediaSession.playbackState = 'playing';
+}
+
+function setupMediaSessionHandlers() {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play',     () => { if(!isPlaying) togglePlay(); });
+  navigator.mediaSession.setActionHandler('pause',    () => { if(isPlaying)  togglePlay(); });
+  navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+  navigator.mediaSession.setActionHandler('nexttrack',     () => nextTrack());
+  navigator.mediaSession.setActionHandler('seekto', (details) => {
+    if (audio.duration && details.seekTime != null) {
+      audio.currentTime = details.seekTime;
+    }
+  });
+}
+setupMediaSessionHandlers();
+
+// Update lock screen progress bar
+audio.addEventListener('timeupdate', () => {
+  if (!('mediaSession' in navigator) || !audio.duration) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration:     audio.duration,
+      playbackRate: audio.playbackRate,
+      position:     audio.currentTime
+    });
+  } catch(e) {}
+});
+
+audio.addEventListener('pause', () => {
+  if ('mediaSession' in navigator)
+    navigator.mediaSession.playbackState = 'paused';
+});
+
+// ── iOS keep-alive ───────────────────────────────────────────────────────────
+// iOS will freeze a page if it thinks nothing is happening, even if audio is
+// playing. Touching the AudioContext periodically prevents this freeze.
+// We do this only while playing and only every 25 seconds (well under iOS's
+// ~30s freeze threshold) to avoid battery drain.
+let _keepAliveTimer = null;
+function startKeepAlive() {
+  stopKeepAlive();
+  _keepAliveTimer = setInterval(() => {
+    if (!isPlaying) { stopKeepAlive(); return; }
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      _audioCtx.resume().catch(() => {});
+    }
+  }, 25000);
+}
+function stopKeepAlive() {
+  if (_keepAliveTimer) { clearInterval(_keepAliveTimer); _keepAliveTimer = null; }
+}
 
 
 // VIEW (no sidebar nav, but queue/tags/etc still reachable via grid cards)
@@ -1162,17 +1234,24 @@ function togglePlay(){
   if(!audio.src&&library.length){playTrack(0);return;}
   if(isPlaying){
     clearFade();audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();
+    stopKeepAlive();
+    if('mediaSession' in navigator) navigator.mediaSession.playbackState='paused';
   } else {
     setupAudioAnalyser();
     const doPlay = () => {
-      audio.play().then(()=>{isPlaying=true;animateVU();updatePlayBtn();}).catch(()=>{});
+      audio.play().then(()=>{
+        isPlaying=true; animateVU(); updatePlayBtn();
+        const t = currentIndex>=0 ? library[currentIndex] : null;
+        updateMediaSession(t);
+        startKeepAlive();
+      }).catch(()=>{});
     };
     if(_audioCtx && _audioCtx.state==='suspended'){
       _audioCtx.resume().then(doPlay).catch(doPlay);
     } else {
       doPlay();
     }
-    return; // updatePlayBtn called inside doPlay
+    return;
   }
   updatePlayBtn();
 }
@@ -1185,18 +1264,32 @@ function clearFade(){
   isFading=false;
   if(fadeInterval){clearInterval(fadeInterval);fadeInterval=null;}
   if(_fadeTimeout){clearTimeout(_fadeTimeout);_fadeTimeout=null;}
+  // Restore to whatever the slider currently shows — never assume 1.0
+  const restoreVol = parseFloat(document.getElementById('vol-slider').value);
   if(_masterGain && _audioCtx){
     _masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);
-    _masterGain.gain.value=fadeStartVol;
+    _masterGain.gain.setValueAtTime(restoreVol, _audioCtx.currentTime);
   }
-  audio.volume=fadeStartVol;
+  audio.volume = restoreVol;
+  fadeStartVol = restoreVol;
   document.getElementById('stop-btn-v').style.opacity='1';
 }
 function stopTrack(){
   if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';return;}
   clearFade();
   isFading=true;
-  fadeStartVol=(_masterGain && _audioCtx)?_masterGain.gain.value:audio.volume;
+
+  // Read the true current volume from the slider — most reliable source on iOS.
+  // Then immediately hard-set both audio.volume and _masterGain to this value
+  // before scheduling any ramp, so there is zero opportunity for iOS to
+  // briefly reset either to 1.0 between now and the first ramp frame.
+  fadeStartVol = parseFloat(document.getElementById('vol-slider').value);
+  audio.volume = fadeStartVol;
+  if(_masterGain && _audioCtx) {
+    _masterGain.gain.cancelScheduledValues(_audioCtx.currentTime);
+    _masterGain.gain.setValueAtTime(fadeStartVol, _audioCtx.currentTime);
+  }
+
   const FADE_SEC=3.0;
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
 
@@ -1232,6 +1325,7 @@ function stopTrack(){
           if(_masterGain && _audioCtx) _masterGain.gain.value=fadeStartVol;
         }, 200);
         isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
+        stopKeepAlive();
         document.getElementById('prog-fill').style.width='0%';
         document.getElementById('t-cur').textContent='0:00';
         document.getElementById('stop-btn-v').style.opacity='1';
@@ -1621,6 +1715,8 @@ function playTrack(idx){
       audio.play().then(()=>{
         if(playTrack._token !== playToken) return;
         isPlaying=true; updatePlayBtn(); clearTimeout(vuAnimFrame); animateVU();
+        updateMediaSession(t);
+        startKeepAlive();
         setTimeout(()=>{
           if(currentIndex===idx){ updateArtDisplay(); if(!userIsScrolling) scrollPlayingRowToCenter(); }
         }, 800);
@@ -1663,7 +1759,7 @@ function handleForegroundReturn() {
       if (!isPlaying || !audio.paused) return; // state changed
       const doResume = () => {
         audio.play()
-          .then(() => { animateVU(); })
+          .then(() => { animateVU(); startKeepAlive(); })
           .catch(() => {
             // Blob URL may have expired — nothing we can do without user gesture.
             // Show a prompt so the user knows to tap play.
@@ -1707,7 +1803,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike
-// INDEX 98: spacer div sized by JS so controls always clear the bike
+// INDEX 100: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
