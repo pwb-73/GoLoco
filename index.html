@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 112                                            -->
+<!-- GoLoco · INDEX 113                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 112</title>
+<title>GoLoco · INDEX 113</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -544,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 112';
+const APP_VERSION = 'INDEX 113';
 </script>
 <div id="app">
 
@@ -1721,8 +1721,8 @@ function updateNowPlayingOverlay(){
     var ROAD_NAT_W = 1900;
     var tileW = ROAD_NAT_W * (roadBandH / 545);
 
-    // Fill top and bottom with same tan colour (sampled from top of road image)
-    var TAN = '#8a7050';
+    // Fill top and bottom with exact colour sampled from top edge of road.png
+    var TAN = 'rgb(197,180,159)';
     npCtx.fillStyle = TAN;
     npCtx.fillRect(0, 0, W, roadBandY);
     npCtx.fillRect(0, roadBandY + roadBandH, W, H - roadBandY - roadBandH);
@@ -1757,9 +1757,11 @@ function updateNowPlayingOverlay(){
     var bikeW = (728 / 576) * bikeH;
     // Centre horizontally
     var bikeX = (W - bikeW) / 2;
-    // Lower onto road — push wheels down to sit on tarmac line
-    var roadSurface = roadBandY + roadBandH * 0.92;
-    var bikeY = roadSurface - bikeH * 0.97 + bobY;
+    // Road tarmac sits at ~93% into the road band.
+    // Bike PNG: wheels are at ~97% of image height.
+    // Add an extra push-down so wheels sit ON the surface, not above it.
+    var roadSurface = roadBandY + roadBandH * 0.93;
+    var bikeY = roadSurface - bikeH * 0.97 + bobY + (bikeH * 0.06);
 
     // Spawn particles
     if(Math.random() < 0.70) npSpawnStreak(bikeX, bikeY, bikeW, bikeH);
@@ -1997,7 +1999,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike + wind particles
-// INDEX 112: spacer div sized by JS so controls always clear the bike
+// INDEX 113: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
