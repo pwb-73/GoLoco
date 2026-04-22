@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 101                                            -->
+<!-- GoLoco · INDEX 102                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 101</title>
+<title>GoLoco · INDEX 102</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -544,7 +544,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 101';
+const APP_VERSION = 'INDEX 102';
 </script>
 <div id="app">
 
@@ -1803,7 +1803,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
 <script>
 // Topbar — scrolling road (mirror-tiled) + stationary bouncing bike + wind particles
-// INDEX 101: spacer div sized by JS so controls always clear the bike
+// INDEX 102: spacer div sized by JS so controls always clear the bike
 (function(){
   var canvas = document.getElementById('topbar-canvas');
   var ctx = canvas.getContext('2d');
@@ -1866,12 +1866,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     streaks.push({
       x:     sx,
       y:     sy + (Math.random() - 0.5) * 3,
-      len:   22 + Math.random() * 55,
-      alpha: 0.45 + Math.random() * 0.35,
-      vy:    (Math.random() - 0.5) * 0.5,
+      len:   30 + Math.random() * 70,
+      alpha: 0.75 + Math.random() * 0.25,
+      vy:    (Math.random() - 0.5) * 0.6,
       life:  1.0,
-      decay: 0.042 + Math.random() * 0.042,
-      speed: 2.2 + Math.random() * 2.8
+      decay: 0.035 + Math.random() * 0.035,
+      speed: 2.5 + Math.random() * 3.5
     });
   }
 
@@ -1883,49 +1883,49 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     wisps.push({
       x:     sx,
       y:     sy + (Math.random() - 0.5) * 4,
-      r:     1.8 + Math.random() * 4,
-      vx:    -(1.4 + Math.random() * 3.2),
-      vy:    (Math.random() - 0.5) * 0.8,
-      alpha: 0.18 + Math.random() * 0.20,
+      r:     3 + Math.random() * 6,
+      vx:    -(1.8 + Math.random() * 4.0),
+      vy:    (Math.random() - 0.5) * 1.0,
+      alpha: 0.45 + Math.random() * 0.35,
       life:  1.0,
-      decay: 0.020 + Math.random() * 0.028,
-      grow:  0.7 + Math.random() * 1.6
+      decay: 0.018 + Math.random() * 0.025,
+      grow:  1.0 + Math.random() * 2.0
     });
   }
 
   function updateParticles(bobY) {
-    // Spawn — both effects, tuned for natural density
-    if (Math.random() < 0.55) spawnStreak(bobY);
-    if (Math.random() < 0.48) spawnWisp(bobY);
+    // Spawn both every frame — high density so they're clearly visible
+    if (Math.random() < 0.75) spawnStreak(bobY);
+    if (Math.random() < 0.65) spawnWisp(bobY);
 
-    // Draw wisps behind streaks
+    // Wisps — soft white/light grey puffs
     wisps = wisps.filter(function(w){ return w.life > 0; });
     wisps.forEach(function(w){
       w.x += w.vx;
       w.y += w.vy;
-      w.r  += w.grow * 0.09;
+      w.r  += w.grow * 0.10;
       w.life -= w.decay;
       if (w.life <= 0) return;
-      var a = w.alpha * Math.pow(w.life, 0.75);
+      var a = w.alpha * Math.pow(w.life, 0.6);
       ctx.beginPath();
       ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(210,205,195,' + a + ')';
+      ctx.fillStyle = 'rgba(255,252,245,' + a + ')';
       ctx.fill();
     });
 
-    // Draw streaks
+    // Streaks — bright white tapered lines
     streaks = streaks.filter(function(s){ return s.life > 0; });
     streaks.forEach(function(s){
       s.x -= s.speed;
       s.y += s.vy;
       s.life -= s.decay;
       if (s.life <= 0) return;
-      var a = s.alpha * Math.pow(s.life, 0.55);
+      var a = s.alpha * Math.pow(s.life, 0.45);
       var grad = ctx.createLinearGradient(s.x, s.y, s.x - s.len, s.y);
-      grad.addColorStop(0, 'rgba(238,232,218,' + a + ')');
-      grad.addColorStop(1, 'rgba(238,232,218,0)');
+      grad.addColorStop(0, 'rgba(255,252,245,' + a + ')');
+      grad.addColorStop(1, 'rgba(255,252,245,0)');
       ctx.strokeStyle = grad;
-      ctx.lineWidth = 0.7 + s.life * 1.5;
+      ctx.lineWidth = 1.2 + s.life * 2.0;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(s.x, s.y);
@@ -1984,10 +1984,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     bounceT += BOUNCE_FREQ;
     var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.8;
 
-    // Draw particles BEFORE bike so they appear to come from behind the rider
-    updateParticles(bobY);
-
+    // Draw bike first
     ctx.drawImage(bike, bikeX, bikeCenterY + bobY, bikeW, bikeH);
+
+    // Draw particles ON TOP of bike — they trail from behind the rider's
+    // head and back so they naturally overlap the transparent areas of the PNG
+    updateParticles(bobY);
   }
 
   road.onload = function(){ roadLoaded = true; resize(); };
