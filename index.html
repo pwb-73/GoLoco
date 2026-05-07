@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 114                                            -->
+<!-- GoLoco · INDEX 115                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 114</title>
+<title>GoLoco · INDEX 115</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -571,7 +571,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 114';
+const APP_VERSION = 'INDEX 115';
 </script>
 <div id="app">
 
@@ -795,7 +795,7 @@ document.title = 'GoLoco · ' + APP_VERSION;
 let userIsScrolling = false;
 let scrollSuppressTimer = null;
 
-let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0, cueMode=false;
+let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0, cueMode=false, isCueQueue=false;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
 let playedThisSession=new Set(); // tracks played indices — reset when all have played
 let tags=JSON.parse(localStorage.getItem('gl_tags')||'["Favorites","Workout","Chill","Study"]');
@@ -1395,14 +1395,33 @@ function nextTrack(){
   let next;
   if(queue.length){
     const qi=queue.indexOf(currentIndex);
-    if(isShuffle){
-      // No-repeat within queue
+    if(isCueQueue){
+      // One-shot cue — play remaining unplayed cue tracks in order, then clear
       const unplayed=queue.filter(i=>!playedThisSession.has(i));
-      const pool=unplayed.length?unplayed:queue; // if all played, reset
-      if(!unplayed.length)playedThisSession.clear();
-      next=pool[Math.floor(Math.random()*pool.length)];
+      if(unplayed.length){
+        next=unplayed[0];
+      } else {
+        // All cue tracks done — discard cue and resume shuffle
+        queue=[];isCueQueue=false;
+        renderView();
+        showNotif('CUE FINISHED — RESUMING SHUFFLE');
+        const allIdx=[...Array(library.length).keys()];
+        const up2=allIdx.filter(i=>!playedThisSession.has(i)&&i!==currentIndex);
+        const pool=up2.length?up2:allIdx.filter(i=>i!==currentIndex);
+        if(!up2.length)playedThisSession.clear();
+        next=pool.length?pool[Math.floor(Math.random()*pool.length)]:(currentIndex+1)%library.length;
+        playTrack(next);return;
+      }
     } else {
-      next=queue[(qi+1)%queue.length];
+      // playGroup queue — original looping behaviour
+      if(isShuffle){
+        const unplayed=queue.filter(i=>!playedThisSession.has(i));
+        const pool=unplayed.length?unplayed:queue;
+        if(!unplayed.length)playedThisSession.clear();
+        next=pool[Math.floor(Math.random()*pool.length)];
+      } else {
+        next=queue[(qi+1)%queue.length];
+      }
     }
   } else {
     if(isShuffle){
@@ -1430,7 +1449,7 @@ function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView()
 function addTag(){const v=document.getElementById('tag-input').value.trim();if(!v||tags.includes(v))return;tags.push(v);save();document.getElementById('tag-input').value='';renderTags();}
 function delTag(tag,e){e.stopPropagation();tags=tags.filter(t=>t!==tag);if(activeTag===tag)activeTag=null;save();renderTags();}
 function selectTag(tag){activeTag=activeTag===tag?null:tag;renderTags();}
-function clearQueue(){queue=[];renderQueue();if(cueMode)renderAll();}
+function clearQueue(){queue=[];isCueQueue=false;renderQueue();if(cueMode)renderAll();}
 
 function addToCue(libIdx, e){
   e.stopPropagation();
@@ -1439,8 +1458,10 @@ function addToCue(libIdx, e){
     showNotif('REMOVED FROM CUE');
   } else {
     queue.push(libIdx);
+    isCueQueue=true; // mark this as a one-shot cue
     showNotif(`ADDED TO CUE (${queue.length})`);
   }
+  if(!queue.length)isCueQueue=false;
   renderView();
 }
 
@@ -1956,6 +1977,10 @@ function updatePlayBtn(){
 function playTrack(idx){
   if(idx<0||idx>=library.length)return;
   clearFade();
+  // If a cue is active and the user manually plays a track outside the cue, discard the cue
+  if(isCueQueue && queue.length && !queue.includes(idx)){
+    queue=[];isCueQueue=false;renderView();
+  }
   currentIndex=idx; const t=library[idx];
   playedThisSession.add(idx);
 
