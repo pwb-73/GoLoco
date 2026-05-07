@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 113                                            -->
+<!-- GoLoco · INDEX 114                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 113</title>
+<title>GoLoco · INDEX 114</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -171,7 +171,7 @@ body::before {
 }
 #right-art {
   width: 100%; aspect-ratio: 1; border-radius: 6px;
-  background: transparent; border: none; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  background: transparent; border: none; box-shadow: none;
   display: flex; align-items: center; justify-content: center;
   font-size: 48px; overflow: hidden; cursor: pointer; transition: opacity 0.3s;
 }
@@ -241,10 +241,37 @@ body::before {
 .tracks-topbar { display: flex; align-items: center; gap: 10px; padding: 8px 14px 4px; flex-shrink: 0; flex-wrap: wrap; }
 .tracks-count { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 0.5px; flex-shrink: 0; }
 .tracks-topbar .sort-hint-inline { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); letter-spacing: 0.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rating-filter { display: flex; align-items: center; gap: 6px; background: transparent; padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.4); flex-shrink: 0; }
-.rating-filter label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-mid); letter-spacing: 1px; }
-.rf-star { font-size: 14px; color: var(--text-mid); cursor: pointer; transition: color 0.1s; }
-.rf-star.on { color: var(--orange-bright); text-shadow: 0 0 6px var(--orange); }
+/* CUE MODE SWITCH */
+.cue-switch-wrap {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 10px; border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.4);
+  flex-shrink: 0; cursor: pointer; user-select: none; -webkit-user-select: none;
+}
+.cue-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  color: var(--text-mid); letter-spacing: 1.5px; font-weight: 700;
+}
+.cue-toggle {
+  width: 34px; height: 18px; border-radius: 9px;
+  background: #7a6040; border: 1px solid #5a4020;
+  position: relative; transition: background 0.2s;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+}
+.cue-toggle.on { background: var(--orange); border-color: var(--orange-dark); }
+.cue-knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e8d8a0, #a89060);
+  border: 1px solid #8a7040;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  transition: transform 0.2s;
+}
+.cue-toggle.on .cue-knob { transform: translateX(16px); }
+/* Row highlight when in cue mode and not playing */
+.cue-mode-on .track-table tbody tr:not(.playing):hover { background: rgba(212,98,26,0.08); }
+tr.cued td { background: rgba(212,98,26,0.15) !important; }
+tr.cued.playing td { background: #ffe600 !important; }
 
 /* SORT HINT */
 .sort-hint { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-light); padding: 2px 14px 4px; flex-shrink: 0; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
@@ -544,7 +571,7 @@ body::before {
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 113';
+const APP_VERSION = 'INDEX 114';
 </script>
 <div id="app">
 
@@ -581,9 +608,11 @@ const APP_VERSION = 'INDEX 113';
       <div class="view active" id="view-all">
         <div class="tracks-topbar">
           <span class="tracks-count" id="sub-all">0 TRACKS</span>
-          <div class="rating-filter">
-            <label>MIN</label>
-            <div id="rf-stars"></div>
+          <div class="cue-switch-wrap" id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list">
+            <span class="cue-label">CUE</span>
+            <div class="cue-toggle" id="cue-toggle">
+              <div class="cue-knob"></div>
+            </div>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
           <span id="version-label" style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;"></span>
@@ -659,7 +688,7 @@ const APP_VERSION = 'INDEX 113';
     <!-- RIGHT PANEL: album art + vertical transport controls (changes #2 & #3) -->
     <div id="right-panel">
       <!-- Album art (change #2) -->
-      <div class="unit" id="right-art-wrap">
+      <div id="right-art-wrap">
         <div id="right-art" onclick="openNowPlaying()" title="Now Playing — tap to expand">♫</div>
       </div>
 
@@ -679,7 +708,7 @@ const APP_VERSION = 'INDEX 113';
     <div class="player-inner">
       <div class="player-top">
         <!-- Small art thumbnail — opens overlay -->
-        <div class="player-art" id="player-art" onclick="openNowPlaying()" title="Now Playing" style="cursor:pointer;width:72px;height:72px;border-radius:6px;background:#1a1008;border:1px solid #0a0804;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.6);">♫</div>
+        <div class="player-art" id="player-art" onclick="openNowPlaying()" title="Now Playing" style="cursor:pointer;width:72px;height:72px;border-radius:6px;background:#1a1008;border:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;">♫</div>
 
         <!-- [4] Song title: 2× larger + heavier weight -->
         <div class="player-info">
@@ -766,7 +795,7 @@ document.title = 'GoLoco · ' + APP_VERSION;
 let userIsScrolling = false;
 let scrollSuppressTimer = null;
 
-let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0;
+let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0, cueMode=false;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
 let playedThisSession=new Set(); // tracks played indices — reset when all have played
 let tags=JSON.parse(localStorage.getItem('gl_tags')||'["Favorites","Workout","Chill","Study"]');
@@ -1175,14 +1204,17 @@ function rowHTML(t){
   const libIdx=library.indexOf(t);
   const r=ratings[t.id]||0;
   const playing=libIdx===currentIndex;
+  const isCued=cueMode&&queue.includes(libIdx)&&!playing;
   const stars=[1,2,3,4,5].map(s=>`<span class="t-star ${s<=r?'on':''}" onclick="setRating('${t.id}',${s},event)">★</span>`).join('');
   const eq=playing?`<span class="eq-inline"><span class="eq-b"></span><span class="eq-b"></span><span class="eq-b"></span></span>`:'';
-  return`<tr class="${playing?'playing':''}" data-lib-idx="${libIdx}" onclick="playTrack(${libIdx})">
+  const cueIndicator=isCued?`<span style="font-size:9px;color:var(--orange);margin-right:4px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;">[CUE]</span>`:'';
+  const clickFn=cueMode?`addToCue(${libIdx},event)`:`playTrack(${libIdx})`;
+  return`<tr class="${playing?'playing':''}${isCued?' cued':''}" data-lib-idx="${libIdx}" onclick="${clickFn}">
     <td class="col-genre">${esc(t.genre||'—')}</td>
     <td class="col-artist">${esc(t.artist)}</td>
     <td class="col-year">${esc(t.year||'—')}</td>
     <td class="col-album">${esc(t.album==='Unknown Album'?'—':t.album)}</td>
-    <td class="col-title">${eq}${esc(t.title||t.name)}</td>
+    <td class="col-title">${eq}${cueIndicator}${esc(t.title||t.name)}</td>
     <td class="col-dur">${fmtTime(t.duration)}</td>
     <td class="col-rating">${stars}</td>
   </tr>`;
@@ -1212,9 +1244,18 @@ function renderQueue(){
   tbody.innerHTML=queue.map((idx,i)=>{const t=library[idx];if(!t)return'';const playing=idx===currentIndex;return`<tr class="${playing?'playing':''}" onclick="playTrack(${idx})"><td class="col-year">${i+1}</td><td class="col-title" style="font-weight:700;">${esc(t.title||t.name)}</td><td class="col-artist">${esc(t.artist)}</td><td class="col-dur">${fmtTime(t.duration)}</td></tr>`;}).join('');
 }
 
-// RATING FILTER
-function initRF(){const el=document.getElementById('rf-stars');el.innerHTML=[0,1,2,3,4,5].map(s=>{if(s===0)return`<span class="rf-star ${minRating===0?'on':''}" onclick="setMinR(0)" title="Any">✦</span>`;return`<span class="rf-star ${s<=minRating?'on':''}" onclick="setMinR(${s})">★</span>`;}).join('');}
-function setMinR(r){minRating=r;initRF();renderAll();}
+// CUE MODE
+function toggleCueMode(){
+  cueMode=!cueMode;
+  document.getElementById('cue-toggle').classList.toggle('on',cueMode);
+  document.getElementById('content').classList.toggle('cue-mode-on',cueMode);
+  showNotif(cueMode?'CUE MODE ON — TAP SONGS TO CUE':'CUE MODE OFF');
+  renderView();
+}
+
+// RATING FILTER (stars removed from UI but keep minRating=0 so filteredTracks works)
+function initRF(){} // no-op — stars UI removed
+function setMinR(r){minRating=r;renderAll();}
 
 // ALBUM ART
 function setArtEl(el,url){
@@ -1233,7 +1274,11 @@ function updateArtDisplay(){
 // PLAYBACK
 function playGroup(type,name){const key=type==='albums'?'album':type==='artists'?'artist':'composer';queue=library.filter(t=>t[key]===name).map(t=>library.indexOf(t));if(queue.length)playTrack(queue[0]);showView('queue',null);}
 function togglePlay(){
-  if(!audio.src&&library.length){playTrack(0);return;}
+  if(!audio.src&&library.length){
+    // If cue has items, start from cue; otherwise start from library index 0
+    if(queue.length){ playTrack(queue[0]); return; }
+    playTrack(0);return;
+  }
   if(isPlaying){
     clearFade();audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();
     stopKeepAlive();
@@ -1385,7 +1430,19 @@ function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView()
 function addTag(){const v=document.getElementById('tag-input').value.trim();if(!v||tags.includes(v))return;tags.push(v);save();document.getElementById('tag-input').value='';renderTags();}
 function delTag(tag,e){e.stopPropagation();tags=tags.filter(t=>t!==tag);if(activeTag===tag)activeTag=null;save();renderTags();}
 function selectTag(tag){activeTag=activeTag===tag?null:tag;renderTags();}
-function clearQueue(){queue=[];renderQueue();}
+function clearQueue(){queue=[];renderQueue();if(cueMode)renderAll();}
+
+function addToCue(libIdx, e){
+  e.stopPropagation();
+  if(queue.includes(libIdx)){
+    queue=queue.filter(i=>i!==libIdx);
+    showNotif('REMOVED FROM CUE');
+  } else {
+    queue.push(libIdx);
+    showNotif(`ADDED TO CUE (${queue.length})`);
+  }
+  renderView();
+}
 
 // README modal
 function openReadme(){
@@ -1540,16 +1597,20 @@ async function fetchMusicBrainzArt(t) {
 
     if (!releaseId) return null;
 
-    // Ask Cover Art Archive for the front image
+    // Ask Cover Art Archive for the full-size front image (not the 250px thumbnail)
     const caRes = await fetchWithTimeout(
-      `https://coverartarchive.org/release/${releaseId}/front-250`,
-      {}, 6000
+      `https://coverartarchive.org/release/${releaseId}/front`,
+      {}, 8000
     );
     // CAA redirects to the actual image; fetch follows redirects
     if (!caRes.ok) return null;
     const blob = await caRes.blob();
     if (!blob.size) return null;
-    return URL.createObjectURL(blob);
+    // Only accept art that is at least 720px wide
+    const blobUrl = URL.createObjectURL(blob);
+    const wide = await checkImageWidth(blobUrl, 720);
+    if (!wide) { URL.revokeObjectURL(blobUrl); return null; }
+    return blobUrl;
   } catch (e) {
     return null;
   }
@@ -1567,16 +1628,30 @@ async function fetchItunesArt(t) {
     const data = await res.json();
     const artUrl = data.results?.[0]?.artworkUrl100;
     if (!artUrl) return null;
-    // Upgrade from 100px to 600px thumbnail
-    const bigUrl = artUrl.replace('100x100bb', '600x600bb');
+    // Upgrade from 100px to 1200px thumbnail for best quality
+    const bigUrl = artUrl.replace('100x100bb', '1200x1200bb');
     const imgRes = await fetchWithTimeout(bigUrl, {}, 6000);
     if (!imgRes.ok) return null;
     const blob = await imgRes.blob();
     if (!blob.size) return null;
-    return URL.createObjectURL(blob);
+    // Only accept art that is at least 720px wide
+    const blobUrl = URL.createObjectURL(blob);
+    const wide = await checkImageWidth(blobUrl, 720);
+    if (!wide) { URL.revokeObjectURL(blobUrl); return null; }
+    return blobUrl;
   } catch (e) {
     return null;
   }
+}
+
+// Helper: resolve true when an image URL is at least minW pixels wide
+function checkImageWidth(url, minW) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload  = () => resolve(img.naturalWidth >= minW);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
 }
 
 // Helper: fetch with a timeout
