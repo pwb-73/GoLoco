@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 122                                            -->
+<!-- GoLoco · INDEX 123                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 122</title>
+<title>GoLoco · INDEX 123</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -603,7 +603,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 122';
+const APP_VERSION = 'INDEX 123';
 </script>
 <div id="app">
 
@@ -2259,6 +2259,46 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
       }, 200);
     }
   });
+
+  // ── Fetch from LRCLIB and start synced display ───────────────────────────────
+  window.updateLyricsTicker = async function(t) {
+    clearLyrics();
+    if (!t) return;
+
+    const artist = (t.artist && t.artist !== 'Unknown Artist') ? t.artist : '';
+    const title  = t.title || t.name || '';
+    if (!artist || !title) return;
+
+    try {
+      const params = new URLSearchParams({ artist_name: artist, track_name: title });
+      if (t.album && t.album !== 'Unknown Album') params.set('album_name', t.album);
+      if (t.duration) params.set('duration', Math.round(t.duration));
+
+      const res = await fetch('https://lrclib.net/api/get?' + params, {
+        headers: { 'Lrclib-Client': 'GoLoco/122 (https://github.com/pwb-73/GoLoco)' }
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const lrcText = data.syncedLyrics || '';
+      if (!lrcText) return;
+
+      const parsed = parseLRC(lrcText);
+      if (!parsed.length) return;
+
+      lrcLines = parsed;
+      hasLyrics = true;
+      lastLineIdx = -1;
+
+      if (!searchActive && !input.value) {
+        ticker.classList.remove('hidden');
+        startSync();
+      }
+    } catch (e) {
+      // Network error — leave bar empty
+    }
+  };
 
   // When user types in search, ensure sync is off
   input.addEventListener('focus', () => { searchActive = true; stopSync(); });
