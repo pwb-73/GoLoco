@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 117                                            -->
+<!-- GoLoco · INDEX 119                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 117</title>
+<title>GoLoco · INDEX 119</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -134,8 +134,8 @@ body::before {
 /* ── Synced lyric line display ── */
 #lyrics-ticker {
   position: absolute; inset: 0;
-  display: flex; align-items: center;
-  padding: 0 10px 0 10px;
+  display: flex; align-items: stretch;
+  padding: 0;
   overflow: hidden;
   border-radius: 4px;
   cursor: text;
@@ -145,19 +145,26 @@ body::before {
 #lyrics-ticker-inner {
   white-space: nowrap;
   font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
+  font-size: 28px;
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: 0.3px;
-  display: inline-block;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  transition: opacity 0.25s ease;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  line-height: 1;
+  will-change: transform;
+  transition: opacity 0.2s ease;
+  padding: 0 6px;
+}
+@keyframes lyricScroll {
+  from { transform: translateX(var(--ls, 100%)); }
+  to   { transform: translateX(var(--le, -100%)); }
 }
 #lyrics-ticker.hidden { display: none; }
 #lyrics-ticker-inner.lyric-fade { opacity: 0; }
+/* Hide search bar border while lyrics ticker is visible */
+#search-wrap:has(#lyrics-ticker:not(.hidden)) #search-bar { border-color: transparent; }
 #search-bar { width: 100%; background: transparent; border: 1px solid rgba(0,0,0,0.6); border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-dark); outline: none; letter-spacing: 0.5px; }
 #search-bar::placeholder { color: var(--text-light); } #search-bar:focus { border-color: var(--orange); }
 .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #5a4030; pointer-events: none; }
@@ -599,7 +606,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 117';
+const APP_VERSION = 'INDEX 119';
 </script>
 <div id="app">
 
@@ -2111,6 +2118,30 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
     return idx;
   }
 
+  // ── Scroll a lyric line right-to-left ──────────────────────────
+  function scrollLine(text) {
+    inner.style.animation = 'none';
+    inner.classList.add('lyric-fade');
+    setTimeout(() => {
+      inner.textContent = text;
+      inner.classList.remove('lyric-fade');
+      const containerW = ticker.offsetWidth;
+      const textW = inner.scrollWidth;
+      if (textW <= containerW) {
+        inner.style.animation = 'none';
+        inner.style.transform = 'translateX(0)';
+      } else {
+        const startPx = containerW + 'px';
+        const endPx = '-' + textW + 'px';
+        const travelPx = containerW + textW;
+        const dur = Math.max(3, travelPx / 120);
+        inner.style.setProperty('--ls', startPx);
+        inner.style.setProperty('--le', endPx);
+        inner.style.animation = 'lyricScroll ' + dur + 's linear infinite';
+      }
+    }, 120);
+  }
+
   // ── RAF loop — runs while lyrics are active and audio is playing ──────────
   function syncLoop() {
     if (!hasLyrics || searchActive) { lrcRaf = null; return; }
@@ -2119,13 +2150,10 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
       lastLineIdx = idx;
       const text = idx >= 0 ? lrcLines[idx].text : '';
       if (text) {
-        // Fade out → swap → fade in
-        inner.classList.add('lyric-fade');
-        setTimeout(() => {
-          inner.textContent = text;
-          inner.classList.remove('lyric-fade');
-        }, 130);
+        scrollLine(text);
       } else {
+        inner.style.animation = 'none';
+        inner.style.transform = 'translateX(0)';
         inner.textContent = '';
       }
     }
