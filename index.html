@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 123                                            -->
+<!-- GoLoco · INDEX 124                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 123</title>
+<title>GoLoco · INDEX 124</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -603,7 +603,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 123';
+const APP_VERSION = 'INDEX 124';
 </script>
 <div id="app">
 
@@ -2141,49 +2141,73 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 
   function launchSlot(slotIdx, text) {
     const sl = slots[slotIdx];
-    // Reset slot
+
+    // Cancel any previous animation/fade cleanly
     sl.style.transition = 'none';
     sl.style.animation  = 'none';
     sl.style.opacity    = '0';
+    sl.textContent      = '';
     void sl.offsetWidth; // reflow
 
     sl.textContent = text;
 
     const containerW = ticker.offsetWidth;
-    const textW = sl.scrollWidth;
-    const travelPx = containerW + textW;
-    // Speed: ~113px/s (150 × 0.75)
+    const textW      = sl.scrollWidth;
+    const travelPx   = containerW + textW;
+    // Speed: ~113px/s
     const dur = Math.max(4, travelPx / 113);
     sl.style.setProperty('--ls', containerW + 'px');
     sl.style.setProperty('--le', '-' + textW + 'px');
-    sl.style.animation = 'lyricScroll ' + dur + 's linear';
+    sl.style.animation = 'lyricScroll ' + dur + 's linear forwards';
 
     // Fade in
     requestAnimationFrame(() => {
       sl.style.transition = 'opacity 0.15s ease';
-      sl.style.opacity = '1';
+      sl.style.opacity    = '1';
     });
+
+    // When scroll finishes: fade out then clear — prevents ghost text at left edge
+    sl.addEventListener('animationend', function onDone() {
+      sl.removeEventListener('animationend', onDone);
+      sl.style.transition = 'opacity 0.4s ease';
+      sl.style.opacity    = '0';
+      setTimeout(() => { sl.textContent = ''; sl.style.animation = 'none'; }, 450);
+    }, { once: true });
   }
 
   function scrollLine(text) {
     clearSilenceTimer();
 
     const currentSl = slots[activeSlot];
-    const isVisible  = parseFloat(currentSl.style.opacity || '0') > 0.05;
-    const isMoving   = currentSl.style.animation && currentSl.style.animation !== 'none'
-                       && currentSl.style.animationPlayState !== 'paused';
+    // A slot is "actively scrolling" if it has a running animation and is visible
+    const animating = currentSl.style.animation && currentSl.style.animation !== 'none'
+                      && !currentSl.style.animation.includes('forwards')
+                        ? false  // already ended (forwards = frozen at end)
+                        : currentSl.style.animation && currentSl.style.animation !== 'none';
+    const visible   = parseFloat(currentSl.style.opacity || '0') > 0.05;
 
-    if (isVisible && isMoving) {
-      // Previous line still scrolling — let it continue off left, new line scrolls in on idle slot
-      const nextSlot = 1 - activeSlot;
-      activeSlot = nextSlot;
-      launchSlot(nextSlot, text);
-    } else {
-      // No line currently scrolling — fresh start on active slot
-      launchSlot(activeSlot, text);
+    if (visible && animating) {
+      // Old line still mid-scroll — use the other slot; old one finishes naturally
+      activeSlot = 1 - activeSlot;
     }
+    launchSlot(activeSlot, text);
 
-    armSilenceTimer();
+    // Silence timer: only fires AFTER the scroll animation would have ended
+    // so it never cuts a line short mid-travel. Minimum 4s, actual scroll dur + 0.5s buffer.
+    const sl         = slots[activeSlot];
+    const containerW = ticker.offsetWidth;
+    // Re-measure text width from the slot we just launched
+    const textW      = sl.scrollWidth;
+    const travelPx   = containerW + textW;
+    const scrollDur  = Math.max(4, travelPx / 113) * 1000; // ms
+    const fadeDelay  = Math.max(4000, scrollDur + 500);
+    silenceTimer = setTimeout(() => {
+      // Only fade if this slot is still the active one and not mid-new-scroll
+      const s = slots[activeSlot];
+      s.style.transition = 'opacity 1.5s ease';
+      s.style.opacity    = '0';
+      setTimeout(() => { s.textContent = ''; s.style.animation = 'none'; }, 1600);
+    }, fadeDelay);
   }
 
   // ── RAF loop — runs while lyrics are active and audio is playing ──────────
