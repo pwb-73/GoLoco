@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 133                                            -->
+<!-- GoLoco · INDEX 134                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 133</title>
+<title>GoLoco · INDEX 134</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -147,7 +147,7 @@ body::before {
   font-family: 'DM Sans', sans-serif;
   font-size: 28px;
   font-weight: 900;
-  color: #ffffff;
+  color: #fffaaa; /* overridden per-line by JS */
   letter-spacing: 0.2px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   line-height: 1;
@@ -427,7 +427,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 .player-title {
   font-size: 72px;
   font-weight: 900;
-  color: #ffffff;
+  color: #fffaaa; /* overridden per-line by JS */
   -webkit-text-fill-color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
@@ -599,7 +599,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 133';
+const APP_VERSION = 'INDEX 134';
 </script>
 <div id="app">
 
@@ -2126,10 +2126,12 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
   let lastTs     = null;
 
   // Lane pool — we reuse the two slot elements
+  const laneColors = ['#fffaaa', '#aaddff']; // pale yellow, pale blue
   const lanes = [
-    { el: slots[0], x: 0, dest: 0, active: false },
-    { el: slots[1], x: 0, dest: 0, active: false },
+    { el: slots[0], x: 0, dest: 0, active: false, color: laneColors[0] },
+    { el: slots[1], x: 0, dest: 0, active: false, color: laneColors[1] },
   ];
+  let nextColor = 0; // alternates 0/1 with each new line
 
   function stopScroll() {
     rafRunning = false;
@@ -2183,6 +2185,8 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 
     // Set text and measure
     lane.el.textContent = text;
+    lane.el.style.color = laneColors[nextColor];
+    nextColor = 1 - nextColor;
     lane.el.style.transform = 'translateX(' + containerW + 'px)';
     lane.el.style.opacity = '1';
     void lane.el.offsetWidth; // force layout for accurate scrollWidth
