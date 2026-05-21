@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 127                                            -->
+<!-- GoLoco · INDEX 128                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 127</title>
+<title>GoLoco · INDEX 128</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -603,7 +603,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 127';
+const APP_VERSION = 'INDEX 128';
 </script>
 <div id="app">
 
@@ -2142,48 +2142,35 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
   function launchSlot(slotIdx, text) {
     const sl = slots[slotIdx];
 
-    // Cancel any previous animation/fade cleanly
+    // Hard reset
     sl.style.transition = 'none';
     sl.style.animation  = 'none';
-    sl.style.opacity    = '0';
+    sl.style.opacity    = '1';
     sl.textContent      = '';
     void sl.offsetWidth; // reflow
 
     sl.textContent = text;
+    void sl.offsetWidth; // reflow again after text set so scrollWidth is accurate
 
     const containerW = ticker.offsetWidth;
     const textW      = sl.scrollWidth;
     const travelPx   = containerW + textW;
-    // Speed: ~113px/s
+    // Speed: ~113px/s — no 'forwards', text scrolls off left and is just gone
     const dur = Math.max(4, travelPx / 113);
     sl.style.setProperty('--ls', containerW + 'px');
     sl.style.setProperty('--le', '-' + textW + 'px');
-    sl.style.animation = 'lyricScroll ' + dur + 's linear forwards';
-
-    // Fade in
-    requestAnimationFrame(() => {
-      sl.style.transition = 'opacity 0.15s ease';
-      sl.style.opacity    = '1';
-    });
-
-    // When scroll finishes: fade out and clear to prevent ghost text
-    sl.addEventListener('animationend', function onDone() {
-      sl.removeEventListener('animationend', onDone);
-      sl.style.transition = 'opacity 0.4s ease';
-      sl.style.opacity    = '0';
-      setTimeout(() => { sl.textContent = ''; sl.style.animation = 'none'; }, 450);
-    }, { once: true });
+    // 'normal' fill: when animation ends element snaps back to default transform
+    // but we clear textContent via silence timer so nothing is visible
+    sl.style.animation = 'lyricScroll ' + dur + 's linear';
   }
 
   function scrollLine(text) {
     clearSilenceTimer();
 
-    // Always launch — never skip. Each new LRC line immediately replaces
-    // whatever is showing. The old slot is force-cleared first.
+    // Clear all slots cleanly — new line scrolls in immediately
     slots.forEach(sl => {
-      sl.style.animation  = 'none';
       sl.style.transition = 'none';
-      sl.style.opacity    = '0';
+      sl.style.animation  = 'none';
       sl.textContent      = '';
     });
     activeSlot = 0; // always use slot A for simplicity
