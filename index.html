@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 139                                            -->
+<!-- GoLoco · INDEX 140                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 139</title>
+<title>GoLoco · INDEX 140</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -623,8 +623,8 @@ tr.cued.playing td { background: #ffe600 !important; }
 #fx-close-btn {
   background: linear-gradient(180deg, var(--orange-bright), var(--orange-dark));
   border: 1px solid var(--orange-dark); border-radius: 20px;
-  padding: 14px 28px; font-family: 'Share Tech Mono', monospace;
-  font-size: 36px; letter-spacing: 1.5px; color: #fff; cursor: pointer;
+  padding: 5px 9px; font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 1.5px; color: #fff; cursor: pointer;
 }
 
 #fx-overlay-body {
@@ -743,7 +743,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 139';
+const APP_VERSION = 'INDEX 140';
 </script>
 <div id="app">
 
@@ -1127,6 +1127,10 @@ let _fftL = null, _fftR = null;
 let _eq100 = null, _eq1k = null, _eq10k = null;
 // Reverb nodes
 let _convolver = null, _reverbWet = null, _reverbDry = null;
+// Reverb vocal-range bandpass filters (80 Hz – 1100 Hz singing range)
+let _reverbHP = null, _reverbLP = null;
+// Stereo merger for reverb wet path
+let _reverbMerger = null;
 
 // Track whether createMediaElementSource has been called — it can only be called once per element
 let _mediaSourceCreated = false;
@@ -1183,24 +1187,44 @@ function setupAudioAnalyser() {
       _eq1k.frequency.value   = 1000;  _eq1k.Q.value   = 1.4;
       _eq10k.frequency.value  = 10000; _eq10k.Q.value  = 1.4;
 
-      // ── Reverb: convolver + wet gain ────────────────────────────────
+      // ── Reverb: convolver + vocal-range bandpass + stereo wet gain ──
       _convolver   = _audioCtx.createConvolver();
       _reverbWet   = _audioCtx.createGain();
       _reverbDry   = _audioCtx.createGain();
       _reverbWet.gain.value = 0.0;
       _reverbDry.gain.value = 1.0;
+
+      // Bandpass filters to restrict reverb to singing range: 80 Hz – 1100 Hz
+      _reverbHP = _audioCtx.createBiquadFilter();
+      _reverbHP.type = 'highpass';
+      _reverbHP.frequency.value = 80;
+      _reverbHP.Q.value = 0.7;
+
+      _reverbLP = _audioCtx.createBiquadFilter();
+      _reverbLP.type = 'lowpass';
+      _reverbLP.frequency.value = 1100;
+      _reverbLP.Q.value = 0.7;
+
+      // Stereo channel splitter/merger for true stereo reverb
+      _reverbMerger = _audioCtx.createChannelMerger(2);
+
       buildImpulse(0.5); // build initial IR
 
-      // Signal chain: panner → eq100 → eq1k → eq10k → [dry + convolver→wet] → destination
+      // Signal chain: panner → eq100 → eq1k → eq10k → [dry + vocal-band→convolver→stereo-wet] → destination
       _panner.connect(_eq100);
       _eq100.connect(_eq1k);
       _eq1k.connect(_eq10k);
       // Dry path
       _eq10k.connect(_reverbDry);
       _reverbDry.connect(_audioCtx.destination);
-      // Wet path
-      _eq10k.connect(_convolver);
-      _convolver.connect(_reverbWet);
+      // Wet path: bandpass (HP→LP) → convolver → merge L+R → wet gain → destination
+      _eq10k.connect(_reverbHP);
+      _reverbHP.connect(_reverbLP);
+      _reverbLP.connect(_convolver);
+      // Split convolver output into L/R and re-merge for explicit stereo
+      _convolver.connect(_reverbMerger, 0, 0);
+      _convolver.connect(_reverbMerger, 0, 1);
+      _reverbMerger.connect(_reverbWet);
       _reverbWet.connect(_audioCtx.destination);
     }
 
@@ -1326,16 +1350,20 @@ function resetEQ() {
 // ── Reverb / Impulse Response ─────────────────────────────────────────────────
 function buildImpulse(size) {
   if (!_audioCtx || !_convolver) return;
-  // Synthesize a simple decaying noise IR
+  // Synthesize a stereo decaying-noise IR — each channel is independently
+  // randomised so the convolver outputs true L/R decorrelated reverb tails.
   const sampleRate = _audioCtx.sampleRate;
   const duration   = 0.1 + size * 3.9;   // 0.1s (small) – 4.0s (large)
   const length     = Math.floor(sampleRate * duration);
   const impulse    = _audioCtx.createBuffer(2, length, sampleRate);
   for (let ch = 0; ch < 2; ch++) {
     const data = impulse.getChannelData(ch);
+    // Seed per-channel with a slight offset so L and R are decorrelated
+    const phaseShift = ch === 1 ? 0.3 : 0;
     for (let i = 0; i < length; i++) {
       const env = Math.pow(1 - i / length, 1.5 + size * 2);
-      data[i] = (Math.random() * 2 - 1) * env;
+      // Use two independent noise terms to decorrelate channels
+      data[i] = (Math.random() * 2 - 1 + Math.sin(i * 0.37 + phaseShift) * 0.05) * env;
     }
   }
   _convolver.buffer = impulse;
@@ -2744,7 +2772,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   var bounceT = 0;
   var BOUNCE_FREQ = 0.09;
-  var BOUNCE_AMP = 0.6;
+  var BOUNCE_AMP = 1.2;
 
   var cw = 0, ch = 0, tileW = 0;
   var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
@@ -2873,7 +2901,8 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     bikeH = ch * 0.90;
     bikeW = (728 / 576) * bikeH;
     bikeX = 4;
-    bikeCenterY = (ch - bikeH) / 2;
+    // Shift bike down by ~3px so wheels touch the road surface
+    bikeCenterY = (ch - bikeH) / 2 + 3;
     if(spacer) spacer.style.width = (bikeX + bikeW + 8) + 'px';
     // Clear particles on resize so they don't appear at wrong positions
     streaks = []; wisps = [];
@@ -2910,7 +2939,10 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     }
 
     bounceT += BOUNCE_FREQ;
-    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.15;
+    // Bias bounce so bike lifts upward only — wheels stay on the road surface.
+    // sin oscillates -1..1; we take only the upward portion by offsetting
+    var rawBob = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.3;
+    var bobY = rawBob < 0 ? rawBob : rawBob * 0.15; // full lift up, tiny downward sag
 
     // Draw bike first — particles spawn offset left so they emerge from
     // BEHIND the rider and never appear on top of the body
