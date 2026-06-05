@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 134                                            -->
+<!-- GoLoco · INDEX 135                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 134</title>
+<title>GoLoco · INDEX 135</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -583,6 +583,149 @@ tr.cued.playing td { background: #ffe600 !important; }
   .player-title { font-size: 36px; }
 }
 
+/* ── FX OVERLAY (opened by clicking motorcycle) ─────────────────────────── */
+#fx-overlay {
+  position: fixed; inset: 0; z-index: 250;
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#fx-overlay.open { opacity: 1; pointer-events: auto; }
+
+#fx-overlay-bg {
+  position: absolute; inset: 0;
+  background: rgba(10,6,2,0.72);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+
+#fx-overlay-panel {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 640px;
+  background: linear-gradient(180deg, var(--panel-light) 0%, var(--panel) 50%, var(--panel-dark) 100%);
+  border: 1px solid var(--tan); border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.35);
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+}
+#fx-overlay.open #fx-overlay-panel { transform: translateY(0); }
+
+#fx-overlay-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+#fx-overlay-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  letter-spacing: 3px; color: var(--text-dark);
+}
+#fx-close-btn {
+  background: linear-gradient(180deg, var(--orange-bright), var(--orange-dark));
+  border: 1px solid var(--orange-dark); border-radius: 20px;
+  padding: 7px 18px; font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 1.5px; color: #fff; cursor: pointer;
+}
+
+#fx-overlay-body {
+  padding: 18px 22px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+  max-height: 70vh; overflow-y: auto;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+}
+#fx-overlay-body::-webkit-scrollbar { width: 3px; }
+#fx-overlay-body::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 2px; }
+
+.fxo-section {}
+.fxo-section-label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+  padding-bottom: 6px; margin-bottom: 14px;
+}
+.fxo-section-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2.5px;
+  color: var(--text-mid);
+  border-bottom: none; padding-bottom: 0; margin-bottom: 0;
+}
+
+.fxo-reset-btn {
+  background: linear-gradient(180deg, #d4c8a8, #b8aa88);
+  border: 1px solid #8a7a58; border-bottom: 2px solid #6a5a38;
+  border-radius: 3px; padding: 4px 12px;
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; color: var(--text-dark); cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: all 0.08s; flex-shrink: 0;
+}
+.fxo-reset-btn:active { transform: translateY(1px); border-bottom-width: 1px; }
+.fxo-reset-btn:hover { border-color: var(--orange); color: var(--orange); }
+.fxo-bands {
+  display: flex; flex-direction: row; align-items: stretch;
+  gap: 0;
+}
+.fxo-band {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 0 12px;
+}
+.fxo-band-freq {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1px;
+  color: var(--orange); font-weight: 700; text-align: center;
+}
+.fxo-band-divider {
+  width: 1px; background: rgba(0,0,0,0.12); flex-shrink: 0; margin: 4px 0;
+}
+.fxo-ctrl-pair {
+  display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;
+}
+.fxo-ctrl {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%;
+}
+.fxo-ctrl-wide { flex: 1; }
+.fxo-ctrl-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 1px;
+  color: var(--text-light); text-align: center;
+}
+.fxo-ctrl-val {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--orange);
+  font-weight: 700; text-align: center; min-width: 50px;
+}
+
+/* Sliders */
+.fxo-slider {
+  -webkit-appearance: none;
+  width: 100%; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+}
+.fxo-slider.q-slider {
+  background: linear-gradient(90deg, #5a4030 0%, #b8921a 40%, #5a4030 100%);
+}
+.fxo-slider.gain-slider {
+  background: linear-gradient(90deg, #0a3a10 0%, #2a8020 35%, #5a4030 50%, #a04010 65%, #cc2200 100%);
+}
+.fxo-slider.fxo-reverb-slider {
+  background: linear-gradient(90deg, #1a2838 0%, #204878 50%, #3080c0 100%);
+}
+.fxo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 32px;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at 35% 28%, #e0d0a0, #8a7848);
+  border: 1px solid #6a5030;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5); cursor: pointer;
+}
+.fxo-slider::-moz-range-thumb {
+  width: 20px; height: 32px; border-radius: 4px;
+  background: radial-gradient(ellipse at 35% 28%, #e0d0a0, #8a7848);
+  border: 1px solid #6a5030; cursor: pointer; box-sizing: border-box;
+}
+
+/* Reverb row */
+.fxo-reverb-row {
+  display: flex; flex-direction: row; gap: 28px;
+}
+.fxo-section-reverb .fxo-ctrl-wide .fxo-slider {
+  width: 100%;
+}
+/* ── end FX overlay ─────────────────────────────────────────────────────── */
+
 /* NOW PLAYING bottom row: progress left, controls right */
 #np-bottom-row {
   display: flex;
@@ -599,7 +742,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 134';
+const APP_VERSION = 'INDEX 135';
 </script>
 <div id="app">
 
@@ -608,7 +751,7 @@ const APP_VERSION = 'INDEX 134';
     <canvas id="topbar-canvas"></canvas>
     <!-- All controls float on top -->
     <div id="topbar-controls">
-      <div id="bike-spacer"></div><!-- width set by JS to match rendered bike width -->
+      <div id="bike-spacer" onclick="openFX()" title="FX — EQ & Reverb" style="cursor:pointer;flex-shrink:0;"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <div id="vu-analog-wrap">
         <div class="vu-row" id="vu-l"></div>
@@ -797,7 +940,100 @@ const APP_VERSION = 'INDEX 134';
 </div>
 
 
+<!-- FX OVERLAY: Parametric EQ + Reverb — opened by clicking the motorcycle -->
+<div id="fx-overlay">
+  <div id="fx-overlay-bg"></div>
+  <div id="fx-overlay-panel">
+    <div id="fx-overlay-header">
+      <span id="fx-overlay-title">FX — SOUND SHAPING</span>
+      <button id="fx-close-btn" onclick="closeFX()">▾ CLOSE</button>
+    </div>
 
+    <div id="fx-overlay-body">
+
+      <!-- PARAMETRIC EQ -->
+      <div class="fxo-section">
+        <div class="fxo-section-label-row">
+          <div class="fxo-section-label">Parametric Equalizer</div>
+          <button class="fxo-reset-btn" onclick="resetEQ()" title="Reset all EQ bands to flat">RESET</button>
+        </div>
+        <div class="fxo-bands">
+
+          <div class="fxo-band">
+            <div class="fxo-band-freq">100 Hz</div>
+            <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">WIDTH</div>
+                <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-q-100-val">Q 1.4</div>
+              </div>
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">GAIN</div>
+                <input type="range" class="fxo-slider gain-slider" id="eq-g-100" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-g-100-val">0 dB</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fxo-band-divider"></div>
+
+          <div class="fxo-band">
+            <div class="fxo-band-freq">1 kHz</div>
+            <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">WIDTH</div>
+                <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-q-1k-val">Q 1.4</div>
+              </div>
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">GAIN</div>
+                <input type="range" class="fxo-slider gain-slider" id="eq-g-1k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-g-1k-val">0 dB</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fxo-band-divider"></div>
+
+          <div class="fxo-band">
+            <div class="fxo-band-freq">10 kHz</div>
+            <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">WIDTH</div>
+                <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-q-10k-val">Q 1.4</div>
+              </div>
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">GAIN</div>
+                <input type="range" class="fxo-slider gain-slider" id="eq-g-10k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-g-10k-val">0 dB</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /fxo-bands -->
+      </div><!-- /eq section -->
+
+      <!-- REVERB -->
+      <div class="fxo-section fxo-section-reverb">
+        <div class="fxo-section-label">Reverb</div>
+        <div class="fxo-reverb-row">
+          <div class="fxo-ctrl fxo-ctrl-wide">
+            <div class="fxo-ctrl-label">ROOM SIZE</div>
+            <input type="range" class="fxo-slider fxo-reverb-slider" id="rv-size" min="0.1" max="1.0" step="0.01" value="0.5" oninput="updateReverb()">
+            <div class="fxo-ctrl-val" id="rv-size-val">0.50</div>
+          </div>
+          <div class="fxo-ctrl fxo-ctrl-wide">
+            <div class="fxo-ctrl-label">AMOUNT</div>
+            <input type="range" class="fxo-slider fxo-reverb-slider" id="rv-wet" min="0" max="1.0" step="0.01" value="0" oninput="updateReverb()">
+            <div class="fxo-ctrl-val" id="rv-wet-val">DRY</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /fx-overlay-body -->
+  </div><!-- /fx-overlay-panel -->
+</div><!-- /fx-overlay -->
 <div id="readme-modal" onclick="closeReadme()">
   <div id="readme-box" onclick="event.stopPropagation()">
     <div id="readme-header">
@@ -886,6 +1122,10 @@ let _vuL = 0, _vuR = 0; // smoothed level 0-1
 let _audioCtx = null, _analyserL = null, _analyserR = null;
 let _splitter = null, _panner = null, _masterGain = null;
 let _fftL = null, _fftR = null;
+// EQ nodes
+let _eq100 = null, _eq1k = null, _eq10k = null;
+// Reverb nodes
+let _convolver = null, _reverbWet = null, _reverbDry = null;
 
 // Track whether createMediaElementSource has been called — it can only be called once per element
 let _mediaSourceCreated = false;
@@ -932,7 +1172,35 @@ function setupAudioAnalyser() {
       _panner.connect(_splitter);
       _splitter.connect(_analyserL, 0);
       _splitter.connect(_analyserR, 1);
-      _panner.connect(_audioCtx.destination);
+
+      // ── EQ: 3 peaking filters ───────────────────────────────────────
+      _eq100  = _audioCtx.createBiquadFilter();
+      _eq1k   = _audioCtx.createBiquadFilter();
+      _eq10k  = _audioCtx.createBiquadFilter();
+      [_eq100, _eq1k, _eq10k].forEach(f => { f.type = 'peaking'; f.gain.value = 0; });
+      _eq100.frequency.value  = 100;   _eq100.Q.value  = 1.4;
+      _eq1k.frequency.value   = 1000;  _eq1k.Q.value   = 1.4;
+      _eq10k.frequency.value  = 10000; _eq10k.Q.value  = 1.4;
+
+      // ── Reverb: convolver + wet gain ────────────────────────────────
+      _convolver   = _audioCtx.createConvolver();
+      _reverbWet   = _audioCtx.createGain();
+      _reverbDry   = _audioCtx.createGain();
+      _reverbWet.gain.value = 0.0;
+      _reverbDry.gain.value = 1.0;
+      buildImpulse(0.5); // build initial IR
+
+      // Signal chain: panner → eq100 → eq1k → eq10k → [dry + convolver→wet] → destination
+      _panner.connect(_eq100);
+      _eq100.connect(_eq1k);
+      _eq1k.connect(_eq10k);
+      // Dry path
+      _eq10k.connect(_reverbDry);
+      _reverbDry.connect(_audioCtx.destination);
+      // Wet path
+      _eq10k.connect(_convolver);
+      _convolver.connect(_reverbWet);
+      _reverbWet.connect(_audioCtx.destination);
     }
 
     if (_audioCtx.state === 'suspended') _audioCtx.resume().catch(() => {});
@@ -1020,9 +1288,87 @@ function setBalance(v) {
   if (_panner) _panner.pan.value = v;
 }
 
+// ── Parametric EQ ────────────────────────────────────────────────────────────
+function updateEQ() {
+  const bands = [
+    { filtVar: '_eq100', id: '100' },
+    { filtVar: '_eq1k',  id: '1k'  },
+    { filtVar: '_eq10k', id: '10k' },
+  ];
+  bands.forEach(({ filtVar, id }) => {
+    const qSlider = document.getElementById('eq-q-' + id);
+    const gSlider = document.getElementById('eq-g-' + id);
+    const qVal    = parseFloat(qSlider.value);
+    const gVal    = parseFloat(gSlider.value);
+    // Update display labels
+    document.getElementById('eq-q-' + id + '-val').textContent = 'Q ' + qVal.toFixed(1);
+    const gLabel = gVal === 0 ? '0 dB' : (gVal > 0 ? '+' + gVal.toFixed(1) + ' dB' : gVal.toFixed(1) + ' dB');
+    document.getElementById('eq-g-' + id + '-val').textContent = gLabel;
+    // Apply to filter node if AudioContext is live
+    const node = filtVar === '_eq100' ? _eq100 : filtVar === '_eq1k' ? _eq1k : _eq10k;
+    if (node) {
+      node.Q.value    = qVal;
+      node.gain.value = gVal;
+    }
+  });
+}
+
+function resetEQ() {
+  [['100','eq-q-100','eq-g-100'], ['1k','eq-q-1k','eq-g-1k'], ['10k','eq-q-10k','eq-g-10k']].forEach(([id, qId, gId]) => {
+    document.getElementById(qId).value = 1.4;
+    document.getElementById(gId).value = 0;
+  });
+  updateEQ();
+  showNotif('EQ RESET TO FLAT');
+}
+
+ ─────────────────────────────────────────────────
+function buildImpulse(size) {
+  if (!_audioCtx || !_convolver) return;
+  // Synthesize a simple decaying noise IR
+  const sampleRate = _audioCtx.sampleRate;
+  const duration   = 0.1 + size * 3.9;   // 0.1s (small) – 4.0s (large)
+  const length     = Math.floor(sampleRate * duration);
+  const impulse    = _audioCtx.createBuffer(2, length, sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      const env = Math.pow(1 - i / length, 1.5 + size * 2);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+  }
+  _convolver.buffer = impulse;
+}
+
+function updateReverb() {
+  const sizeSlider = document.getElementById('rv-size');
+  const wetSlider  = document.getElementById('rv-wet');
+  const size = parseFloat(sizeSlider.value);
+  const wet  = parseFloat(wetSlider.value);
+
+  document.getElementById('rv-size-val').textContent = size.toFixed(2);
+  document.getElementById('rv-wet-val').textContent  = wet === 0 ? 'DRY' : (wet * 100).toFixed(0) + '%';
+
+  if (_convolver) buildImpulse(size);
+  if (_reverbWet) _reverbWet.gain.setTargetAtTime(wet,       _audioCtx.currentTime, 0.02);
+  if (_reverbDry) _reverbDry.gain.setTargetAtTime(1 - wet * 0.6, _audioCtx.currentTime, 0.02);
+}
+
+// ── FX overlay open / close ───────────────────────────────────────────────
+function openFX() {
+  document.getElementById('fx-overlay').classList.add('open');
+}
+function closeFX() {
+  document.getElementById('fx-overlay').classList.remove('open');
+}
+// Tap backdrop to close
+document.getElementById('fx-overlay-bg').addEventListener('click', closeFX);
+
 // Set up real audio analysis — called on every play to ensure AudioContext is running
 audio.addEventListener('play', () => {
   setupAudioAnalyser();
+  // Sync EQ + reverb nodes with current UI values (important on first play)
+  setTimeout(() => { updateEQ(); updateReverb(); }, 50);
 });
 
 // ── Media Session API ────────────────────────────────────────────────────────
@@ -2397,7 +2743,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   var bounceT = 0;
   var BOUNCE_FREQ = 0.09;
-  var BOUNCE_AMP = 2.5;
+  var BOUNCE_AMP = 1.2;
 
   var cw = 0, ch = 0, tileW = 0;
   var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
@@ -2563,7 +2909,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     }
 
     bounceT += BOUNCE_FREQ;
-    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.8;
+    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.35;
 
     // Draw bike first — particles spawn offset left so they emerge from
     // BEHIND the rider and never appear on top of the body
