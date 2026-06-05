@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 136                                            -->
+<!-- GoLoco · INDEX 138                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 136</title>
+<title>GoLoco · INDEX 138</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +59,8 @@ body::before {
   box-sizing: border-box;
 }
 /* Spacer div sized by JS to exactly match bike width */
-#bike-spacer { flex-shrink: 0; }
+#bike-spacer { flex-shrink: 0; height: 100%; cursor: pointer; }
+#bike-spacer:hover { background: rgba(212,98,26,0.08); border-radius: 4px; }
 .brand {
   font-family: 'DM Sans', sans-serif; font-size: 28px; font-weight: 900;
   letter-spacing: -1px; color: var(--text-dark);
@@ -742,7 +743,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 136';
+const APP_VERSION = 'INDEX 138';
 </script>
 <div id="app">
 
@@ -2226,7 +2227,7 @@ function updateNowPlayingOverlay(){
 
     // ── Bike ─────────────────────────────────────────────────────────────────
     npBounceT += 0.09;
-    var bobY  = Math.sin(npBounceT) * 3.5 + Math.sin(npBounceT * 2.3) * 1.2;
+    var bobY  = Math.sin(npBounceT) * 0.6 + Math.sin(npBounceT * 2.3) * 0.15;
     var bikeH = H * 0.50;
     var bikeW = (728 / 576) * bikeH;
     // Centre horizontally
@@ -2743,7 +2744,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   var bounceT = 0;
   var BOUNCE_FREQ = 0.09;
-  var BOUNCE_AMP = 1.2;
+  var BOUNCE_AMP = 0.6;
 
   var cw = 0, ch = 0, tileW = 0;
   var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
@@ -2909,7 +2910,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     }
 
     bounceT += BOUNCE_FREQ;
-    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.35;
+    var bobY = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.15;
 
     // Draw bike first — particles spawn offset left so they emerge from
     // BEHIND the rider and never appear on top of the body
