@@ -1187,44 +1187,41 @@ function setupAudioAnalyser() {
       _eq1k.frequency.value   = 1000;  _eq1k.Q.value   = 1.4;
       _eq10k.frequency.value  = 10000; _eq10k.Q.value  = 1.4;
 
-      // ── Reverb: convolver + vocal-range bandpass + stereo wet gain ──
+      // ── Reverb: convolver + vocal-range bandpass (feed only) + stereo wet ──
+      // Bandpass filters shape ONLY the convolver feed — dry signal is untouched.
+      // No volume dip on the main output; wet adds on top of a constant dry=1.0.
+      // The convolver outputs stereo because its IR is a 2-channel buffer.
       _convolver   = _audioCtx.createConvolver();
       _reverbWet   = _audioCtx.createGain();
       _reverbDry   = _audioCtx.createGain();
       _reverbWet.gain.value = 0.0;
-      _reverbDry.gain.value = 1.0;
+      _reverbDry.gain.value = 1.0; // always 1 — never reduced
 
-      // Bandpass filters to restrict reverb to singing range: 80 Hz – 1100 Hz
+      // Bandpass: restrict convolver INPUT to singing range 80 Hz – 1100 Hz.
+      // These nodes are in the wet send only; dry path is completely separate.
       _reverbHP = _audioCtx.createBiquadFilter();
       _reverbHP.type = 'highpass';
       _reverbHP.frequency.value = 80;
-      _reverbHP.Q.value = 0.7;
+      _reverbHP.Q.value = 0.707;
 
       _reverbLP = _audioCtx.createBiquadFilter();
       _reverbLP.type = 'lowpass';
       _reverbLP.frequency.value = 1100;
-      _reverbLP.Q.value = 0.7;
+      _reverbLP.Q.value = 0.707;
 
-      // Stereo channel splitter/merger for true stereo reverb
-      _reverbMerger = _audioCtx.createChannelMerger(2);
+      buildImpulse(0.5);
 
-      buildImpulse(0.5); // build initial IR
-
-      // Signal chain: panner → eq100 → eq1k → eq10k → [dry + vocal-band→convolver→stereo-wet] → destination
+      // Chain: panner → EQ → dry(1.0) → destination
+      //                   └→ HP → LP → convolver → wet(0..1) → destination
       _panner.connect(_eq100);
       _eq100.connect(_eq1k);
       _eq1k.connect(_eq10k);
-      // Dry path
       _eq10k.connect(_reverbDry);
       _reverbDry.connect(_audioCtx.destination);
-      // Wet path: bandpass (HP→LP) → convolver → merge L+R → wet gain → destination
       _eq10k.connect(_reverbHP);
       _reverbHP.connect(_reverbLP);
       _reverbLP.connect(_convolver);
-      // Split convolver output into L/R and re-merge for explicit stereo
-      _convolver.connect(_reverbMerger, 0, 0);
-      _convolver.connect(_reverbMerger, 0, 1);
-      _reverbMerger.connect(_reverbWet);
+      _convolver.connect(_reverbWet);
       _reverbWet.connect(_audioCtx.destination);
     }
 
@@ -1379,8 +1376,9 @@ function updateReverb() {
   document.getElementById('rv-wet-val').textContent  = wet === 0 ? 'DRY' : (wet * 100).toFixed(0) + '%';
 
   if (_convolver) buildImpulse(size);
-  if (_reverbWet) _reverbWet.gain.setTargetAtTime(wet,       _audioCtx.currentTime, 0.02);
-  if (_reverbDry) _reverbDry.gain.setTargetAtTime(1 - wet * 0.6, _audioCtx.currentTime, 0.02);
+  // Dry is always 1.0 — wet reverb is purely additive so there is no volume dip
+  if (_reverbWet) _reverbWet.gain.setTargetAtTime(wet, _audioCtx.currentTime, 0.02);
+  if (_reverbDry) _reverbDry.gain.setTargetAtTime(1.0, _audioCtx.currentTime, 0.02);
 }
 
 // ── FX overlay open / close ───────────────────────────────────────────────
