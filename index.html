@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 141                                            -->
+<!-- GoLoco · INDEX 142                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 141</title>
+<title>GoLoco · INDEX 142</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -743,7 +743,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 141';
+const APP_VERSION = 'INDEX 142';
 </script>
 <div id="app">
 
@@ -1376,9 +1376,16 @@ function updateReverb() {
   document.getElementById('rv-wet-val').textContent  = wet === 0 ? 'DRY' : (wet * 100).toFixed(0) + '%';
 
   if (_convolver) buildImpulse(size);
-  // Dry is always 1.0 — wet reverb is purely additive so there is no volume dip
-  if (_reverbWet) _reverbWet.gain.setTargetAtTime(wet, _audioCtx.currentTime, 0.02);
-  if (_reverbDry) _reverbDry.gain.setTargetAtTime(1.0, _audioCtx.currentTime, 0.02);
+
+  // Constant-power crossfade: dry and wet follow a quarter-circle so total
+  // perceived loudness stays even as you sweep from fully dry to fully wet.
+  // dry = cos(wet × π/2),  wet = sin(wet × π/2)
+  const angle = wet * (Math.PI / 2);
+  const dryGain = Math.cos(angle);
+  const wetGain = Math.sin(angle);
+
+  if (_reverbWet) _reverbWet.gain.setTargetAtTime(wetGain, _audioCtx.currentTime, 0.02);
+  if (_reverbDry) _reverbDry.gain.setTargetAtTime(dryGain, _audioCtx.currentTime, 0.02);
 }
 
 // ── FX overlay open / close ───────────────────────────────────────────────
