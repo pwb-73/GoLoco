@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 150                                            -->
+<!-- GoLoco · INDEX 152                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 150</title>
+<title>GoLoco · INDEX 152</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -586,8 +586,8 @@ tr.cued.playing td { background: #ffe600 !important; }
 #fx-overlay-body {
   padding: 18px 22px 28px;
   display: flex; flex-direction: column; gap: 20px;
-  max-height: 70vh; overflow-y: auto;
-  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  max-height: 82vh; overflow-y: auto;
+  padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
 }
 #fx-overlay-body::-webkit-scrollbar { width: 3px; }
 #fx-overlay-body::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 2px; }
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 150';
+const APP_VERSION = 'INDEX 152';
 </script>
 <div id="app">
 
@@ -2679,7 +2679,10 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var BOUNCE_AMP = 1.2;
 
   var cw = 0, ch = 0, tileW = 0;
-  var bikeW = 0, bikeH = 0, bikeX = 0, bikeCenterY = 0;
+  var bikeW = 0, bikeH = 0, bikeX = 4, bikeCenterY = 0;
+
+  // Slide-in: bikeSlideX is the actual rendered X — starts off-screen, eases to bikeX
+  var bikeSlideX = -2000; // off-screen until we know bikeW after first resize
 
   // ── Wind particle system ─────────────────────────────────────────────────
   // BIKEw.png: bike faces RIGHT. LEFT side of image = back of rider + rear wheel.
@@ -2714,7 +2717,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var wisps   = [];
 
   function getBikeOrigin(bobY) {
-    return { x: bikeX, y: bikeCenterY + bobY };
+    return { x: bikeSlideX, y: bikeCenterY + bobY };
   }
 
   function spawnStreak(bobY) {
@@ -2807,9 +2810,13 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     bikeX = 4;
     // Shift bike down by ~3px so wheels touch the road surface
     bikeCenterY = (ch - bikeH) / 2 + 3;
+    // Spacer always reserves space for the bike at its resting position
+    // so the layout never shifts during the slide-in
     if(spacer) spacer.style.width = (bikeX + bikeW + 8) + 'px';
     // Clear particles on resize so they don't appear at wrong positions
     streaks = []; wisps = [];
+    // If not playing, keep bike off-screen
+    if (!_roadRunning) bikeSlideX = -bikeW - 20;
   }
 
   function drawTile(x, mirrored){
@@ -2848,11 +2855,14 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     var rawBob = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.3;
     var bobY = rawBob < 0 ? rawBob : rawBob * 0.15; // full lift up, tiny downward sag
 
-    // Draw bike first — particles spawn offset left so they emerge from
-    // BEHIND the rider and never appear on top of the body
+    // Ease bikeSlideX toward its resting position (bikeX = 4)
+    // Speed factor 0.018 gives ~2.5s slide across a typical topbar width
+    bikeSlideX += (bikeX - bikeSlideX) * 0.018;
+
     // Draw particles BEFORE bike so bike always renders on top
+    // Pass bikeSlideX as the current origin so particles trail the sliding bike
     updateParticles(bobY);
-    ctx.drawImage(bike, bikeX, bikeCenterY + bobY, bikeW, bikeH);
+    ctx.drawImage(bike, bikeSlideX, bikeCenterY + bobY, bikeW, bikeH);
   }
 
   road.onload = function(){ roadLoaded = true; resize(); };
@@ -2867,8 +2877,16 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   function loop(){ if(_roadRunning) draw(); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
 
-  window.pauseRoadAnim  = function() { clearTimeout(window._roadResumeTimer); _roadRunning = false; };
-  window.resumeRoadAnim = function() { _roadRunning = true;  };
+  window.pauseRoadAnim  = function() {
+    clearTimeout(window._roadResumeTimer);
+    _roadRunning = false;
+    bikeSlideX = -(bikeW + 20); // snap bike back off-screen left
+    streaks = []; wisps = [];   // clear particles so none linger
+  };
+  window.resumeRoadAnim = function() {
+    bikeSlideX = -(bikeW + 20); // ensure it starts off-screen before easing in
+    _roadRunning = true;
+  };
 })();
 </script>
 </body>
