@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 143                                            -->
+<!-- GoLoco · INDEX 144                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 143</title>
+<title>GoLoco · INDEX 144</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -85,51 +85,7 @@ body::before {
   0%,100% { filter: brightness(1); }
   50%     { filter: brightness(1.3) contrast(1.1); }
 }
-/* LED BAR VU METERS */
-#vu-analog-wrap {
-  display: flex; flex-direction: column; gap: 3px; flex-shrink: 0;
-  align-items: center; justify-content: center;
-  max-height: 100%;
-}
-.vu-row {
-  display: flex; gap: 2px; align-items: center;
-  background: #0d0804; border-radius: 3px;
-  padding: 3px 4px;
-  border: 1px solid #2a1a08;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
-}
-.vu-led {
-  width: 3px; height: 9px; border-radius: 1px;
-  background: #080c14;
-  transition: background 0.05s;
-}
-.vu-led.on-blue  { background: #1050d8; box-shadow: 0 0 3px #1050d8; }
-.vu-led.on-lblue { background: #3080ff; box-shadow: 0 0 4px #3080ff; }
-.vu-led.on-red   { background: #ffffff; box-shadow: 0 0 6px #aaccff; }
-/* Balance slider */
-#balance-row {
-  display: flex; align-items: center; justify-content: center; width: 100%;
-  padding: 1px 0 0;
-}
-#balance-slider {
-  width: 50%;
-  -webkit-appearance: none;
-  height: 5px; border-radius: 3px;
-  background: linear-gradient(90deg, #c84010 0%, #3a2010 40%, #3a2010 60%, #8fcc44 100%);
-  outline: none; cursor: pointer;
-}
-#balance-slider::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 12px; height: 18px;
-  border-radius: 3px;
-  background: radial-gradient(ellipse at 35% 30%, #d8c898, #8a7848);
-  border: 1px solid #5a4028;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5); cursor: pointer;
-}
-#balance-slider::-moz-range-thumb {
-  width: 12px; height: 18px; border-radius: 3px;
-  background: radial-gradient(ellipse at 35% 30%, #d8c898, #8a7848);
-  border: 1px solid #5a4028; cursor: pointer;
-}
+
 #search-wrap { flex: 1; position: relative; }
 
 /* ── Synced lyric line display ── */
@@ -743,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 143';
+const APP_VERSION = 'INDEX 144';
 </script>
 <div id="app">
 
@@ -754,13 +710,7 @@ const APP_VERSION = 'INDEX 143';
     <div id="topbar-controls">
       <div id="bike-spacer" onclick="openFX()" title="FX — EQ & Reverb" style="cursor:pointer;flex-shrink:0;"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-      <div id="vu-analog-wrap">
-        <div class="vu-row" id="vu-l"></div>
-        <div class="vu-row" id="vu-r"></div>
-        <div id="balance-row">
-          <input type="range" id="balance-slider" min="-1" max="1" step="0.01" value="0" oninput="setBalance(this.value)">
-        </div>
-      </div>
+
       <div id="search-wrap">
         <span class="search-icon">⌕</span>
         <div id="lyrics-ticker" class="hidden" title="Tap to search">
@@ -1017,7 +967,10 @@ const APP_VERSION = 'INDEX 143';
 
       <!-- REVERB -->
       <div class="fxo-section fxo-section-reverb">
-        <div class="fxo-section-label">Reverb</div>
+        <div class="fxo-section-label-row">
+          <div class="fxo-section-label">Reverb</div>
+          <button class="fxo-reset-btn" onclick="resetReverb()" title="Reset reverb to off">RESET</button>
+        </div>
         <div class="fxo-reverb-row">
           <div class="fxo-ctrl fxo-ctrl-wide">
             <div class="fxo-ctrl-label">ROOM SIZE</div>
@@ -1110,19 +1063,11 @@ function toggleFullscreen(){
 document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
 document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
 
-let vuAnimFrame;
-// ── LED BAR VU METERS ────────────────────────────────────────────────────────
-// 16 LEDs per channel. 0-12 = deep blue, 13-14 = bright blue, 15 = red
-const VU_LEDS = 16;
-const VU_RED_THRESH  = 15; // last LED = red
-const VU_LBLUE_THRESH = 13; // last 2 before red = bright blue
-
-let _vuL = 0, _vuR = 0; // smoothed level 0-1
 
 // Real audio analysis
-let _audioCtx = null, _analyserL = null, _analyserR = null;
-let _splitter = null, _panner = null, _masterGain = null;
-let _fftL = null, _fftR = null;
+let _audioCtx = null;
+let _panner = null, _masterGain = null;
+
 // EQ nodes
 let _eq100 = null, _eq1k = null, _eq10k = null;
 // Reverb nodes
@@ -1156,27 +1101,11 @@ function setupAudioAnalyser() {
       _masterGain.gain.value = audio.volume;
 
       _panner = _audioCtx.createStereoPanner();
-      const balVal = parseFloat(document.getElementById('balance-slider').value || '0');
-      _panner.pan.value = balVal;
+      _panner.pan.value = 0;
 
-      _splitter = _audioCtx.createChannelSplitter(2);
-
-      _analyserL = _audioCtx.createAnalyser();
-      _analyserR = _audioCtx.createAnalyser();
-      _analyserL.fftSize = 256; _analyserR.fftSize = 256;
-      _analyserL.smoothingTimeConstant = 0.15;
-      _analyserR.smoothingTimeConstant = 0.15;
-
-      _fftL = new Uint8Array(_analyserL.frequencyBinCount);
-      _fftR = new Uint8Array(_analyserR.frequencyBinCount);
-
-      // Wire graph: src → gain → panner → splitter → analysers
-      //                                 → destination
+      // Wire graph: src → masterGain → panner → EQ chain
       src.connect(_masterGain);
       _masterGain.connect(_panner);
-      _panner.connect(_splitter);
-      _splitter.connect(_analyserL, 0);
-      _splitter.connect(_analyserR, 1);
 
       // ── EQ: 3 peaking filters ───────────────────────────────────────
       _eq100  = _audioCtx.createBiquadFilter();
@@ -1232,83 +1161,7 @@ function setupAudioAnalyser() {
   }
 }
 
-function getRealLevel(analyser, fftBuf) {
-  if (!analyser) return null;
-  analyser.getByteTimeDomainData(fftBuf);
-  let sum = 0;
-  for (let i = 0; i < fftBuf.length; i++) {
-    const s = (fftBuf[i] - 128) / 128;
-    sum += s * s;
-  }
-  return Math.sqrt(sum / fftBuf.length);
-}
-
-function drawLEDs(rowId, level) {
-  const row = document.getElementById(rowId);
-  if (!row) return;
-  // Build LEDs on first call
-  if (!row._built) {
-    row.innerHTML = '';
-    for (let i = 0; i < VU_LEDS; i++) {
-      const d = document.createElement('div');
-      d.className = 'vu-led';
-      row.appendChild(d);
-    }
-    row._built = true;
-  }
-  const lit = Math.round(level * VU_LEDS);
-  const leds = row.children;
-  for (let i = 0; i < VU_LEDS; i++) {
-    const on = i < lit;
-    if (on) {
-      if (i >= VU_RED_THRESH)       leds[i].className = 'vu-led on-red';
-      else if (i >= VU_LBLUE_THRESH) leds[i].className = 'vu-led on-lblue';
-      else                           leds[i].className = 'vu-led on-blue';
-    } else {
-      leds[i].className = 'vu-led';
-    }
-  }
-}
-
-function animateVU() {
-  if (!isPlaying) { resetVU(); return; }
-  const rmsL = getRealLevel(_analyserL, _fftL);
-  const rmsR = getRealLevel(_analyserR, _fftR);
-  if (rmsL !== null && rmsR !== null) {
-    const scale = 2.4;
-    _vuL += (Math.min(1, rmsL * scale) * balanceLGain - _vuL) * 0.4;
-    _vuR += (Math.min(1, rmsR * scale) * balanceRGain - _vuR) * 0.4;
-  } else {
-    const base = 0.3 + Math.random() * 0.4;
-    _vuL += (base * balanceLGain - _vuL) * 0.4;
-    _vuR += (base * balanceRGain - _vuR) * 0.4;
-  }
-  drawLEDs('vu-l', _vuL);
-  drawLEDs('vu-r', _vuR);
-  vuAnimFrame = setTimeout(animateVU, 50);
-}
-
-function resetVU() {
-  _vuL = 0; _vuR = 0;
-  drawLEDs('vu-l', 0);
-  drawLEDs('vu-r', 0);
-}
-
-function initVU() { resetVU(); }
-
-function updateVURow(id, lvl) {
-  if (id === 'vu-l') _vuL = lvl;
-  else if (id === 'vu-r') _vuR = lvl;
-}
-
-// Balance control
-let balanceLGain = 1.0, balanceRGain = 1.0;
-function setBalance(v) {
-  v = parseFloat(v);
-  balanceLGain = v <= 0 ? 1.0 : 1.0 - v;
-  balanceRGain = v >= 0 ? 1.0 : 1.0 + v;
-  if (_panner) _panner.pan.value = v;
-}
+// VU meters and balance removed
 
 // ── Parametric EQ ────────────────────────────────────────────────────────────
 function updateEQ() {
@@ -1366,6 +1219,13 @@ function buildImpulse(size) {
   _convolver.buffer = impulse;
 }
 
+function resetReverb() {
+  document.getElementById('rv-size').value = 0.5;
+  document.getElementById('rv-wet').value  = 0;
+  updateReverb();
+  showNotif('REVERB RESET');
+}
+
 function updateReverb() {
   const sizeSlider = document.getElementById('rv-size');
   const wetSlider  = document.getElementById('rv-wet');
@@ -1378,9 +1238,9 @@ function updateReverb() {
   if (_convolver) buildImpulse(size);
 
   // Additive reverb: dry path is ALWAYS 1.0 — the full mix is never reduced.
-  // Only the vocal-range wet signal is faded in on top, so the backing track
-  // volume is completely unaffected regardless of how much reverb is applied.
-  const wetGain = wet;   // 0.0 (dry) → 1.0 (full reverb)
+  // Only the vocal-range wet signal fades in on top, so the backing track
+  // volume is completely unaffected regardless of reverb amount.
+  const wetGain = wet;
 
   if (_reverbWet) _reverbWet.gain.setTargetAtTime(wetGain, _audioCtx.currentTime, 0.02);
   if (_reverbDry) _reverbDry.gain.setTargetAtTime(1.0,     _audioCtx.currentTime, 0.02);
@@ -1690,14 +1550,15 @@ function togglePlay(){
     playTrack(0);return;
   }
   if(isPlaying){
-    clearFade();audio.pause();isPlaying=false;clearTimeout(vuAnimFrame);resetVU();
+    clearFade();audio.pause();isPlaying=false;
     stopKeepAlive();
     if('mediaSession' in navigator) navigator.mediaSession.playbackState='paused';
   } else {
     setupAudioAnalyser();
     const doPlay = () => {
       audio.play().then(()=>{
-        isPlaying=true; animateVU(); updatePlayBtn();
+        isPlaying=true; updatePlayBtn();
+        if(window.resumeRoadAnim)resumeRoadAnim();
         const t = currentIndex>=0 ? library[currentIndex] : null;
         updateMediaSession(t);
         startKeepAlive();
@@ -1732,7 +1593,7 @@ function clearFade(){
   document.getElementById('stop-btn-v').style.opacity='1';
 }
 function stopTrack(){
-  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';return;}
+  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';if(window.pauseRoadAnim)pauseRoadAnim();return;}
   clearFade();
   isFading=true;
 
@@ -1764,8 +1625,7 @@ function stopTrack(){
       step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
       audio.volume=vol;
       if(_masterGain && _audioCtx && _audioCtx.state!=='running') _masterGain.gain.value=vol;
-      if(step%3===0)updateVURow('vu-l',(1-pct)*0.6*Math.random());
-      if(step%3===1)updateVURow('vu-r',(1-pct)*0.6*Math.random());
+
     },50);
     _fadeTimeout=setTimeout(()=>{
       clearInterval(fadeInterval);fadeInterval=null;
@@ -1781,8 +1641,9 @@ function stopTrack(){
           audio.volume=fadeStartVol;
           if(_masterGain && _audioCtx) _masterGain.gain.value=fadeStartVol;
         }, 200);
-        isPlaying=false;clearTimeout(vuAnimFrame);resetVU();updatePlayBtn();
+        isPlaying=false;updatePlayBtn();
         stopKeepAlive();
+        if(window.pauseRoadAnim)pauseRoadAnim();
         document.getElementById('prog-fill').style.width='0%';
         document.getElementById('t-cur').textContent='0:00';
         document.getElementById('stop-btn-v').style.opacity='1';
@@ -2099,7 +1960,7 @@ window.addEventListener('online',  () => { showNotif('NETWORK RESTORED — RESUM
 // ─────────────────────────────────────────────────────────────────────────────
 
 // INIT
-initVU();initRF();updateBadge();renderAll();
+initRF();updateBadge();renderAll();
 // Shuffle is on by default — reflect in button state
 document.getElementById('shuffle-btn').classList.add('active');
 // Attach scroll suppression to track table wrap
@@ -2365,7 +2226,7 @@ function updatePlayBtn(){
     btn.classList.remove('visible');tr.classList.remove('swipe-open');tr.classList.add('swipe-deleting');activeRow=null;
     setTimeout(()=>{
       const t=library[idx];if(!t)return;if(t.url)URL.revokeObjectURL(t.url);if(t.art)URL.revokeObjectURL(t.art);
-      if(currentIndex===idx){audio.pause();audio.src='';isPlaying=false;currentIndex=-1;resetVU();updatePlayBtn();document.getElementById('player-title').textContent='NO TRACK SELECTED';document.getElementById('player-artist').textContent='— SELECT A TRACK TO BEGIN —';updateArtDisplay();if(typeof updateLyricsTicker==='function')updateLyricsTicker(null);}
+      if(currentIndex===idx){audio.pause();audio.src='';isPlaying=false;currentIndex=-1;updatePlayBtn();document.getElementById('player-title').textContent='NO TRACK SELECTED';document.getElementById('player-artist').textContent='— SELECT A TRACK TO BEGIN —';updateArtDisplay();if(typeof updateLyricsTicker==='function')updateLyricsTicker(null);}
       else if(currentIndex>idx)currentIndex--;
       queue=queue.filter(q=>q!==idx).map(q=>q>idx?q-1:q);library.splice(idx,1);updateBadge();renderView();showNotif('TRACK REMOVED');
     },300);
@@ -2421,7 +2282,7 @@ function playTrack(idx){
       if(playTrack._token !== playToken) return;
       audio.play().then(()=>{
         if(playTrack._token !== playToken) return;
-        isPlaying=true; updatePlayBtn(); clearTimeout(vuAnimFrame); animateVU();
+        isPlaying=true; updatePlayBtn();
         updateMediaSession(t);
         startKeepAlive();
         setTimeout(()=>{
@@ -2713,7 +2574,7 @@ function handleForegroundReturn() {
       if (!isPlaying || !audio.paused) return; // state changed
       const doResume = () => {
         audio.play()
-          .then(() => { animateVU(); startKeepAlive(); })
+          .then(() => {  startKeepAlive(); })
           .catch(() => {
             // Blob URL may have expired — nothing we can do without user gesture.
             // Show a prompt so the user knows to tap play.
@@ -2729,8 +2590,8 @@ function handleForegroundReturn() {
     }, 300);
   } else if (isPlaying) {
     // Audio is still running but VU animation may have been cleared
-    clearTimeout(vuAnimFrame);
-    animateVU();
+    
+    
   }
 }
 
@@ -2739,7 +2600,7 @@ document.addEventListener('visibilitychange', () => {
     handleForegroundReturn();
   } else {
     // Going to background — stop VU animation to save battery
-    clearTimeout(vuAnimFrame);
+    
   }
 });
 
@@ -2962,8 +2823,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   window.addEventListener('resize', resize);
 
-  function loop(){ draw(); requestAnimationFrame(loop); }
+  var _roadRunning = true;
+  function loop(){ if(_roadRunning) draw(); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
+
+  window.pauseRoadAnim  = function() { _roadRunning = false; };
+  window.resumeRoadAnim = function() { _roadRunning = true;  };
 })();
 </script>
 </body>
