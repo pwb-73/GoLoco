@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 147                                            -->
+<!-- GoLoco · INDEX 148                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 147</title>
+<title>GoLoco · INDEX 148</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 147';
+const APP_VERSION = 'INDEX 148';
 </script>
 <div id="app">
 
@@ -983,6 +983,18 @@ const APP_VERSION = 'INDEX 147';
             <div class="fxo-ctrl-val" id="rv-wet-val">DRY</div>
           </div>
         </div>
+        <div class="fxo-reverb-row" style="margin-top:14px;">
+          <div class="fxo-ctrl fxo-ctrl-wide">
+            <div class="fxo-ctrl-label">ECHO DELAY</div>
+            <input type="range" class="fxo-slider fxo-reverb-slider" id="rv-delay" min="0.1" max="0.6" step="0.01" value="0.3" oninput="updateReverb()">
+            <div class="fxo-ctrl-val" id="rv-delay-val">300 ms</div>
+          </div>
+          <div class="fxo-ctrl fxo-ctrl-wide">
+            <div class="fxo-ctrl-label">FEEDBACK</div>
+            <input type="range" class="fxo-slider fxo-reverb-slider" id="rv-fb" min="0" max="0.75" step="0.01" value="0" oninput="updateReverb()">
+            <div class="fxo-ctrl-val" id="rv-fb-val">OFF</div>
+          </div>
+        </div>
       </div>
 
     </div><!-- /fx-overlay-body -->
@@ -1076,6 +1088,8 @@ let _convolver = null, _reverbWet = null, _reverbDry = null;
 let _reverbHP = null, _reverbLP = null;
 // Stereo merger for reverb wet path
 let _reverbMerger = null;
+// Echo (delay) nodes
+let _delay = null, _delayFeedback = null, _delayWet = null;
 
 // Track whether createMediaElementSource has been called — it can only be called once per element
 let _mediaSourceCreated = false;
@@ -1140,8 +1154,19 @@ function setupAudioAnalyser() {
 
       buildImpulse(0.5);
 
+      // ── Echo (delay): tapped from same bandpass feed as reverb ──────────
+      // Signal path: HP → LP → delay → feedback loop → delayWet → destination
+      // Feedback loop: delay output feeds back into delay input via _delayFeedback gain.
+      _delay           = _audioCtx.createDelay(2.0); // max 2s delay time
+      _delay.delayTime.value = 0.3;                   // default 300ms
+      _delayFeedback   = _audioCtx.createGain();
+      _delayFeedback.gain.value = 0.0;                // off by default
+      _delayWet        = _audioCtx.createGain();
+      _delayWet.gain.value = 0.0;                     // off by default
+
       // Chain: panner → EQ → dry(1.0) → destination
-      //                   └→ HP → LP → convolver → wet(0..1) → destination
+      //                   └→ HP → LP → convolver → reverbWet → destination
+      //                              └→ delay ⟲ feedback → delayWet → destination
       _panner.connect(_eq100);
       _eq100.connect(_eq1k);
       _eq1k.connect(_eq10k);
@@ -1152,6 +1177,12 @@ function setupAudioAnalyser() {
       _reverbLP.connect(_convolver);
       _convolver.connect(_reverbWet);
       _reverbWet.connect(_audioCtx.destination);
+      // Echo tapped from same bandpass output
+      _reverbLP.connect(_delay);
+      _delay.connect(_delayFeedback);
+      _delayFeedback.connect(_delay);   // feedback loop
+      _delay.connect(_delayWet);
+      _delayWet.connect(_audioCtx.destination);
     }
 
     if (_audioCtx.state === 'suspended') _audioCtx.resume().catch(() => {});
@@ -1220,30 +1251,37 @@ function buildImpulse(size) {
 }
 
 function resetReverb() {
-  document.getElementById('rv-size').value = 0.5;
-  document.getElementById('rv-wet').value  = 0;
+  document.getElementById('rv-size').value  = 0.5;
+  document.getElementById('rv-wet').value   = 0;
+  document.getElementById('rv-delay').value = 0.3;
+  document.getElementById('rv-fb').value    = 0;
   updateReverb();
-  showNotif('REVERB RESET');
+  showNotif('REVERB + ECHO RESET');
 }
 
 function updateReverb() {
-  const sizeSlider = document.getElementById('rv-size');
-  const wetSlider  = document.getElementById('rv-wet');
-  const size = parseFloat(sizeSlider.value);
-  const wet  = parseFloat(wetSlider.value);
+  const size  = parseFloat(document.getElementById('rv-size').value);
+  const wet   = parseFloat(document.getElementById('rv-wet').value);
+  const delay = parseFloat(document.getElementById('rv-delay').value);
+  const fb    = parseFloat(document.getElementById('rv-fb').value);
 
-  document.getElementById('rv-size-val').textContent = size.toFixed(2);
-  document.getElementById('rv-wet-val').textContent  = wet === 0 ? 'DRY' : (wet * 100).toFixed(0) + '%';
+  document.getElementById('rv-size-val').textContent  = size.toFixed(2);
+  document.getElementById('rv-wet-val').textContent   = wet  === 0 ? 'DRY' : (wet  * 100).toFixed(0) + '%';
+  document.getElementById('rv-delay-val').textContent = (delay * 1000).toFixed(0) + ' ms';
+  document.getElementById('rv-fb-val').textContent    = fb   === 0 ? 'OFF' : (fb   * 100).toFixed(0) + '%';
 
   if (_convolver) buildImpulse(size);
 
-  // Additive reverb: dry path is ALWAYS 1.0 — the full mix is never reduced.
-  // Only the vocal-range wet signal fades in on top, so the backing track
-  // volume is completely unaffected regardless of reverb amount.
+  // Reverb: dry always 1.0, wet fades in additively
   const wetGain = wet;
-
   if (_reverbWet) _reverbWet.gain.setTargetAtTime(wetGain, _audioCtx.currentTime, 0.02);
   if (_reverbDry) _reverbDry.gain.setTargetAtTime(1.0,     _audioCtx.currentTime, 0.02);
+
+  // Echo: delay time + feedback amount
+  if (_delay)         _delay.delayTime.setTargetAtTime(delay, _audioCtx.currentTime, 0.02);
+  if (_delayFeedback) _delayFeedback.gain.setTargetAtTime(fb, _audioCtx.currentTime, 0.02);
+  // Echo wet mirrors reverb wet so they ride together, scaled back slightly
+  if (_delayWet)      _delayWet.gain.setTargetAtTime(wetGain * 0.6, _audioCtx.currentTime, 0.02);
 }
 
 // ── FX overlay open / close ───────────────────────────────────────────────
