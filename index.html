@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 144                                            -->
+<!-- GoLoco · INDEX 145                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 144</title>
+<title>GoLoco · INDEX 145</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 144';
+const APP_VERSION = 'INDEX 145';
 </script>
 <div id="app">
 
@@ -1558,7 +1558,7 @@ function togglePlay(){
     const doPlay = () => {
       audio.play().then(()=>{
         isPlaying=true; updatePlayBtn();
-        if(window.resumeRoadAnim)resumeRoadAnim();
+        if(window.resumeRoadAnim){ clearTimeout(window._roadResumeTimer); window._roadResumeTimer = setTimeout(resumeRoadAnim, 2000); }
         const t = currentIndex>=0 ? library[currentIndex] : null;
         updateMediaSession(t);
         startKeepAlive();
@@ -2827,7 +2827,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   function loop(){ if(_roadRunning) draw(); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
 
-  window.pauseRoadAnim  = function() { _roadRunning = false; };
+  window.pauseRoadAnim  = function() { clearTimeout(window._roadResumeTimer); _roadRunning = false; };
   window.resumeRoadAnim = function() { _roadRunning = true;  };
 })();
 </script>
