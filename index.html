@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 148                                            -->
+<!-- GoLoco · INDEX 150                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 148</title>
+<title>GoLoco · INDEX 150</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 148';
+const APP_VERSION = 'INDEX 150';
 </script>
 <div id="app">
 
@@ -710,6 +710,7 @@ const APP_VERSION = 'INDEX 148';
     <div id="topbar-controls">
       <div id="bike-spacer" onclick="openFX()" title="FX — EQ & Reverb" style="cursor:pointer;flex-shrink:0;"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
+      <button class="sel-btn" onclick="openFX()" title="FX — EQ &amp; Reverb" style="font-size:13px;letter-spacing:1.5px;padding:10px 14px;">FX</button>
 
       <div id="search-wrap">
         <span class="search-icon">⌕</span>
@@ -1277,11 +1278,11 @@ function updateReverb() {
   if (_reverbWet) _reverbWet.gain.setTargetAtTime(wetGain, _audioCtx.currentTime, 0.02);
   if (_reverbDry) _reverbDry.gain.setTargetAtTime(1.0,     _audioCtx.currentTime, 0.02);
 
-  // Echo: delay time + feedback amount
+  // Echo: delay time + feedback amount — fully independent of reverb
+  // _delayWet is fixed at 0.8 when feedback > 0, so echo works with reverb off
   if (_delay)         _delay.delayTime.setTargetAtTime(delay, _audioCtx.currentTime, 0.02);
   if (_delayFeedback) _delayFeedback.gain.setTargetAtTime(fb, _audioCtx.currentTime, 0.02);
-  // Echo wet mirrors reverb wet so they ride together, scaled back slightly
-  if (_delayWet)      _delayWet.gain.setTargetAtTime(wetGain * 0.6, _audioCtx.currentTime, 0.02);
+  if (_delayWet)      _delayWet.gain.setTargetAtTime(fb > 0 ? 0.8 : 0, _audioCtx.currentTime, 0.02);
 }
 
 // ── FX overlay open / close ───────────────────────────────────────────────
