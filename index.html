@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 156                                            -->
+<!-- GoLoco · INDEX 157                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 156</title>
+<title>GoLoco · INDEX 157</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 156';
+const APP_VERSION = 'INDEX 157';
 </script>
 <div id="app">
 
@@ -2912,13 +2912,12 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   // Called immediately on play — road starts scrolling right away
   window.startRoadScroll = function() {
-    if (_animState === 'idle') {
-      roadSpeed    = 1.53;
-      bikeSlideX   = -(bikeW + 20);
-      bikeAlpha    = 1.0;
-      _bikeVisible = false; // bike stays hidden until resumeRoadAnim fires
-      _animState   = 'playing';
-    }
+    clearTimeout(window._roadResumeTimer);
+    roadSpeed    = 1.53;
+    bikeSlideX   = -(bikeW + 20);
+    bikeAlpha    = 1.0;
+    _bikeVisible = false; // bike stays hidden until resumeRoadAnim fires at 3s
+    _animState   = 'playing';
   };
 
   // Called 3s after music starts — triggers bike slide-in
@@ -2947,7 +2946,6 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     roadSpeed    = 1.53;
     _animState   = 'fading';
   };
-})();
 })();
 </script>
 </body>
