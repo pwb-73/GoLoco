@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 155                                            -->
+<!-- GoLoco · INDEX 156                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 155</title>
+<title>GoLoco · INDEX 156</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 155';
+const APP_VERSION = 'INDEX 156';
 </script>
 <div id="app">
 
@@ -2324,6 +2324,8 @@ function playTrack(idx){
       audio.play().then(()=>{
         if(playTrack._token !== playToken) return;
         isPlaying=true; updatePlayBtn();
+        if(window.startRoadScroll) startRoadScroll();
+        if(window.resumeRoadAnim){ clearTimeout(window._roadResumeTimer); window._roadResumeTimer = setTimeout(resumeRoadAnim, 3000); }
         updateMediaSession(t);
         startKeepAlive();
         setTimeout(()=>{
