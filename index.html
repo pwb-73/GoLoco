@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 157                                            -->
+<!-- GoLoco · INDEX 158                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 157</title>
+<title>GoLoco · INDEX 158</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 157';
+const APP_VERSION = 'INDEX 158';
 </script>
 <div id="app">
 
@@ -2839,12 +2839,15 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   function draw(){
     if(!roadLoaded || !bikeLoaded || cw === 0) return;
 
-    // Road scroll — always advances when not idle (continues during fade)
+    // Road scroll — only advances when playing or fading
     var doubleTile = tileW * 2;
-    roadOffset = (roadOffset + roadSpeed) % doubleTile;
+    if (_animState !== 'idle') {
+      roadOffset = (roadOffset + roadSpeed) % doubleTile;
+    }
 
     ctx.clearRect(0, 0, cw, ch);
 
+    // Road always draws (static when idle, scrolling when playing/fading)
     var startTileIndex = Math.floor(roadOffset / tileW);
     var startX = -(roadOffset % tileW);
     var tileIndex = startTileIndex;
@@ -2855,12 +2858,14 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
       tileIndex++;
     }
 
+    // Bike and particles only when not idle
+    if (_animState === 'idle') return;
+
     bounceT += BOUNCE_FREQ;
     var rawBob = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.3;
     var bobY = rawBob < 0 ? rawBob : rawBob * 0.15;
 
     if (_animState === 'playing') {
-      // Slide-in easing — only runs after resumeRoadAnim fires (3s delay)
       if (_bikeVisible) {
         bikeSlideX += (bikeX - bikeSlideX) * 0.018;
       }
@@ -2868,7 +2873,6 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     }
 
     if (_animState === 'fading') {
-      // Decay alpha ~0.008/frame ≈ 2s at 60fps
       bikeAlpha -= 0.008;
       if (bikeAlpha <= 0) {
         bikeAlpha    = 0;
@@ -2876,12 +2880,11 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
         roadSpeed    = 1.53;
         bikeSlideX   = -(bikeW + 20);
         streaks = []; wisps = [];
-        _animState = 'idle';
+        _animState   = 'idle';
         return;
       }
     }
 
-    // Draw particles then bike at current alpha
     ctx.save();
     ctx.globalAlpha = bikeAlpha;
     updateParticles(bobY);
@@ -2904,10 +2907,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   // 'fading'  — road scrolls (stop) or frozen (pause), bike fades out → idle
   var _animState = 'idle';  // start idle — nothing moves until first play
 
-  function loop(){
-    if (_animState !== 'idle') draw();
-    requestAnimationFrame(loop);
-  }
+  function loop(){ draw(); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
 
   // Called immediately on play — road starts scrolling right away
