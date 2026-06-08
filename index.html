@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 154                                            -->
+<!-- GoLoco · INDEX 155                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 154</title>
+<title>GoLoco · INDEX 155</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 154';
+const APP_VERSION = 'INDEX 155';
 </script>
 <div id="app">
 
@@ -1598,6 +1598,7 @@ function togglePlay(){
     const doPlay = () => {
       audio.play().then(()=>{
         isPlaying=true; updatePlayBtn();
+        if(window.startRoadScroll) startRoadScroll();
         if(window.resumeRoadAnim){ clearTimeout(window._roadResumeTimer); window._roadResumeTimer = setTimeout(resumeRoadAnim, 3000); }
         const t = currentIndex>=0 ? library[currentIndex] : null;
         updateMediaSession(t);
@@ -2682,10 +2683,9 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   var bikeW = 0, bikeH = 0, bikeX = 4, bikeCenterY = 0;
 
   // Slide-in: bikeSlideX is the actual rendered X — starts off-screen, eases to bikeX
-  var bikeSlideX = -2000; // off-screen until we know bikeW after first resize
-  // Fade-out: bikeAlpha fades from 1→0 over ~2s when stop is triggered
-  var bikeAlpha  = 1.0;
-  var _bikeFading = false;
+  var bikeSlideX  = -2000;
+  var bikeAlpha   = 1.0;
+  var _bikeVisible = false; // true only after resumeRoadAnim fires (3s delay)
 
   // ── Wind particle system ─────────────────────────────────────────────────
   // BIKEw.png: bike faces RIGHT. LEFT side of image = back of rider + rear wheel.
@@ -2837,6 +2837,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   function draw(){
     if(!roadLoaded || !bikeLoaded || cw === 0) return;
 
+    // Road scroll — always advances when not idle (continues during fade)
     var doubleTile = tileW * 2;
     roadOffset = (roadOffset + roadSpeed) % doubleTile;
 
@@ -2856,24 +2857,29 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     var rawBob = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.3;
     var bobY = rawBob < 0 ? rawBob : rawBob * 0.15;
 
-    // Slide-in easing
-    bikeSlideX += (bikeX - bikeSlideX) * 0.018;
+    if (_animState === 'playing') {
+      // Slide-in easing — only runs after resumeRoadAnim fires (3s delay)
+      if (_bikeVisible) {
+        bikeSlideX += (bikeX - bikeSlideX) * 0.018;
+      }
+      bikeAlpha = 1.0;
+    }
 
-    // Fade-out: decay alpha toward 0 at ~0.008/frame ≈ 2s at 60fps
-    if (_bikeFading) {
+    if (_animState === 'fading') {
+      // Decay alpha ~0.008/frame ≈ 2s at 60fps
       bikeAlpha -= 0.008;
       if (bikeAlpha <= 0) {
         bikeAlpha    = 0;
-        _bikeFading  = false;
-        _roadRunning = false;
-        roadSpeed    = 1.53; // restore for next play
+        _bikeVisible = false;
+        roadSpeed    = 1.53;
         bikeSlideX   = -(bikeW + 20);
         streaks = []; wisps = [];
+        _animState = 'idle';
         return;
       }
     }
 
-    // Draw particles then bike, both at bikeAlpha opacity
+    // Draw particles then bike at current alpha
     ctx.save();
     ctx.globalAlpha = bikeAlpha;
     updateParticles(bobY);
@@ -2889,34 +2895,57 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   window.addEventListener('resize', resize);
 
-  var _roadRunning = true;
-  function loop(){ if(_roadRunning) draw(); requestAnimationFrame(loop); }
+  // ── Animation state machine ───────────────────────────────────────────────
+  // States: 'idle' | 'playing' | 'fading'
+  // 'idle'    — loop runs but draw() skips everything; canvas is blank
+  // 'playing' — road scrolls, bike slides in, particles spawn
+  // 'fading'  — road scrolls (stop) or frozen (pause), bike fades out → idle
+  var _animState = 'idle';  // start idle — nothing moves until first play
+
+  function loop(){
+    if (_animState !== 'idle') draw();
+    requestAnimationFrame(loop);
+  }
   requestAnimationFrame(loop);
 
-  window.pauseRoadAnim  = function() {
-    clearTimeout(window._roadResumeTimer);
-    // Freeze road movement but keep canvas running so the fade plays out
-    // bikeAlpha decays to 0 over ~2s then draw() idles itself
-    _bikeFading  = true;
-    _roadRunning = true;
-    roadSpeed    = 0; // freeze road scroll during fade
+  // Called immediately on play — road starts scrolling right away
+  window.startRoadScroll = function() {
+    if (_animState === 'idle') {
+      roadSpeed    = 1.53;
+      bikeSlideX   = -(bikeW + 20);
+      bikeAlpha    = 1.0;
+      _bikeVisible = false; // bike stays hidden until resumeRoadAnim fires
+      _animState   = 'playing';
+    }
   };
+
+  // Called 3s after music starts — triggers bike slide-in
   window.resumeRoadAnim = function() {
-    _bikeFading  = false;
     bikeAlpha    = 1.0;
-    roadSpeed    = 1.53; // restore road scroll
-    bikeSlideX   = -(bikeW + 20); // start off-screen so slide-in plays
-    _roadRunning = true;
+    bikeSlideX   = -(bikeW + 20); // reset so slide plays from off-screen
+    _bikeVisible = true;
+    roadSpeed    = 1.53;
+    _animState   = 'playing';
   };
-  // Called by stop — keeps canvas running briefly to fade out over ~2s
+
+  // Called immediately on pause — road freezes, bike fades out
+  window.pauseRoadAnim = function() {
+    clearTimeout(window._roadResumeTimer);
+    if (_animState === 'idle') return;
+    _bikeVisible = false;
+    roadSpeed    = 0;
+    _animState   = 'fading';
+  };
+
+  // Called on stop — road keeps rolling during fade then idles
   window.fadeOutRoadAnim = function() {
     clearTimeout(window._roadResumeTimer);
-    if (!_roadRunning && !_bikeFading) return; // already stopped, nothing to fade
-    _bikeFading  = true;       // draw() will decay bikeAlpha each frame
-    _roadRunning = true;       // keep loop drawing during fade
-    // road keeps scrolling during stop-fade for a natural run-down feel
+    if (_animState === 'idle') return;
+    _bikeVisible = false;
     roadSpeed    = 1.53;
+    _animState   = 'fading';
   };
+})();
 })();
 </script>
 </body>
