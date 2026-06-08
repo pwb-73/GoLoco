@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 152                                            -->
+<!-- GoLoco · INDEX 153                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 152</title>
+<title>GoLoco · INDEX 153</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -699,7 +699,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 152';
+const APP_VERSION = 'INDEX 153';
 </script>
 <div id="app">
 
@@ -1633,7 +1633,7 @@ function clearFade(){
   document.getElementById('stop-btn-v').style.opacity='1';
 }
 function stopTrack(){
-  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';if(window.pauseRoadAnim)pauseRoadAnim();return;}
+  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';if(window.fadeOutRoadAnim)fadeOutRoadAnim();return;}
   clearFade();
   isFading=true;
 
@@ -1683,7 +1683,7 @@ function stopTrack(){
         }, 200);
         isPlaying=false;updatePlayBtn();
         stopKeepAlive();
-        if(window.pauseRoadAnim)pauseRoadAnim();
+        if(window.fadeOutRoadAnim)fadeOutRoadAnim();
         document.getElementById('prog-fill').style.width='0%';
         document.getElementById('t-cur').textContent='0:00';
         document.getElementById('stop-btn-v').style.opacity='1';
@@ -2683,6 +2683,9 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   // Slide-in: bikeSlideX is the actual rendered X — starts off-screen, eases to bikeX
   var bikeSlideX = -2000; // off-screen until we know bikeW after first resize
+  // Fade-out: bikeAlpha fades from 1→0 over ~2s when stop is triggered
+  var bikeAlpha  = 1.0;
+  var _bikeFading = false;
 
   // ── Wind particle system ─────────────────────────────────────────────────
   // BIKEw.png: bike faces RIGHT. LEFT side of image = back of rider + rear wheel.
@@ -2850,19 +2853,31 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     }
 
     bounceT += BOUNCE_FREQ;
-    // Bias bounce so bike lifts upward only — wheels stay on the road surface.
-    // sin oscillates -1..1; we take only the upward portion by offsetting
     var rawBob = Math.sin(bounceT) * BOUNCE_AMP + Math.sin(bounceT * 2.3) * 0.3;
-    var bobY = rawBob < 0 ? rawBob : rawBob * 0.15; // full lift up, tiny downward sag
+    var bobY = rawBob < 0 ? rawBob : rawBob * 0.15;
 
-    // Ease bikeSlideX toward its resting position (bikeX = 4)
-    // Speed factor 0.018 gives ~2.5s slide across a typical topbar width
+    // Slide-in easing
     bikeSlideX += (bikeX - bikeSlideX) * 0.018;
 
-    // Draw particles BEFORE bike so bike always renders on top
-    // Pass bikeSlideX as the current origin so particles trail the sliding bike
+    // Fade-out: decay alpha toward 0 at ~0.008/frame ≈ 2s at 60fps
+    if (_bikeFading) {
+      bikeAlpha -= 0.008;
+      if (bikeAlpha <= 0) {
+        bikeAlpha  = 0;
+        _bikeFading = false;
+        _roadRunning = false;
+        bikeSlideX = -(bikeW + 20);
+        streaks = []; wisps = [];
+        return;
+      }
+    }
+
+    // Draw particles then bike, both at bikeAlpha opacity
+    ctx.save();
+    ctx.globalAlpha = bikeAlpha;
     updateParticles(bobY);
     ctx.drawImage(bike, bikeSlideX, bikeCenterY + bobY, bikeW, bikeH);
+    ctx.restore();
   }
 
   road.onload = function(){ roadLoaded = true; resize(); };
@@ -2879,13 +2894,24 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 
   window.pauseRoadAnim  = function() {
     clearTimeout(window._roadResumeTimer);
+    _bikeFading  = false;
     _roadRunning = false;
-    bikeSlideX = -(bikeW + 20); // snap bike back off-screen left
-    streaks = []; wisps = [];   // clear particles so none linger
+    bikeAlpha    = 1.0;
+    bikeSlideX   = -(bikeW + 20); // snap off-screen instantly on pause
+    streaks = []; wisps = [];
   };
   window.resumeRoadAnim = function() {
-    bikeSlideX = -(bikeW + 20); // ensure it starts off-screen before easing in
+    _bikeFading  = false;
+    bikeAlpha    = 1.0;
+    bikeSlideX   = -(bikeW + 20); // start off-screen so slide-in plays
     _roadRunning = true;
+  };
+  // Called by stop — keeps canvas running briefly to fade out over ~2s
+  window.fadeOutRoadAnim = function() {
+    clearTimeout(window._roadResumeTimer);
+    if (!_roadRunning) return; // already stopped, nothing to fade
+    _bikeFading  = true;       // draw() will decay bikeAlpha each frame
+    _roadRunning = true;       // keep loop drawing during fade
   };
 })();
 </script>
