@@ -1824,7 +1824,7 @@ audio.addEventListener('ended', () => {
 });
 function showAllDonePopup(){document.getElementById('all-done-overlay').classList.add('open');}
 function resetPlayed(){playedThisSession.clear();savePlayed();updatePlayedCount();document.getElementById('all-done-overlay').classList.remove('open');renderView();showNotif('PLAYED LIST RESET');}
-if(playedThisSession.has(libIdx)){playedThisSession.delete(libIdx);}else{playedThisSession.add(libIdx);}savePlayed();updatePlayedCount();renderView();}
+function togglePlayed(libIdx,e){e.stopPropagation();if(playedThisSession.has(libIdx)){playedThisSession.delete(libIdx);}else{playedThisSession.add(libIdx);}savePlayed();updatePlayedCount();renderView();}
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
@@ -2891,7 +2891,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     // Clear particles on resize so they don't appear at wrong positions
     streaks = []; wisps = [];
     // If not playing, keep bike off-screen
-    if (!_roadRunning) bikeSlideX = -bikeW - 20;
+    if (_animState === 'idle') bikeSlideX = -bikeW - 20;
   }
 
   function drawTile(x, mirrored){
