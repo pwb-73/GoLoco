@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 159                                            -->
+<!-- GoLoco · INDEX 160                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 159</title>
+<title>GoLoco · INDEX 160</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -744,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 159';
+const APP_VERSION = 'INDEX 160';
 </script>
 <div id="app">
 
@@ -2360,6 +2360,8 @@ function playTrack(idx){
   }
   currentIndex=idx; const t=library[idx];
   playedThisSession.add(t.id);
+  savePlayed();
+  updatePlayedCount();
 
   // Ensure AudioContext exists and is running before touching audio.src
   // This is the critical step — setting src while context is suspended is fine,
