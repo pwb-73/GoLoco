@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 158                                            -->
+<!-- GoLoco · INDEX 159                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 158</title>
+<title>GoLoco · INDEX 159</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -744,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 158';
+const APP_VERSION = 'INDEX 159';
 </script>
 <div id="app">
 
@@ -1080,7 +1080,7 @@ let scrollSuppressTimer = null;
 
 let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0, cueMode=false, isCueQueue=false;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
-let playedThisSession=new Set(JSON.parse(localStorage.getItem('gl_played')||'[]')); // persists across sessions
+let playedThisSession=new Set(JSON.parse(localStorage.getItem('gl_played')||'[]')); // stores track IDs — persists across sessions
 let tags=JSON.parse(localStorage.getItem('gl_tags')||'["Favorites","Workout","Chill","Study"]');
 let trackTags=JSON.parse(localStorage.getItem('gl_track_tags')||'{}');
 let ratings=JSON.parse(localStorage.getItem('gl_ratings')||'{}');
@@ -1563,7 +1563,7 @@ function rowHTML(t){
   const libIdx=library.indexOf(t);
   const playing=libIdx===currentIndex;
   const isCued=cueMode&&queue.includes(libIdx)&&!playing;
-  const isPlayed=playedThisSession.has(libIdx);
+  const isPlayed=playedThisSession.has(t.id);
   const playedBtn=`<span class="played-btn ${isPlayed?'played':''}" onclick="togglePlayed(${libIdx},event)" title="${isPlayed?'Mark unplayed':'Mark played'}">●</span>`;
   const eq=playing?`<span class="eq-inline"><span class="eq-b"></span><span class="eq-b"></span><span class="eq-b"></span></span>`:'';
   const cueIndicator=isCued?`<span style="font-size:9px;color:var(--orange);margin-right:4px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;">[CUE]</span>`:'';
@@ -1759,7 +1759,7 @@ function nextTrack(){
     const qi=queue.indexOf(currentIndex);
     if(isCueQueue){
       // One-shot cue — play remaining unplayed cue tracks in order, then clear
-      const unplayed=queue.filter(i=>!playedThisSession.has(i));
+      const unplayed=queue.filter(i=>library[i]&&!playedThisSession.has(library[i].id));
       if(unplayed.length){
         next=unplayed[0];
       } else {
@@ -1768,18 +1768,15 @@ function nextTrack(){
         renderView();
         showNotif('CUE FINISHED — RESUMING SHUFFLE');
         const allIdx=[...Array(library.length).keys()];
-        const up2=allIdx.filter(i=>!playedThisSession.has(i)&&i!==currentIndex);
-        const pool=up2.length?up2:allIdx.filter(i=>i!==currentIndex);
-        if(!up2.length)playedThisSession.clear();
-        next=pool.length?pool[Math.floor(Math.random()*pool.length)]:(currentIndex+1)%library.length;
+        const up2=allIdx.filter(i=>library[i]&&!playedThisSession.has(library[i].id)&&i!==currentIndex);
+        next=up2.length?up2[Math.floor(Math.random()*up2.length)]:(currentIndex+1)%library.length;
         playTrack(next);return;
       }
     } else {
       // playGroup queue — original looping behaviour
       if(isShuffle){
-        const unplayed=queue.filter(i=>!playedThisSession.has(i));
+        const unplayed=queue.filter(i=>library[i]&&!playedThisSession.has(library[i].id));
         const pool=unplayed.length?unplayed:queue;
-        if(!unplayed.length)playedThisSession.clear();
         next=pool[Math.floor(Math.random()*pool.length)];
       } else {
         next=queue[(qi+1)%queue.length];
@@ -1788,10 +1785,9 @@ function nextTrack(){
   } else {
     if(isShuffle){
       const allIdx=[...Array(library.length).keys()];
-      const unplayed=allIdx.filter(i=>!playedThisSession.has(i)&&i!==currentIndex);
+      const unplayed=allIdx.filter(i=>!playedThisSession.has(library[i].id)&&i!==currentIndex);
       if(!unplayed.length){
-        // All played — don't auto-advance, popup will handle this
-        return;
+        return; // all played — popup will handle this
       }
       next=unplayed[Math.floor(Math.random()*unplayed.length)];
     } else {
@@ -1807,15 +1803,14 @@ function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBounding
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
 audio.addEventListener('ended', () => {
-  // Mark current track as played
-  if(currentIndex>=0){
-    playedThisSession.add(currentIndex);
+  // Mark current track as played by ID
+  if(currentIndex>=0 && library[currentIndex]){
+    playedThisSession.add(library[currentIndex].id);
     savePlayed();
     updatePlayedCount();
   }
   // Check if all tracks have been played
-  const allIdx=[...Array(library.length).keys()];
-  const unplayed=allIdx.filter(i=>!playedThisSession.has(i));
+  const unplayed=library.filter(t=>!playedThisSession.has(t.id));
   if(library.length>0&&unplayed.length===0){
     showAllDonePopup();
   } else {
@@ -1824,7 +1819,7 @@ audio.addEventListener('ended', () => {
 });
 function showAllDonePopup(){document.getElementById('all-done-overlay').classList.add('open');}
 function resetPlayed(){playedThisSession.clear();savePlayed();updatePlayedCount();document.getElementById('all-done-overlay').classList.remove('open');renderView();showNotif('PLAYED LIST RESET');}
-function togglePlayed(libIdx,e){e.stopPropagation();if(playedThisSession.has(libIdx)){playedThisSession.delete(libIdx);}else{playedThisSession.add(libIdx);}savePlayed();updatePlayedCount();renderView();}
+function togglePlayed(libIdx,e){e.stopPropagation();const t=library[libIdx];if(!t)return;const id=t.id;if(playedThisSession.has(id)){playedThisSession.delete(id);}else{playedThisSession.add(id);}savePlayed();updatePlayedCount();renderView();}
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
@@ -2364,7 +2359,7 @@ function playTrack(idx){
     queue=[];isCueQueue=false;renderView();
   }
   currentIndex=idx; const t=library[idx];
-  playedThisSession.add(idx);
+  playedThisSession.add(t.id);
 
   // Ensure AudioContext exists and is running before touching audio.src
   // This is the critical step — setting src while context is suspended is fine,
