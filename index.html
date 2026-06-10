@@ -681,7 +681,52 @@ tr.cued.playing td { background: #ffe600 !important; }
 .fxo-section-reverb .fxo-ctrl-wide .fxo-slider {
   width: 100%;
 }
-/* ── end FX overlay ─────────────────────────────────────────────────────── */
+/* PLAYED BUTTON */
+.played-btn {
+  display: inline-block; font-size: 12px; line-height: 1;
+  color: transparent; cursor: pointer;
+  border: 1.5px solid #8a7060; border-radius: 50%;
+  width: 15px; height: 15px; text-align: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none; -webkit-user-select: none;
+}
+.played-btn.played {
+  background: #5a5050; border-color: #3a3030; color: #5a5050;
+}
+tr.played-row td { opacity: 0.45; }
+tr.played-row.playing td { opacity: 1; }
+
+/* ALL DONE POPUP */
+#all-done-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+#all-done-overlay.open { opacity: 1; pointer-events: auto; }
+#all-done-box {
+  background: linear-gradient(180deg, var(--panel-light), var(--panel-dark));
+  border: 1px solid var(--tan); border-radius: 8px;
+  padding: 28px 32px; text-align: center; max-width: 300px; width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+#all-done-box .all-done-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 3px;
+  color: var(--text-dark); margin-bottom: 6px;
+}
+#all-done-box .all-done-sub {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  color: var(--text-light); letter-spacing: 1px; margin-bottom: 20px;
+}
+#all-done-box .all-done-btn {
+  background: linear-gradient(180deg, var(--orange-bright), var(--orange), var(--orange-dark));
+  border: 1px solid var(--orange-dark); border-bottom: 2px solid #6a2808;
+  color: #fff; padding: 10px 28px; border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace; font-size: 13px;
+  letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
 
 /* NOW PLAYING bottom row: progress left, controls right */
 #np-bottom-row {
@@ -710,7 +755,10 @@ const APP_VERSION = 'INDEX 158';
     <div id="topbar-controls">
       <div id="bike-spacer" onclick="openFX()" title="FX — EQ & Reverb" style="cursor:pointer;flex-shrink:0;"></div><!-- width set by JS to match rendered bike width -->
       <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-      <button class="sel-btn" onclick="openFX()" title="FX — EQ &amp; Reverb" style="font-size:13px;letter-spacing:1.5px;padding:10px 14px;">FX</button>
+      <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 12px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid #8a7a58;border-bottom:2px solid #6a5a38;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:70px;">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-light);line-height:1;">PLAYED</span>
+        <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.2;">0 / 0</span>
+      </div>
 
       <div id="search-wrap">
         <span class="search-icon">⌕</span>
@@ -754,7 +802,7 @@ const APP_VERSION = 'INDEX 158';
               <th data-col="album"    onclick="addSort('album',event)">Album</th>
               <th data-col="title"    onclick="addSort('title',event)">Song Title</th>
               <th data-col="duration" onclick="addSort('duration',event)">Length</th>
-              <th data-col="rating"   onclick="addSort('rating',event)">Rating</th>
+              <th style="text-align:center;">Played</th>
             </tr></thead>
             <tbody id="track-tbody"></tbody>
           </table>
@@ -792,7 +840,7 @@ const APP_VERSION = 'INDEX 158';
         </div>
         <div class="track-table-wrap">
           <table class="track-table"><thead><tr>
-            <th>Genre</th><th>Artist</th><th>Year</th><th>Album</th><th>Song Title</th><th>Length</th><th>Rating</th>
+            <th style="text-align:center;">Played</th>
           </tr></thead><tbody id="tagged-tbody"></tbody></table>
         </div>
       </div>
@@ -1032,7 +1080,7 @@ let scrollSuppressTimer = null;
 
 let library=[], queue=[], currentIndex=-1, isPlaying=false, isShuffle=true, minRating=0, cueMode=false, isCueQueue=false;
 let currentView='all', activeTag=null, searchQ='', sortCriteria=[];
-let playedThisSession=new Set(); // tracks played indices — reset when all have played
+let playedThisSession=new Set(JSON.parse(localStorage.getItem('gl_played')||'[]')); // persists across sessions
 let tags=JSON.parse(localStorage.getItem('gl_tags')||'["Favorites","Workout","Chill","Study"]');
 let trackTags=JSON.parse(localStorage.getItem('gl_track_tags')||'{}');
 let ratings=JSON.parse(localStorage.getItem('gl_ratings')||'{}');
@@ -1045,6 +1093,8 @@ audio.setAttribute('webkit-playsinline','');
 audio.setAttribute('x-webkit-airplay','allow');
 
 function save(){localStorage.setItem('gl_ratings',JSON.stringify(ratings));localStorage.setItem('gl_tags',JSON.stringify(tags));localStorage.setItem('gl_track_tags',JSON.stringify(trackTags));}
+function savePlayed(){localStorage.setItem('gl_played',JSON.stringify([...playedThisSession]));}
+function updatePlayedCount(){const total=library.length;const played=playedThisSession.size;const el=document.getElementById('played-count-num');if(el)el.textContent=played+' / '+total;}
 
 // SAVE / RESTORE (kept for internal use even though buttons removed)
 function saveLibrary(){
@@ -1388,7 +1438,7 @@ function processFileList(files){
   let renderTimer=null;
   function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(()=>{updateBadge();renderView();},150);}
   const safetyTimer=setTimeout(()=>{showNotif(`✓ LOADED ${added} TRACK(S)`);updateBadge();renderView();},10000);
-  function done(){resolved++;scheduleRender();if(resolved>=total){clearTimeout(safetyTimer);clearTimeout(renderTimer);showNotif(`✓ ADDED ${added} TRACK(S)${skipped?' · '+skipped+' ALREADY IN LIBRARY':''}`);updateBadge();renderView();}}
+  function done(){resolved++;scheduleRender();if(resolved>=total){clearTimeout(safetyTimer);clearTimeout(renderTimer);showNotif(`✓ ADDED ${added} TRACK(S)${skipped?' · '+skipped+' ALREADY IN LIBRARY':''}`);updateBadge();updatePlayedCount();renderView();}}
   files.forEach(file=>{
     const stableId=filenameToId(file.name);
     if(library.find(t=>t.id===stableId)){skipped++;done();return;}
@@ -1511,21 +1561,21 @@ function renderAll(){
 
 function rowHTML(t){
   const libIdx=library.indexOf(t);
-  const r=ratings[t.id]||0;
   const playing=libIdx===currentIndex;
   const isCued=cueMode&&queue.includes(libIdx)&&!playing;
-  const stars=[1,2,3,4,5].map(s=>`<span class="t-star ${s<=r?'on':''}" onclick="setRating('${t.id}',${s},event)">★</span>`).join('');
+  const isPlayed=playedThisSession.has(libIdx);
+  const playedBtn=`<span class="played-btn ${isPlayed?'played':''}" onclick="togglePlayed(${libIdx},event)" title="${isPlayed?'Mark unplayed':'Mark played'}">●</span>`;
   const eq=playing?`<span class="eq-inline"><span class="eq-b"></span><span class="eq-b"></span><span class="eq-b"></span></span>`:'';
   const cueIndicator=isCued?`<span style="font-size:9px;color:var(--orange);margin-right:4px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;">[CUE]</span>`:'';
   const clickFn=cueMode?`addToCue(${libIdx},event)`:`playTrack(${libIdx})`;
-  return`<tr class="${playing?'playing':''}${isCued?' cued':''}" data-lib-idx="${libIdx}" onclick="${clickFn}">
+  return`<tr class="${playing?'playing':''}${isCued?' cued':''}${isPlayed&&!playing?' played-row':''}" data-lib-idx="${libIdx}" onclick="${clickFn}">
     <td class="col-genre">${esc(t.genre||'—')}</td>
     <td class="col-artist">${esc(t.artist)}</td>
     <td class="col-year">${esc(t.year||'—')}</td>
     <td class="col-album">${esc(t.album==='Unknown Album'?'—':t.album)}</td>
     <td class="col-title">${eq}${cueIndicator}${esc(t.title||t.name)}</td>
     <td class="col-dur">${fmtTime(t.duration)}</td>
-    <td class="col-rating">${stars}</td>
+    <td class="col-rating" style="text-align:center;">${playedBtn}</td>
   </tr>`;
 }
 
@@ -1739,9 +1789,11 @@ function nextTrack(){
     if(isShuffle){
       const allIdx=[...Array(library.length).keys()];
       const unplayed=allIdx.filter(i=>!playedThisSession.has(i)&&i!==currentIndex);
-      const pool=unplayed.length?unplayed:allIdx.filter(i=>i!==currentIndex);
-      if(!unplayed.length)playedThisSession.clear();
-      next=pool.length?pool[Math.floor(Math.random()*pool.length)]:(currentIndex+1)%library.length;
+      if(!unplayed.length){
+        // All played — don't auto-advance, popup will handle this
+        return;
+      }
+      next=unplayed[Math.floor(Math.random()*unplayed.length)];
     } else {
       next=(currentIndex+1)%library.length;
     }
@@ -1749,12 +1801,30 @@ function nextTrack(){
   playTrack(next);
 }
 function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!library.length)return;let prev;if(queue.length){const qi=queue.indexOf(currentIndex);prev=qi>0?queue[qi-1]:queue[queue.length-1];}else prev=(currentIndex-1+library.length)%library.length;playTrack(prev);}
-function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);if(!isShuffle)playedThisSession.clear();showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
+function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
 function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
-audio.addEventListener('ended', () => nextTrack());
+audio.addEventListener('ended', () => {
+  // Mark current track as played
+  if(currentIndex>=0){
+    playedThisSession.add(currentIndex);
+    savePlayed();
+    updatePlayedCount();
+  }
+  // Check if all tracks have been played
+  const allIdx=[...Array(library.length).keys()];
+  const unplayed=allIdx.filter(i=>!playedThisSession.has(i));
+  if(library.length>0&&unplayed.length===0){
+    showAllDonePopup();
+  } else {
+    nextTrack();
+  }
+});
+function showAllDonePopup(){document.getElementById('all-done-overlay').classList.add('open');}
+function resetPlayed(){playedThisSession.clear();savePlayed();updatePlayedCount();document.getElementById('all-done-overlay').classList.remove('open');renderView();showNotif('PLAYED LIST RESET');}
+if(playedThisSession.has(libIdx)){playedThisSession.delete(libIdx);}else{playedThisSession.add(libIdx);}savePlayed();updatePlayedCount();renderView();}
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
@@ -2001,7 +2071,7 @@ window.addEventListener('online',  () => { showNotif('NETWORK RESTORED — RESUM
 // ─────────────────────────────────────────────────────────────────────────────
 
 // INIT
-initRF();updateBadge();renderAll();
+initRF();updateBadge();updatePlayedCount();renderAll();
 // Shuffle is on by default — reflect in button state
 document.getElementById('shuffle-btn').classList.add('active');
 // Attach scroll suppression to track table wrap
@@ -2948,5 +3018,14 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
   };
 })();
 </script>
+<!-- ALL DONE POPUP -->
+<div id="all-done-overlay">
+  <div id="all-done-box">
+    <div class="all-done-title">ALL DONE</div>
+    <div class="all-done-sub">Every track has been played.<br>Reset to start fresh?</div>
+    <button class="all-done-btn" onclick="resetPlayed()">RESET</button>
+  </div>
+</div>
+
 </body>
 </html>
