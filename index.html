@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 160                                            -->
+<!-- GoLoco · INDEX 161                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 160</title>
+<title>GoLoco · INDEX 161</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -66,24 +66,23 @@ body::before {
   letter-spacing: -1px; color: var(--text-dark);
   flex-shrink: 0; display: inline-block;
   line-height: 1; padding: 0 4px;
-  transform-origin: center center;
-  animation: brandStretch 7s ease-in-out infinite;
+  animation: brandFade 4s ease-in-out infinite;
 }
 .brand .loco { display: inline-block; color: var(--orange); }
 
-@keyframes brandStretch {
-  0%   { transform: scaleX(1);    text-shadow: -2px 0 2px rgba(255,0,0,0.5), 2px 0 2px rgba(0,210,255,0.5); filter: brightness(1); }
-  50%  { transform: scaleX(1.15); text-shadow: -6px 0 4px rgba(255,0,0,0.8), 6px 0 4px rgba(0,210,255,0.8); filter: brightness(1.2) contrast(1.1); }
-  100% { transform: scaleX(1);    text-shadow: -2px 0 2px rgba(255,0,0,0.5), 2px 0 2px rgba(0,210,255,0.5); filter: brightness(1); }
+@keyframes brandFade {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.35; }
+  100% { opacity: 1; }
 }
 
-/* When playing, layer a subtle groove pulse on top */
+/* When playing, keep same fade but add a subtle brightness pulse */
 .brand.playing {
-  animation: brandStretch 7s ease-in-out infinite, brandPlayPulse 0.8s ease-in-out infinite;
+  animation: brandFade 4s ease-in-out infinite, brandPlayPulse 0.8s ease-in-out infinite;
 }
 @keyframes brandPlayPulse {
   0%,100% { filter: brightness(1); }
-  50%     { filter: brightness(1.3) contrast(1.1); }
+  50%     { filter: brightness(1.3); }
 }
 
 #search-wrap { flex: 1; position: relative; }
@@ -744,7 +743,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 160';
+const APP_VERSION = 'INDEX 161';
 </script>
 <div id="app">
 
@@ -754,11 +753,6 @@ const APP_VERSION = 'INDEX 160';
     <!-- All controls float on top -->
     <div id="topbar-controls">
       <div id="bike-spacer" onclick="openFX()" title="FX — EQ & Reverb" style="cursor:pointer;flex-shrink:0;"></div><!-- width set by JS to match rendered bike width -->
-      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
-      <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 12px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid #8a7a58;border-bottom:2px solid #6a5a38;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:70px;">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-light);line-height:1;">PLAYED</span>
-        <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.2;">0 / 0</span>
-      </div>
 
       <div id="search-wrap">
         <span class="search-icon">⌕</span>
@@ -768,6 +762,7 @@ const APP_VERSION = 'INDEX 160';
         </div>
         <input type="text" id="search-bar" placeholder="SEARCH LIBRARY..." oninput="onSearch(this.value)">
       </div>
+      <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       <div style="flex-shrink:0; display:flex; align-items:center; padding-right:8px;">
         <div class="brand" onclick="triggerFileImport()" title="Tap to import music" style="cursor:pointer;">Go <span class="loco">Loco</span></div>
       </div>
@@ -789,6 +784,10 @@ const APP_VERSION = 'INDEX 160';
               <div class="cue-knob"></div>
             </div>
           </div>
+          <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 10px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:70px;align-self:stretch;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-light);line-height:1;">PLAYED</span>
+            <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.2;">0 / 0</span>
+          </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
           <span id="version-label" style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;"></span>
         </div>
@@ -802,7 +801,7 @@ const APP_VERSION = 'INDEX 160';
               <th data-col="album"    onclick="addSort('album',event)">Album</th>
               <th data-col="title"    onclick="addSort('title',event)">Song Title</th>
               <th data-col="duration" onclick="addSort('duration',event)">Length</th>
-              <th style="text-align:center;">Played</th>
+              <th data-col="played" onclick="addSort('played',event)" style="text-align:center;">Played</th>
             </tr></thead>
             <tbody id="track-tbody"></tbody>
           </table>
@@ -1530,7 +1529,7 @@ function updateSortHeaders(){
   if(hint){let textNode=Array.from(hint.childNodes).find(n=>n.nodeType===3);if(!textNode){textNode=document.createTextNode('');hint.insertBefore(textNode,hint.firstChild);}if(sortCriteria.length>0){textNode.textContent='SORT: '+sortCriteria.map((s,i)=>`${i+1}:${s.col.toUpperCase()} ${s.dir==='asc'?'▲':'▼'}`).join('  ')+'  ';}else{textNode.textContent='TAP HEADER TO SORT  ';}}
 }
 function getSorted(tracks){if(!sortCriteria.length)return tracks;return[...tracks].sort((a,b)=>{for(const s of sortCriteria){let va=getSortVal(a,s.col),vb=getSortVal(b,s.col);let c=typeof va==='number'&&typeof vb==='number'?va-vb:String(va).localeCompare(String(vb),undefined,{numeric:true});if(c!==0)return s.dir==='asc'?c:-c;}return 0;});}
-function getSortVal(t,col){switch(col){case'title':return(t.title||t.name||'').toLowerCase();case'artist':return(t.artist||'').toLowerCase();case'album':return(t.album||'').toLowerCase();case'genre':return(t.genre||'').toLowerCase();case'composer':return(t.composer||'').toLowerCase();case'year':return parseInt(t.year)||0;case'duration':return t.duration||0;case'rating':return ratings[t.id]||0;default:return'';}}
+function getSortVal(t,col){switch(col){case'title':return(t.title||t.name||'').toLowerCase();case'artist':return(t.artist||'').toLowerCase();case'album':return(t.album||'').toLowerCase();case'genre':return(t.genre||'').toLowerCase();case'composer':return(t.composer||'').toLowerCase();case'year':return parseInt(t.year)||0;case'duration':return t.duration||0;case'rating':return ratings[t.id]||0;case'played':return playedThisSession.has(t.id)?1:0;default:return'';}}
 
 // RENDER
 function updateBadge(){const b=document.getElementById('badge-all');if(b)b.textContent=library.length;}
