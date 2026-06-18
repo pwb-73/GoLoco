@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 162                                            -->
+<!-- GoLoco · INDEX 163                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 162</title>
+<title>GoLoco · INDEX 163</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -66,20 +66,21 @@ body::before {
   letter-spacing: -1px; color: var(--text-dark);
   flex-shrink: 0; display: inline-block;
   line-height: 1; padding: 0 4px;
-  animation: brandFade 6s linear infinite;
+  animation: brandFade 8s linear infinite;
 }
 .brand .loco { display: inline-block; color: var(--orange); }
 
-/* 6s total: 4s fading out (0→66.7%), then 2s fading back in (66.7→100%) */
+/* 8s cycle: 4s fade out → 2s fully invisible → 2s fade back in */
 @keyframes brandFade {
-  0%      { opacity: 1; }
-  66.667% { opacity: 0.2; }
-  100%    { opacity: 1; }
+  0%    { opacity: 1; }
+  50%   { opacity: 0; }
+  75%   { opacity: 0; }
+  100%  { opacity: 1; }
 }
 
 /* When playing, keep same fade but add a subtle brightness pulse */
 .brand.playing {
-  animation: brandFade 6s linear infinite, brandPlayPulse 0.8s ease-in-out infinite;
+  animation: brandFade 8s linear infinite, brandPlayPulse 0.8s ease-in-out infinite;
 }
 @keyframes brandPlayPulse {
   0%,100% { filter: brightness(1); }
@@ -744,7 +745,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 162';
+const APP_VERSION = 'INDEX 163';
 </script>
 <div id="app">
 
@@ -786,9 +787,8 @@ const APP_VERSION = 'INDEX 162';
                 <div class="cue-knob"></div>
               </div>
             </div>
-            <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 8px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:22px;">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1px;color:var(--text-light);line-height:1;">PLAYED</span>
-              <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;color:var(--text-dark);line-height:1.1;">0 / 0</span>
+            <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:22px;">
+              <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:700;color:var(--text-dark);line-height:1;white-space:nowrap;">0 / 0</span>
             </div>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
