@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 163                                            -->
+<!-- GoLoco · INDEX 164                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 163</title>
+<title>GoLoco · INDEX 164</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&display=swap" rel="stylesheet">
 <style>
@@ -745,7 +745,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 163';
+const APP_VERSION = 'INDEX 164';
 </script>
 <div id="app">
 
@@ -787,7 +787,7 @@ const APP_VERSION = 'INDEX 163';
                 <div class="cue-knob"></div>
               </div>
             </div>
-            <div id="played-count-display" onclick="openFX()" title="Played count — tap for FX" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:22px;">
+            <div id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:22px;">
               <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:700;color:var(--text-dark);line-height:1;white-space:nowrap;">0 / 0</span>
             </div>
           </div>
@@ -1814,12 +1814,23 @@ audio.addEventListener('ended', () => {
   // Check if all tracks have been played
   const unplayed=library.filter(t=>!playedThisSession.has(t.id));
   if(library.length>0&&unplayed.length===0){
-    showAllDonePopup();
+    showAllDonePopup(true);
   } else {
     nextTrack();
   }
 });
-function showAllDonePopup(){document.getElementById('all-done-overlay').classList.add('open');}
+function showAllDonePopup(allDone){
+  const title=document.getElementById('all-done-title');
+  const sub=document.getElementById('all-done-sub');
+  if(allDone){
+    if(title)title.textContent='ALL DONE';
+    if(sub)sub.innerHTML='Every track has been played.<br>Reset to start fresh?';
+  } else {
+    if(title)title.textContent='RESET PLAYED?';
+    if(sub)sub.innerHTML='Mark all tracks as unplayed<br>and start fresh?';
+  }
+  document.getElementById('all-done-overlay').classList.add('open');
+}
 function resetPlayed(){playedThisSession.clear();savePlayed();updatePlayedCount();document.getElementById('all-done-overlay').classList.remove('open');renderView();showNotif('PLAYED LIST RESET');}
 function togglePlayed(libIdx,e){e.stopPropagation();const t=library[libIdx];if(!t)return;const id=t.id;if(playedThisSession.has(id)){playedThisSession.delete(id);}else{playedThisSession.add(id);}savePlayed();updatePlayedCount();renderView();}
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
@@ -3020,9 +3031,10 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
 <!-- ALL DONE POPUP -->
 <div id="all-done-overlay">
   <div id="all-done-box">
-    <div class="all-done-title">ALL DONE</div>
-    <div class="all-done-sub">Every track has been played.<br>Reset to start fresh?</div>
-    <button class="all-done-btn" onclick="resetPlayed()">RESET</button>
+    <div class="all-done-title" id="all-done-title">ALL DONE</div>
+    <div class="all-done-sub" id="all-done-sub">Every track has been played.<br>Reset to start fresh?</div>
+    <button class="all-done-btn" onclick="resetPlayed()">RESET PLAYED</button>
+    <button class="all-done-btn" onclick="document.getElementById('all-done-overlay').classList.remove('open')" style="margin-top:8px;background:transparent;border-color:var(--text-light);color:var(--text-light);">CANCEL</button>
   </div>
 </div>
 
