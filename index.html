@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 167                                            -->
+<!-- GoLoco · INDEX 168                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 167</title>
+<title>GoLoco · INDEX 168</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -63,11 +63,11 @@ body::before {
 #bike-spacer:hover { background: rgba(212,98,26,0.08); border-radius: 4px; }
 .brand {
   font-family: 'VT323', monospace;
-  font-size: 34px;
+  font-size: 64px;
   letter-spacing: 2px;
   color: var(--text-dark);
   text-shadow: 0 0 6px var(--orange), 0 0 16px var(--orange);
-  flex-shrink: 0; display: inline-flex; align-items: baseline;
+  flex-shrink: 0; display: inline-flex; align-items: center;
   line-height: 1; padding: 0 4px;
   cursor: pointer;
 }
@@ -88,7 +88,7 @@ body::before {
 .brand .gl:nth-child(5) { animation: flk5 4.8s ease-in-out infinite 1.8s; }
 .brand .gl:nth-child(6) { animation: flk6 5.2s ease-in-out infinite 0.9s; }
 
-#search-wrap { flex: 1; position: relative; }
+#search-wrap { flex: 1; position: relative; max-width: calc(100% - 19px); }
 
 /* ── Synced lyric line display ── */
 #lyrics-ticker {
@@ -444,7 +444,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 
 /* RESPONSIVE */
 @media (max-height: 850px) {
-  .brand { font-size: 36px; }
+  .brand { font-size: 54px; }
   #topbar-controls { padding: 5px 16px; gap: 10px; }
   .topbar-btns .sel-btn { font-size: 14px; padding: 7px 13px; }
   #fs-btn { font-size: 18px; padding: 7px 10px; }
@@ -459,7 +459,7 @@ tr.cued.playing td { background: #ffe600 !important; }
   #right-panel { width: 180px; }
 }
 @media (max-height: 700px) {
-  .brand { font-size: 28px; }
+  .brand { font-size: 44px; }
   #topbar-controls { padding: 4px 12px; }
   /* responsive handled by clamp */
   .player-title { font-size: 36px; }
@@ -746,7 +746,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 167';
+const APP_VERSION = 'INDEX 168';
 </script>
 <div id="app">
 
