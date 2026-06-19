@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 182                                            -->
+<!-- GoLoco · INDEX 183                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 182</title>
+<title>GoLoco · INDEX 183</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -747,7 +747,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 182';
+const APP_VERSION = 'INDEX 183';
 </script>
 <div id="app">
 
@@ -2869,7 +2869,7 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     // tileW: scale the source crop width so the cropped height fills canvas height
     // Source crop is ROAD_NATURAL_W wide × (ROAD_NATURAL_H * ROAD_CROP_H) tall
     var srcCropH = ROAD_NATURAL_H * ROAD_CROP_H;
-    tileW = ROAD_NATURAL_W * (ch / srcCropH);
+    tileW = Math.ceil(ROAD_NATURAL_W * (ch / srcCropH)) + 1; // +1 to overlap and eliminate seam
     bikeH = ch * 0.90;
     bikeW = (728 / 576) * bikeH;
     bikeX = 4;
