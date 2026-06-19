@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 168                                            -->
+<!-- GoLoco · INDEX 171                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 168</title>
+<title>GoLoco · INDEX 171</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -746,7 +746,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 168';
+const APP_VERSION = 'INDEX 171';
 </script>
 <div id="app">
 
@@ -765,7 +765,7 @@ const APP_VERSION = 'INDEX 168';
         </div>
         <input type="text" id="search-bar" placeholder="SEARCH LIBRARY..." oninput="onSearch(this.value)">
       </div>
-      <div style="flex-shrink:0; display:flex; align-items:center; padding-right:8px;">
+      <div style="flex-shrink:0; display:flex; align-items:center; height:100%; padding-right:8px;">
         <div class="brand" onclick="triggerFileImport()" title="Tap to import music"><span class="gl">G</span><span class="gl">O</span><span class="gl">L</span><span class="gl">O</span><span class="gl">C</span><span class="gl">O</span></div>
       </div>
     </div>
@@ -1635,6 +1635,70 @@ function updateArtDisplay(){
 
 // PLAYBACK
 function playGroup(type,name){const key=type==='albums'?'album':type==='artists'?'artist':'composer';queue=library.filter(t=>t[key]===name).map(t=>library.indexOf(t));if(queue.length)playTrack(queue[0]);showView('queue',null);}
+// ── Tape stop/start effect ────────────────────────────────────────────────
+// Smoothly ramps playbackRate down (pause) or up (resume) over ~1 second
+// to emulate multitrack tape slowing/speeding to a stop or starting up.
+let _tapeRampRAF = null;
+let _tapeIsBraking = false; // true while a tape-stop or tape-start ramp is running
+
+function _cancelTapeRamp() {
+  if (_tapeRampRAF) { cancelAnimationFrame(_tapeRampRAF); _tapeRampRAF = null; }
+  _tapeIsBraking = false;
+}
+
+function tapeStop(onDone) {
+  // Ramp playbackRate from current value down to 0 over TAPE_STOP_MS ms
+  const TAPE_STOP_MS = 950;
+  _cancelTapeRamp();
+  _tapeIsBraking = true;
+  const startRate = audio.playbackRate || 1;
+  const startTime = performance.now();
+  function step(now) {
+    if (!_tapeIsBraking) return;
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / TAPE_STOP_MS, 1);
+    // Ease-in curve so it decelerates naturally (fast at first, sluggish at end)
+    const eased = 1 - Math.pow(1 - t, 2);
+    const rate = Math.max(0, startRate * (1 - eased));
+    audio.playbackRate = rate;
+    if (t < 1) {
+      _tapeRampRAF = requestAnimationFrame(step);
+    } else {
+      audio.playbackRate = 0;
+      _tapeIsBraking = false;
+      if (onDone) onDone();
+    }
+  }
+  _tapeRampRAF = requestAnimationFrame(step);
+}
+
+function tapeStart(onDone) {
+  // Ramp playbackRate from near-0 up to 1 over TAPE_START_MS ms
+  const TAPE_START_MS = 900;
+  _cancelTapeRamp();
+  _tapeIsBraking = true;
+  audio.playbackRate = 0.01;
+  const startTime = performance.now();
+  function step(now) {
+    if (!_tapeIsBraking) return;
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / TAPE_START_MS, 1);
+    // Ease-out curve: starts fast, eases into full speed
+    const eased = 1 - Math.pow(1 - t, 2);
+    const rate = 0.01 + (1 - 0.01) * eased;
+    audio.playbackRate = Math.min(rate, 1);
+    if (t < 1) {
+      _tapeRampRAF = requestAnimationFrame(step);
+    } else {
+      audio.playbackRate = 1;
+      _tapeIsBraking = false;
+      if (onDone) onDone();
+    }
+  }
+  _tapeRampRAF = requestAnimationFrame(step);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function togglePlay(){
   if(!audio.src&&library.length){
     // If cue has items, start from cue; otherwise start from library index 0
@@ -1642,13 +1706,22 @@ function togglePlay(){
     playTrack(0);return;
   }
   if(isPlaying){
-    clearFade();audio.pause();isPlaying=false;
+    clearFade();
+    _cancelTapeRamp();
+    isPlaying=false; updatePlayBtn();
     stopKeepAlive();
     if(window.pauseRoadAnim)pauseRoadAnim();
     if('mediaSession' in navigator) navigator.mediaSession.playbackState='paused';
+    // Tape stop: ramp down playbackRate, then pause
+    tapeStop(() => {
+      audio.pause();
+      audio.playbackRate = 1; // reset for next play
+    });
   } else {
     setupAudioAnalyser();
     const doPlay = () => {
+      // Start playback at near-zero rate, then ramp up (tape start effect)
+      audio.playbackRate = 0.01;
       audio.play().then(()=>{
         isPlaying=true; updatePlayBtn();
         if(window.startRoadScroll) startRoadScroll();
@@ -1656,7 +1729,9 @@ function togglePlay(){
         const t = currentIndex>=0 ? library[currentIndex] : null;
         updateMediaSession(t);
         startKeepAlive();
-      }).catch(()=>{});
+        // Ramp up to full speed
+        tapeStart();
+      }).catch(()=>{ audio.playbackRate = 1; });
     };
     if(_audioCtx && _audioCtx.state==='suspended'){
       _audioCtx.resume().then(doPlay).catch(doPlay);
@@ -1687,6 +1762,7 @@ function clearFade(){
   document.getElementById('stop-btn-v').style.opacity='1';
 }
 function stopTrack(){
+  _cancelTapeRamp(); audio.playbackRate = 1;
   if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';if(window.fadeOutRoadAnim)fadeOutRoadAnim();return;}
   clearFade();
   isFading=true;
@@ -1706,20 +1782,30 @@ function stopTrack(){
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
 
   function doFade(){
+    // Convex fade curve: drops steeply at the start, then eases gradually into
+    // silence. Shape: vol = fadeStartVol * (1 - t)^3 over FADE_SEC.
+    // At t=0.25 volume is already ~42%; at t=0.5 it's at ~12%.
     if(_masterGain && _audioCtx && _audioCtx.state==='running'){
       const now=_audioCtx.currentTime;
       _masterGain.gain.cancelScheduledValues(now);
       _masterGain.gain.setValueAtTime(fadeStartVol, now);
-      // Ramp all the way to true 0 (not 0.0001) to eliminate end-of-fade click
-      _masterGain.gain.linearRampToValueAtTime(0, now+FADE_SEC);
+      const N=512;
+      const curve=new Float32Array(N);
+      for(let i=0;i<N;i++){
+        const t=i/(N-1);
+        curve[i]=fadeStartVol*Math.pow(1-t, 3);
+      }
+      curve[N-1]=0; // guarantee true silence at end
+      _masterGain.gain.setValueCurveAtTime(curve, now, FADE_SEC);
     }
-    // Parallel JS fade on audio.volume as backup
+    // Parallel JS fade on audio.volume as backup (same convex shape)
     const steps=60; let step=0;
     fadeInterval=setInterval(()=>{
-      step++;const pct=step/steps;const vol=Math.max(0,fadeStartVol*(1-pct));
+      step++;
+      const t=step/steps;
+      const vol=Math.max(0, fadeStartVol*Math.pow(1-t, 3));
       audio.volume=vol;
       if(_masterGain && _audioCtx && _audioCtx.state!=='running') _masterGain.gain.value=vol;
-
     },50);
     _fadeTimeout=setTimeout(()=>{
       clearInterval(fadeInterval);fadeInterval=null;
@@ -2368,6 +2454,7 @@ function updatePlayBtn(){
 function playTrack(idx){
   if(idx<0||idx>=library.length)return;
   clearFade();
+  _cancelTapeRamp(); audio.playbackRate = 1;
   // If a cue is active and the user manually plays a track outside the cue, discard the cue
   if(isCueQueue && queue.length && !queue.includes(idx)){
     queue=[];isCueQueue=false;renderView();
