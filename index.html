@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 180                                            -->
+<!-- GoLoco · INDEX 181                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 180</title>
+<title>GoLoco · INDEX 181</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -747,7 +747,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 180';
+const APP_VERSION = 'INDEX 181';
 </script>
 <div id="app">
 
@@ -1664,12 +1664,12 @@ function stopTrack(){
     _masterGain.gain.setValueAtTime(fadeStartVol, _audioCtx.currentTime);
   }
 
-  const FADE_SEC=3.0;
+  const FADE_SEC=5.0;
   showNotif('FADING OUT...');document.getElementById('stop-btn-v').style.opacity='0.4';
 
   function doFade(){
-    // Convex fade curve: drops steeply at the start, then eases gradually into
-    // silence. Shape: vol = fadeStartVol * (1 - t)^3 over FADE_SEC.
+    // Concave-up fade curve: stays loud, then drops sharply at the end.
+    // Shape: vol = fadeStartVol * (1 - t^3) over FADE_SEC.
     // At t=0.25 volume is already ~42%; at t=0.5 it's at ~12%.
     if(_masterGain && _audioCtx && _audioCtx.state==='running'){
       const now=_audioCtx.currentTime;
@@ -1679,7 +1679,7 @@ function stopTrack(){
       const curve=new Float32Array(N);
       for(let i=0;i<N;i++){
         const t=i/(N-1);
-        curve[i]=fadeStartVol*Math.pow(1-t, 3);
+        curve[i]=fadeStartVol*(1-Math.pow(t, 3));
       }
       curve[N-1]=0; // guarantee true silence at end
       _masterGain.gain.setValueCurveAtTime(curve, now, FADE_SEC);
@@ -1689,7 +1689,7 @@ function stopTrack(){
     fadeInterval=setInterval(()=>{
       step++;
       const t=step/steps;
-      const vol=Math.max(0, fadeStartVol*Math.pow(1-t, 3));
+      const vol=Math.max(0, fadeStartVol*(1-Math.pow(t, 3)));
       audio.volume=vol;
       if(_masterGain && _audioCtx && _audioCtx.state!=='running') _masterGain.gain.value=vol;
     },50);
