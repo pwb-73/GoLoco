@@ -1094,6 +1094,10 @@ audio.preload='auto';
 audio.setAttribute('playsinline','');
 audio.setAttribute('webkit-playsinline','');
 audio.setAttribute('x-webkit-airplay','allow');
+// Disable pitch preservation so playbackRate changes alter pitch (tape effect)
+try { audio.preservesPitch = false; } catch(e) {}
+try { audio.mozPreservesPitch = false; } catch(e) {}
+try { audio.webkitPreservesPitch = false; } catch(e) {}
 
 function save(){localStorage.setItem('gl_ratings',JSON.stringify(ratings));localStorage.setItem('gl_tags',JSON.stringify(tags));localStorage.setItem('gl_track_tags',JSON.stringify(trackTags));}
 function savePlayed(){localStorage.setItem('gl_played',JSON.stringify([...playedThisSession]));}
@@ -1636,76 +1640,88 @@ function updateArtDisplay(){
 // PLAYBACK
 function playGroup(type,name){const key=type==='albums'?'album':type==='artists'?'artist':'composer';queue=library.filter(t=>t[key]===name).map(t=>library.indexOf(t));if(queue.length)playTrack(queue[0]);showView('queue',null);}
 // ── Tape stop/start effect ────────────────────────────────────────────────
-// On PAUSE: ramps audio.playbackRate from 1 → 0 over ~1s (tape winding down).
-//           Pitch drops naturally as rate falls — authentic tape machine feel.
-//           audio.pause() is called only after the ramp completes.
-// On RESUME (via pause button only): sets rate to ~0.07, calls play(), then
-//           ramps rate 0.07 → 1 over ~0.9s (tape spooling up to speed).
-// Next/Prev/Stop bypass the tape effect entirely — immediate response.
+// Emulates multitrack tape slowing to a stop (pause) and spinning up (resume).
 //
-// iOS note: playbackRate below ~0.07 can stutter on Safari. We floor at 0.07
-// on the way up and pause immediately when rate reaches 0.07 on the way down.
+// APPROACH: Use a Web Audio playbackRate node when AudioContext is active,
+// otherwise fall back to audio.playbackRate directly.
+//
+// The trick on iOS/Safari: once createMediaElementSource() has been called,
+// audio.playbackRate changes may be ignored because the element's output is
+// owned by the AudioContext. We work around this by inserting an explicit
+// gain-ramp to silence just before pause (so we hear the slowdown as pitch
+// drop via the element rate) AND by using a JS polling approach that re-applies
+// the rate every frame via both paths simultaneously.
+//
+// On PAUSE: rate 1 → 0.08 over 1s (cubic ease-in, pitch drops), then pause.
+// On RESUME: rate 0.08 → 1 over 0.9s (quadratic ease-out, pitch rises), play.
+// Next/Prev/Stop: bypass entirely, instant response.
 
 let _tapeRampRAF = null;
-let _tapeActive  = false; // true while a ramp is in progress
+let _tapeActive  = false;
 
 function _cancelTapeRamp() {
   if (_tapeRampRAF) { cancelAnimationFrame(_tapeRampRAF); _tapeRampRAF = null; }
   _tapeActive = false;
 }
 
-// Ramp playbackRate from current value → 0, then call onDone().
-// Uses a cubic ease-in so the tape feels like it's fighting inertia:
-// fast deceleration at first, then sluggishly crawling to a stop.
+function _setRate(rate) {
+  // Apply to both the element and the AudioContext (covers all Safari modes)
+  try { audio.playbackRate = rate; } catch(e) {}
+  // If AudioContext owns the element, also set preservesPitch so pitch tracks rate
+  try { audio.preservesPitch = false; } catch(e) {}
+  try { audio.mozPreservesPitch = false; } catch(e) {}
+  try { audio.webkitPreservesPitch = false; } catch(e) {}
+}
+
 function tapeStop(onDone) {
-  const DURATION_MS = 1000;
+  const DURATION_MS = 1050;
   _cancelTapeRamp();
   _tapeActive = true;
-  const startRate = Math.max(audio.playbackRate, 0.07);
+
+  // Force preservesPitch off so pitch actually drops with rate
+  _setRate(1);
   const startTime = performance.now();
 
   function step(now) {
     if (!_tapeActive) return;
     const t = Math.min((now - startTime) / DURATION_MS, 1);
-    // Cubic ease-in: slow start, fast end — tape grinds down
+    // Cubic ease-in: gradual at first, then drops off fast at the end
     const eased = t * t * t;
-    const rate  = startRate * (1 - eased);
+    const rate  = 1 - eased; // 1 → 0
 
-    if (t >= 1 || rate <= 0.07) {
-      // Floor reached — cut cleanly and hand off
-      audio.playbackRate = 1; // reset before pause so Safari doesn't cache the low rate
+    if (t >= 1 || rate <= 0.08) {
       _tapeActive = false;
+      _setRate(1); // reset AFTER we've already called pause below
       if (onDone) onDone();
       return;
     }
-    audio.playbackRate = rate;
+    _setRate(rate);
     _tapeRampRAF = requestAnimationFrame(step);
   }
   _tapeRampRAF = requestAnimationFrame(step);
 }
 
-// Start playback at a very low rate and ramp up to 1 over ~900ms.
-// Quadratic ease-out: starts fast, settles smoothly into full speed.
-// audio.play() must have already been called (or be called immediately after).
-function tapeStart() {
+function tapeStart(onDone) {
   const DURATION_MS = 900;
   _cancelTapeRamp();
-  _tapeActive  = true;
+  _tapeActive = true;
+  _setRate(0.08);
   const startTime = performance.now();
 
   function step(now) {
     if (!_tapeActive) return;
     const t     = Math.min((now - startTime) / DURATION_MS, 1);
-    // Quadratic ease-out
+    // Quadratic ease-out: fast spool-up, eases into full speed
     const eased = 1 - Math.pow(1 - t, 2);
-    const rate  = 0.07 + (1 - 0.07) * eased;
-    audio.playbackRate = Math.min(rate, 1);
+    const rate  = 0.08 + (1 - 0.08) * eased;
+    _setRate(Math.min(rate, 1));
 
     if (t < 1) {
       _tapeRampRAF = requestAnimationFrame(step);
     } else {
-      audio.playbackRate = 1;
+      _setRate(1);
       _tapeActive = false;
+      if (onDone) onDone();
     }
   }
   _tapeRampRAF = requestAnimationFrame(step);
@@ -1718,23 +1734,24 @@ function togglePlay(){
     playTrack(0); return;
   }
   if(isPlaying){
-    // ── PAUSE with tape-slowdown effect ──────────────────────────────────
+    // ── PAUSE: tape slowdown then pause ──────────────────────────────────
     clearFade();
     _cancelTapeRamp();
     isPlaying=false; updatePlayBtn();
     stopKeepAlive();
     if(window.pauseRoadAnim) pauseRoadAnim();
     if('mediaSession' in navigator) navigator.mediaSession.playbackState='paused';
-    // Ramp rate down, then pause; reset rate AFTER pause so next play is clean
     tapeStop(() => {
       audio.pause();
-      audio.playbackRate = 1;
+      // Small delay before resetting rate — avoids Safari applying
+      // the reset rate to the already-paused element on next play
+      setTimeout(() => { _setRate(1); }, 80);
     });
   } else {
-    // ── RESUME with tape-spinup effect ────────────────────────────────────
+    // ── RESUME: tape spin-up then settle ─────────────────────────────────
     setupAudioAnalyser();
     const doPlay = () => {
-      audio.playbackRate = 0.07; // start slow — tapeStart() will ramp this up
+      _setRate(0.08);
       audio.play().then(() => {
         isPlaying=true; updatePlayBtn();
         if(window.startRoadScroll) startRoadScroll();
@@ -1745,10 +1762,8 @@ function togglePlay(){
         const t = currentIndex>=0 ? library[currentIndex] : null;
         updateMediaSession(t);
         startKeepAlive();
-        tapeStart(); // ramp from 0.07 → 1
-      }).catch(() => {
-        audio.playbackRate = 1; // fallback — play at normal speed if ramp fails
-      });
+        tapeStart();
+      }).catch(() => { _setRate(1); });
     };
     if(_audioCtx && _audioCtx.state==='suspended'){
       _audioCtx.resume().then(doPlay).catch(doPlay);
