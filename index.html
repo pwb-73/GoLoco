@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 183                                            -->
+<!-- GoLoco · INDEX 184                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 183</title>
+<title>GoLoco · INDEX 184</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -62,7 +62,7 @@ body::before {
 #bike-spacer:hover { background: rgba(212,98,26,0.08); border-radius: 4px; }
 .brand {
   font-family: 'VT323', monospace;
-  font-size: 64px;
+  font-size: 96px;
   letter-spacing: 2px;
   color: var(--text-dark);
   text-shadow: 0 0 6px var(--orange), 0 0 16px var(--orange);
@@ -118,7 +118,7 @@ body::before {
 #lyrics-ticker.hidden { display: none; }
 /* Hide search bar border while lyrics ticker is visible */
 #search-wrap:has(#lyrics-ticker:not(.hidden)) #search-bar { border-color: transparent; }
-#search-bar { width: 100%; background: transparent; border: 1px solid rgba(0,0,0,0.6); border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-dark); outline: none; letter-spacing: 0.5px; }
+#search-bar { width: 100%; background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 7px 12px 7px 30px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text-dark); outline: none; letter-spacing: 0.5px; }
 #search-bar::placeholder { color: var(--text-light); } #search-bar:focus { border-color: var(--orange); }
 .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #5a4030; pointer-events: none; }
 .topbar-btns { display: flex; gap: 6px; flex-shrink: 0; }
@@ -747,7 +747,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 183';
+const APP_VERSION = 'INDEX 184';
 </script>
 <div id="app">
 
@@ -764,7 +764,7 @@ const APP_VERSION = 'INDEX 183';
           <span class="lyric-slot" id="lyric-slot-a"></span>
           <span class="lyric-slot" id="lyric-slot-b"></span>
         </div>
-        <input type="text" id="search-bar" placeholder="SEARCH LIBRARY..." oninput="onSearch(this.value)">
+        <input type="text" id="search-bar" placeholder="SEARCH..." oninput="onSearch(this.value)">
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; height:100%; padding-right:8px;">
         <div class="brand" onclick="triggerFileImport()" title="Tap to import music"><span class="gl">G</span><span class="gl">O</span><span class="gl">L</span><span class="gl">O</span><span class="gl">C</span><span class="gl">O</span></div>
@@ -782,14 +782,14 @@ const APP_VERSION = 'INDEX 183';
         <div class="tracks-topbar">
           <span class="tracks-count" id="sub-all">0 TRACKS</span>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="height:22px;padding:0 8px;font-size:13px;line-height:1;">⛶</button>
-            <div class="cue-switch-wrap" id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list">
+            <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="height:28px;padding:0 8px;font-size:13px;line-height:1;">⛶</button>
+            <div class="cue-switch-wrap" id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="height:28px;">
               <span class="cue-label">CUE</span>
               <div class="cue-toggle" id="cue-toggle">
                 <div class="cue-knob"></div>
               </div>
             </div>
-            <div id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:22px;">
+            <div id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:28px;">
               <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:700;color:var(--text-dark);line-height:1;white-space:nowrap;">0 / 0</span>
             </div>
           </div>
@@ -1534,7 +1534,7 @@ function rowHTML(t){
   const playing=libIdx===currentIndex;
   const isCued=cueMode&&queue.includes(libIdx)&&!playing;
   const isPlayed=playedThisSession.has(t.id);
-  const playedBtn=`<span class="played-btn ${isPlayed?'played':''}" onclick="togglePlayed(${libIdx},event)" title="${isPlayed?'Mark unplayed':'Mark played'}">●</span>`;
+  const playedBtn=`<span class="played-btn ${isPlayed?'played':''}" onclick="togglePlayed(${libIdx},event)" ontouchstart="togglePlayed(${libIdx},event)" title="${isPlayed?'Mark unplayed':'Mark played'}">●</span>`;
   const eq=playing?`<span class="eq-inline"><span class="eq-b"></span><span class="eq-b"></span><span class="eq-b"></span></span>`:'';
   const cueIndicator=isCued?`<span style="font-size:9px;color:var(--orange);margin-right:4px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;">[CUE]</span>`:'';
   const clickFn=cueMode?`addToCue(${libIdx},event)`:`playTrack(${libIdx})`;
@@ -1805,7 +1805,7 @@ function showAllDonePopup(allDone){
   document.getElementById('all-done-overlay').classList.add('open');
 }
 function resetPlayed(){playedThisSession.clear();savePlayed();updatePlayedCount();document.getElementById('all-done-overlay').classList.remove('open');renderView();showNotif('PLAYED LIST RESET');}
-function togglePlayed(libIdx,e){e.stopPropagation();const t=library[libIdx];if(!t)return;const id=t.id;if(playedThisSession.has(id)){playedThisSession.delete(id);}else{playedThisSession.add(id);}savePlayed();updatePlayedCount();renderView();}
+function togglePlayed(libIdx,e){e.stopPropagation();e.preventDefault();const t=library[libIdx];if(!t)return;const id=t.id;if(playedThisSession.has(id)){playedThisSession.delete(id);}else{playedThisSession.add(id);}savePlayed();updatePlayedCount();renderView();}
 function setRating(id,r,e){e.stopPropagation();ratings[id]=r;save();renderView();}
 
 // TAGS
