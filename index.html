@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index212                                            -->
+<!-- GoLoco · index214                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index212</title>
+<title>GoLoco · index214</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -744,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index212';
+const APP_VERSION = 'index214';
 </script>
 <div id="app">
 
@@ -2466,83 +2466,85 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
     document.getElementById('lyric-slot-b'),
   ];
   // ── Ticker-tape scroll engine ──────────────────────────────────────────────
-  // Single scrolling lane with a pending queue.
-  // A new line is only launched once the current line has cleared enough space
-  // from the right edge that there is no overlap — exactly like a news crawl.
+  // Two lanes, both scroll every frame continuously — neither ever pauses.
+  // A new line launches from the right only when the rightmost active lane's
+  // right edge has scrolled far enough left to leave a clear gap.
+  // Both lanes keep moving every single frame until they exit the left side.
   const pxPerMs = 120 / 1000; // scroll speed px/ms
-  const GAP_PX  = 60;         // minimum gap between end of one line and start of next
+  const GAP_PX  = 80;         // min gap (px) between trailing edge of one line and start of next
 
-  // We use only ONE visible lane at a time (the two slot elements alternate as
-  // the active lane so we can measure the incoming text off-screen).
   const laneColors = ['#fffaaa', '#aaddff'];
   let nextColor = 0;
 
-  // Single active lane state
-  let lane = { el: slots[0], x: 0, textW: 0, active: false };
-  let idle = slots[1]; // off-screen measuring element
+  // Two independent lanes — both always scrolled in rafStep
+  const lanes = [
+    { el: slots[0], x: -9999, textW: 0, active: false },
+    { el: slots[1], x: -9999, textW: 0, active: false },
+  ];
+  // Index of the lane to use next when launching
+  let nextLane = 0;
 
-  // Queue of pending text strings waiting for clear runway
-  let pendingQueue = [];
+  // Queue: max 1 pending line (discard older ones to stay current with singer)
+  let pendingText = null;
 
   let rafRunning = false;
-  let lastTs     = null;
+  let lastTs = null;
 
   function stopScroll() {
     rafRunning = false;
     lastTs = null;
-    lane.active = false;
-    lane.el.style.transform = 'translateX(9999px)';
-    lane.el.textContent = '';
-    idle.style.transform = 'translateX(9999px)';
-    idle.textContent = '';
-    pendingQueue = [];
+    pendingText = null;
+    lanes.forEach(ln => {
+      ln.active = false;
+      ln.x = -9999;
+      ln.textW = 0;
+      ln.el.style.transform = 'translateX(-9999px)';
+      ln.el.style.opacity = '0';
+      ln.el.textContent = '';
+    });
   }
 
-  // Measure text width using the idle (off-screen) slot
-  function measureText(text, color) {
-    idle.textContent = text;
-    idle.style.color = color;
-    idle.style.opacity = '0';
-    idle.style.transform = 'translateX(9999px)';
-    void idle.offsetWidth;
-    return idle.scrollWidth;
+  // Find the rightmost edge among all active lanes
+  function rightmostEdge() {
+    let edge = -9999;
+    lanes.forEach(ln => {
+      if (ln.active) edge = Math.max(edge, ln.x + ln.textW);
+    });
+    return edge;
   }
 
-  // Try to launch the next queued line if there is clear runway
-  function tryDequeue() {
-    if (!pendingQueue.length) return;
+  // Try to launch pending text if there is clear runway
+  function tryLaunch() {
+    if (pendingText === null) return;
     const containerW = ticker.offsetWidth;
+    // The newest line enters at containerW. The rightmost active line's right
+    // edge must have scrolled at least GAP_PX to the left of containerW.
+    const rEdge = rightmostEdge();
+    if (rEdge > containerW - GAP_PX) return; // not enough room yet
 
-    // Clear runway = active lane's leading edge has moved far enough left
-    // that containerW - (lane.x + lane.textW) >= GAP_PX
-    // i.e. the trailing edge of active text is at lane.x + lane.textW (but
-    // since text starts at lane.x and is lane.textW wide, its RIGHT edge
-    // when launched was containerW; its LEFT edge is now lane.x).
-    // The new text will enter from the RIGHT edge (containerW).
-    // No overlap when: containerW > lane.x + lane.textW + GAP_PX
-    // => lane.x < containerW - lane.textW - GAP_PX
-    const canLaunch = !lane.active || (lane.x + lane.textW + GAP_PX < containerW);
-    if (!canLaunch) return;
+    const text  = pendingText;
+    pendingText = null;
 
-    const text  = pendingQueue.shift();
     const color = laneColors[nextColor];
-    nextColor   = 1 - nextColor;
+    nextColor = 1 - nextColor;
 
-    const newTextW = measureText(text, color);
+    // Use the next available lane (round-robin); if it's still active it will
+    // be finishing up on the left — its content will be replaced cleanly.
+    const ln = lanes[nextLane];
+    nextLane = 1 - nextLane;
 
-    // Swap slots so the measured element becomes active
-    const tmp = lane.el;
-    lane.el = idle;
-    idle    = tmp;
+    ln.el.textContent = text;
+    ln.el.style.color = color;
+    ln.el.style.opacity = '1';
+    // Measure width after setting content (element is in DOM, just off-screen)
+    ln.el.style.transform = 'translateX(-9999px)';
+    void ln.el.offsetWidth;
+    const textW = ln.el.scrollWidth;
 
-    lane.el.textContent = text;
-    lane.el.style.color = color;
-    lane.el.style.opacity = '1';
-    lane.el.style.transform = 'translateX(' + containerW + 'px)';
-    lane.x     = containerW;
-    lane.textW = newTextW;
-    lane.active = true;
-    lane.dest   = -newTextW;
+    ln.x = containerW;
+    ln.textW = textW;
+    ln.active = true;
+    ln.el.style.transform = 'translateX(' + containerW + 'px)';
   }
 
   function rafStep(ts) {
@@ -2550,20 +2552,25 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
     const delta = lastTs === null ? 0 : ts - lastTs;
     lastTs = ts;
 
-    if (lane.active) {
-      lane.x -= pxPerMs * delta;
-      lane.el.style.transform = 'translateX(' + lane.x + 'px)';
-      if (lane.x <= lane.dest) {
-        lane.active = false;
-        lane.el.style.transform = 'translateX(9999px)';
-        lane.el.textContent = '';
+    // Move ALL active lanes every frame — nothing ever pauses
+    lanes.forEach(ln => {
+      if (!ln.active) return;
+      ln.x -= pxPerMs * delta;
+      ln.el.style.transform = 'translateX(' + ln.x + 'px)';
+      // Retire once fully off the left edge
+      if (ln.x + ln.textW < 0) {
+        ln.active = false;
+        ln.x = -9999;
+        ln.textW = 0;
+        ln.el.style.opacity = '0';
+        ln.el.textContent = '';
       }
-    }
+    });
 
-    // Try to launch a queued line every frame
-    tryDequeue();
+    tryLaunch();
 
-    if (lane.active || pendingQueue.length) {
+    const anyActive = lanes.some(ln => ln.active);
+    if (anyActive || pendingText !== null) {
       requestAnimationFrame(rafStep);
     } else {
       rafRunning = false;
@@ -2572,12 +2579,8 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
   }
 
   function scrollLine(text) {
-    // Drop duplicate consecutive lines
-    if (pendingQueue.length && pendingQueue[pendingQueue.length - 1] === text) return;
-    // Keep queue lean — max 2 pending (discard oldest if backed up)
-    if (pendingQueue.length >= 2) pendingQueue.shift();
-    pendingQueue.push(text);
-
+    // Always replace pending with latest — stay current with the singer
+    pendingText = text;
     if (!rafRunning) {
       rafRunning = true;
       lastTs = null;
