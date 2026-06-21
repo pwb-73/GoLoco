@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index209                                            -->
+<!-- GoLoco · index210                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index209</title>
+<title>GoLoco · index210</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -108,10 +108,12 @@ body::before {
   white-space: nowrap;
   font-family: 'DM Sans', sans-serif;
   font-size: 28px;
-  font-weight: 400;
-  color: #fffaaa; /* overridden per-line by JS */
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #fffaaa;
+  paint-order: stroke fill;
   letter-spacing: 0.2px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
   line-height: 1;
   will-change: transform;
   opacity: 0;
@@ -742,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index209';
+const APP_VERSION = 'index210';
 </script>
 <div id="app">
 
@@ -1517,7 +1519,7 @@ function renderAll(){
   const tracks=getSorted(filteredTracks());
   // sub-all track count display removed
   const tbody=document.getElementById('track-tbody');
-  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="padding:40px 20px;text-align:center;">${library.length===0?'<div style="margin-top:14px;"><button class="empty-btn" onclick="triggerFileImport()">add music files</button></div>':'<div style="font-size:12px;color:var(--text-light);">Try a different search or lower the minimum rating.</div>'}</td></tr>`;return;}
+  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="height:60vh;text-align:center;vertical-align:middle;">${library.length===0?'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;"><button class="empty-btn" onclick="triggerFileImport()">add music files</button></div>':'<div style="font-size:12px;color:var(--text-light);">Try a different search or lower the minimum rating.</div>'}</td></tr>`;return;}
   tbody.innerHTML=tracks.map(t=>rowHTML(t)).join('');
 
 }
@@ -2530,7 +2532,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 
     // Set text and measure
     lane.el.textContent = text;
-    lane.el.style.color = laneColors[nextColor];
+    lane.el.style.color = 'transparent'; lane.el.style.webkitTextStrokeColor = laneColors[nextColor];
     nextColor = 1 - nextColor;
     lane.el.style.transform = 'translateX(' + containerW + 'px)';
     lane.el.style.opacity = '1';
