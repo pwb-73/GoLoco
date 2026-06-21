@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · INDEX 189                                            -->
+<!-- GoLoco · INDEX 190                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · INDEX 189</title>
+<title>GoLoco · INDEX 190</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -745,7 +745,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'INDEX 189';
+const APP_VERSION = 'INDEX 190';
 </script>
 <div id="app">
 
@@ -779,17 +779,16 @@ const APP_VERSION = 'INDEX 189';
       <div class="view active" id="view-all">
         <div class="tracks-topbar">
           <span class="tracks-count" id="sub-all">0 TRACKS</span>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <button class="sel-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="height:28px;padding:0 8px;font-size:13px;line-height:1;">⛶</button>
-            <div class="cue-switch-wrap" id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="height:28px;">
-              <span class="cue-label">CUE</span>
-              <div class="cue-toggle" id="cue-toggle">
-                <div class="cue-knob"></div>
-              </div>
-            </div>
-            <div id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 6px;background:linear-gradient(180deg,#d4c8a8,#b8aa88);border:1px solid rgba(0,0,0,0.4);border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);min-width:60px;height:28px;">
-              <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:700;color:var(--text-dark);line-height:1;white-space:nowrap;">0 / 0</span>
-            </div>
+          <div style="display:flex;align-items:center;gap:0;flex-shrink:0;" id="topbar-tab-group">
+            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,#e8dfc0,#c8b890);border-top:2px solid #7a6030;border-bottom:2px solid #5a4010;border-left:2px solid #7a6030;border-right:1px solid #a08040;border-radius:6px 0 0 6px;padding:0 10px;height:34px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 2px 4px rgba(0,0,0,0.3);transition:all 0.08s;">
+              <span style="font-family:'VT323',monospace;font-size:13px;font-weight:900;color:#000;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">full screen</span>
+            </button>
+            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,#e8dfc0,#c8b890);border-top:2px solid #7a6030;border-bottom:2px solid #5a4010;border-left:1px solid #a08040;border-right:1px solid #a08040;border-radius:0;padding:0 10px;height:34px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 2px 4px rgba(0,0,0,0.2);transition:all 0.08s;">
+              <span style="font-family:'VT323',monospace;font-size:13px;font-weight:900;color:#000;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">cue</span>
+            </button>
+            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,#e8dfc0,#c8b890);border-top:2px solid #7a6030;border-bottom:2px solid #5a4010;border-left:1px solid #a08040;border-right:2px solid #7a6030;border-radius:0 6px 6px 0;padding:0 10px;height:34px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 2px 4px rgba(0,0,0,0.3);transition:all 0.08s;">
+              <span id="played-count-num" style="font-family:'VT323',monospace;font-size:13px;font-weight:900;color:#000;letter-spacing:0.5px;line-height:1;white-space:nowrap;">0 / 0</span>
+            </button>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;">TAP HEADER TO SORT<button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ CLEAR SORT</button></div>
           <span id="version-label" style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:#000000;letter-spacing:1px;flex-shrink:0;"></span>
@@ -1099,11 +1098,11 @@ function updatePlayedCount(){const total=library.length;const played=playedThisS
 // FULLSCREEN
 function toggleFullscreen(){
   const btn=document.getElementById('fs-btn');
-  if(!document.fullscreenElement&&!document.webkitFullscreenElement){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();btn.textContent='⛶';btn.title='Exit Fullscreen';showNotif('FULLSCREEN ON');}
-  else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();btn.textContent='⛶';btn.title='Toggle Fullscreen';showNotif('FULLSCREEN OFF');}
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();btn.title='Exit Fullscreen';showNotif('FULLSCREEN ON');}
+  else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();btn.title='Toggle Fullscreen';showNotif('FULLSCREEN OFF');}
 }
-document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
-document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;btn.classList.toggle('active',!!(document.fullscreenElement||document.webkitFullscreenElement));});
+document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,#e8dfc0,#c8b890)';btn.style.borderTopColor=on?'var(--orange-dark)':'#7a6030';btn.style.borderBottomColor=on?'#6a2808':'#5a4010';btn.querySelector('span').style.color=on?'#fff':'#000';});
+document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,#e8dfc0,#c8b890)';btn.style.borderTopColor=on?'var(--orange-dark)':'#7a6030';btn.style.borderBottomColor=on?'#6a2808':'#5a4010';btn.querySelector('span').style.color=on?'#fff':'#000';});
 
 
 // Real audio analysis
@@ -1574,7 +1573,20 @@ function renderQueue(){
 // CUE MODE
 function toggleCueMode(){
   cueMode=!cueMode;
-  document.getElementById('cue-toggle').classList.toggle('on',cueMode);
+  const cueBtn=document.getElementById('cue-switch-wrap');
+  if(cueBtn){
+    if(cueMode){
+      cueBtn.style.background='linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';
+      cueBtn.style.borderTopColor='var(--orange-dark)';
+      cueBtn.style.borderBottomColor='#6a2808';
+      cueBtn.querySelector('span').style.color='#fff';
+    } else {
+      cueBtn.style.background='linear-gradient(180deg,#e8dfc0,#c8b890)';
+      cueBtn.style.borderTopColor='#7a6030';
+      cueBtn.style.borderBottomColor='#5a4010';
+      cueBtn.querySelector('span').style.color='#000';
+    }
+  }
   document.getElementById('content').classList.toggle('cue-mode-on',cueMode);
   showNotif(cueMode?'CUE MODE ON — TAP SONGS TO CUE':'CUE MODE OFF');
   renderView();
