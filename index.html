@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index206                                            -->
+<!-- GoLoco · index207                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index206</title>
+<title>GoLoco · index207</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -741,7 +741,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index206';
+const APP_VERSION = 'index207';
 </script>
 <div id="app">
 
@@ -1576,12 +1576,14 @@ function toggleCueMode(){
       cueBtn.style.borderBottomColor='#8a6a40';
       cueBtn.style.borderLeftColor='#c0a878';
       cueBtn.style.borderRightColor='#c0a878';
+      cueBtn.querySelector('span').style.color='#000';
     } else {
       cueBtn.style.background='linear-gradient(180deg,#f07030,#d4621a,#a04010)';
       cueBtn.style.borderTopColor='#a04010';
       cueBtn.style.borderBottomColor='#6a2808';
       cueBtn.style.borderLeftColor='#a04010';
       cueBtn.style.borderRightColor='#a04010';
+      cueBtn.querySelector('span').style.color='#fff';
     }
   }
   document.getElementById('content').classList.toggle('cue-mode-on',cueMode);
