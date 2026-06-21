@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index214                                            -->
+<!-- GoLoco · index215                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index214</title>
+<title>GoLoco · index215</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -744,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index214';
+const APP_VERSION = 'index215';
 </script>
 <div id="app">
 
@@ -2549,7 +2549,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 
   function rafStep(ts) {
     if (!rafRunning) return;
-    const delta = lastTs === null ? 0 : ts - lastTs;
+    const delta = lastTs === null ? 0 : Math.min(ts - lastTs, 32);
     lastTs = ts;
 
     // Move ALL active lanes every frame — nothing ever pauses
@@ -2616,6 +2616,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 
   function clearLyrics() {
     stopSync();
+    stopScroll();
     hasLyrics = false;
     lrcLines = [];
     lastLineIdx = -1;
