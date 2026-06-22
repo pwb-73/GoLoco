@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index218                                            -->
+<!-- GoLoco · index219                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index218</title>
+<title>GoLoco · index219</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -273,11 +273,10 @@ tr.cued.playing td { background: #ffe600 !important; }
 .track-table thead th {
   position: sticky; top: 0;
   background: linear-gradient(180deg, #fffff0, #f0e8d0);
-  border: 1px solid #c0a878; border-bottom: 2px solid #8a6a40;
+  border: none;
   font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1.5px;
   font-weight: 400; text-transform: lowercase; color: var(--text-dark); padding: 4px 12px;
   text-align: left; cursor: pointer; user-select: none; white-space: nowrap; z-index: 2;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
 }
 .track-table thead th:hover { color: var(--text-dark); }
 .track-table thead th.sort-asc::after { content: ' ▲'; color: var(--orange); }
@@ -744,7 +743,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index218';
+const APP_VERSION = 'index219';
 </script>
 <div id="app">
 
@@ -778,13 +777,13 @@ const APP_VERSION = 'index218';
       <div class="view active" id="view-all">
         <div class="tracks-topbar">
           <div style="display:flex;align-items:center;gap:0;flex-shrink:0;" id="topbar-tab-group">
-            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:2px solid var(--orange-dark);border-right:1px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">full screen</span>
             </button>
-            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:1px solid var(--orange-dark);border-right:1px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">cue</span>
             </button>
-            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:1px solid var(--orange-dark);border-right:2px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;white-space:nowrap;">0 / 0</span>
             </button>
           </div>
@@ -1099,8 +1098,8 @@ function toggleFullscreen(){
   if(!document.fullscreenElement&&!document.webkitFullscreenElement){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();btn.title='Exit Fullscreen';showNotif('FULLSCREEN ON');}
   else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();btn.title='Toggle Fullscreen';showNotif('FULLSCREEN OFF');}
 }
-document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color=on?'#fff':'#000';});
-document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color=on?'#fff':'#000';});
+document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.querySelector('span').style.color=on?'#fff':'#000';});
+document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.querySelector('span').style.color=on?'#fff':'#000';});
 
 
 // Real audio analysis
@@ -1575,17 +1574,17 @@ function toggleCueMode(){
   if(cueBtn){
     if(cueMode){
       cueBtn.style.background='linear-gradient(180deg,#fffff0,#f0e8d0)';
-      cueBtn.style.borderTopColor='#c0a878';
-      cueBtn.style.borderBottomColor='#8a6a40';
-      cueBtn.style.borderLeftColor='#c0a878';
-      cueBtn.style.borderRightColor='#c0a878';
+      
+      
+      
+      
       cueBtn.querySelector('span').style.color='#000';
     } else {
       cueBtn.style.background='linear-gradient(180deg,#f07030,#d4621a,#a04010)';
-      cueBtn.style.borderTopColor='#a04010';
-      cueBtn.style.borderBottomColor='#6a2808';
-      cueBtn.style.borderLeftColor='#a04010';
-      cueBtn.style.borderRightColor='#a04010';
+      
+      
+      
+      
       cueBtn.querySelector('span').style.color='#fff';
     }
   }
