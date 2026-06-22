@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index217                                            -->
+<!-- GoLoco · index218                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index217</title>
+<title>GoLoco · index218</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -271,7 +271,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 .track-table-wrap::-webkit-scrollbar-thumb { background: var(--tan); border-radius: 2px; }
 .track-table { width: 100%; border-collapse: collapse; font-size: 17px; }
 .track-table thead th {
-  position: sticky; top: 0; overflow: hidden;
+  position: sticky; top: 0;
   background: linear-gradient(180deg, #fffff0, #f0e8d0);
   border: 1px solid #c0a878; border-bottom: 2px solid #8a6a40;
   font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1.5px;
@@ -330,7 +330,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 .tag-add { background: linear-gradient(180deg,var(--orange-bright),var(--orange-dark)); border: 1px solid var(--orange-dark); border-bottom: 2px solid #6a2808; color: #fff; padding: 4px 14px; border-radius: 0; font-family: 'Share Tech Mono', monospace; font-size: 11px; cursor: pointer; }
 
 /* EMPTY */
-.empty-btn { margin-top: 20px; background: radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%); border-top: 1px solid #f09050; border-bottom: 2px solid #5a1800; border-left: 1px solid #902010; border-right: 1px solid #902010; color: #fff; padding: 4px 22px; border-radius: 0; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; cursor: pointer; text-transform: none; box-shadow: inset 0 2px 3px rgba(255,140,60,0.5),inset 0 -3px 6px rgba(0,0,0,0.55),0 3px 8px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+.empty-btn { margin-top: 20px; background: linear-gradient(180deg,var(--orange-bright),var(--orange-dark)); border: 1px solid var(--orange-dark); border-bottom: 2px solid #6a2808; color: #fff; padding: 4px 22px; border-radius: 0; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; cursor: pointer; text-transform: none; }
 
 /* SWIPE TO DELETE */
 .track-table tbody tr td { transition: transform 0.18s ease, opacity 0.18s ease; }
@@ -412,13 +412,11 @@ tr.cued.playing td { background: #ffe600 !important; }
   padding: 4px 14px; white-space: nowrap;
 }
 #shuffle-btn.active {
-  background: radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%) !important;
-  border-top: 1px solid #f09050 !important;
-  border-bottom: 2px solid #5a1800 !important;
-  border-left: 1px solid #902010 !important;
-  border-right: 1px solid #902010 !important;
-  box-shadow: inset 0 2px 3px rgba(255,140,60,0.5),inset 0 -3px 6px rgba(0,0,0,0.55),0 3px 8px rgba(0,0,0,0.5) !important;
+  background: linear-gradient(180deg, var(--orange-bright), var(--orange), var(--orange-dark)) !important;
+  border-color: var(--orange-dark) !important;
+  border-bottom-color: #6a2808 !important;
   color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
 }
 /* Volume group: label + slider */
 .volume-group { display: flex; align-items: center; gap: 8px; }
@@ -746,30 +744,8 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index217';
+const APP_VERSION = 'index218';
 </script>
-
-<!-- Shared gloss SVG defs -->
-<svg width="0" height="0" style="position:absolute;overflow:hidden;">
-  <defs>
-    <clipPath id="glossPatch">
-      <path d="M 5,2 Q 22,1 42,4 Q 55,6 58,14 Q 60,22 50,28 Q 38,34 22,30 Q 8,26 3,18 Q 0,10 5,2 Z"/>
-    </clipPath>
-    <radialGradient id="glossGrad" cx="35%" cy="30%" rx="60%" ry="60%">
-      <stop offset="0%"   stop-color="white" stop-opacity="0.92"/>
-      <stop offset="40%"  stop-color="white" stop-opacity="0.75"/>
-      <stop offset="75%"  stop-color="white" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="white" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="glossRim" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="white" stop-opacity="0.0"/>
-      <stop offset="20%"  stop-color="white" stop-opacity="0.6"/>
-      <stop offset="50%"  stop-color="white" stop-opacity="0.8"/>
-      <stop offset="80%"  stop-color="white" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="white" stop-opacity="0.0"/>
-    </linearGradient>
-  </defs>
-</svg>
 <div id="app">
 
   <!-- TOPBAR: Save/Restore buttons removed (change #1) -->
@@ -802,17 +778,14 @@ const APP_VERSION = 'index217';
       <div class="view active" id="view-all">
         <div class="tracks-topbar">
           <div style="display:flex;align-items:center;gap:0;flex-shrink:0;" id="topbar-tab-group">
-            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%);border-top:1px solid #f09050;border-bottom:2px solid #5a1800;border-left:1px solid #902010;border-right:1px solid #902010;border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 2px 3px rgba(255,140,60,0.5),inset 0 -3px 6px rgba(0,0,0,0.55),0 3px 8px rgba(0,0,0,0.5);transition:all 0.08s;overflow:hidden;position:relative;">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;position:relative;z-index:2;color:#000;">full screen</span>
-              <svg viewBox="0 0 100 36" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"><rect width="100" height="36" fill="url(#glossGrad)" clip-path="url(#glossPatch)"/><rect x="0" y="0" width="100" height="2" fill="url(#glossRim)"/></svg>
+            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:2px solid var(--orange-dark);border-right:1px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">full screen</span>
             </button>
-            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%);border-top:1px solid #f09050;border-bottom:2px solid #5a1800;border-left:1px solid #902010;border-right:1px solid #902010;border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 2px 3px rgba(255,140,60,0.5),inset 0 -3px 6px rgba(0,0,0,0.55),0 3px 8px rgba(0,0,0,0.5);transition:all 0.08s;overflow:hidden;position:relative;">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;position:relative;z-index:2;color:#000;">cue</span>
-              <svg viewBox="0 0 100 36" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"><rect width="100" height="36" fill="url(#glossGrad)" clip-path="url(#glossPatch)"/><rect x="0" y="0" width="100" height="2" fill="url(#glossRim)"/></svg>
+            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:1px solid var(--orange-dark);border-right:1px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">cue</span>
             </button>
-            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%);border-top:1px solid #f09050;border-bottom:2px solid #5a1800;border-left:1px solid #902010;border-right:1px solid #902010;border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 2px 3px rgba(255,140,60,0.5),inset 0 -3px 6px rgba(0,0,0,0.55),0 3px 8px rgba(0,0,0,0.5);transition:all 0.08s;overflow:hidden;position:relative;">
-              <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;white-space:nowrap;position:relative;z-index:2;color:#000;">0 / 0</span>
-              <svg viewBox="0 0 100 36" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"><rect width="100" height="36" fill="url(#glossGrad)" clip-path="url(#glossPatch)"/><rect x="0" y="0" width="100" height="2" fill="url(#glossRim)"/></svg>
+            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-top:2px solid var(--orange-dark);border-bottom:2px solid #6a2808;border-left:1px solid var(--orange-dark);border-right:2px solid var(--orange-dark);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 3px 6px rgba(0,0,0,0.45);transition:all 0.08s;">
+              <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;white-space:nowrap;">0 / 0</span>
             </button>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;"><button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ clear sort</button></div>
@@ -921,7 +894,7 @@ const APP_VERSION = 'index217';
         <div class="player-right">
           <div class="shuffle-vol-row">
             <img id="readme-btn" src="cup.png" alt="README" onclick="openReadme()" title="About GoLoco">
-            <button class="sel-btn" id="shuffle-btn" onclick="toggleShuffle()" style="position:relative;overflow:hidden;"><span style="position:relative;z-index:2;color:#000;">shuffle</span><svg viewBox="0 0 100 36" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"><rect width="100" height="36" fill="url(#glossGrad)" clip-path="url(#glossPatch)"/><rect x="0" y="0" width="100" height="2" fill="url(#glossRim)"/></svg></button>
+            <button class="sel-btn" id="shuffle-btn" onclick="toggleShuffle()">shuffle</button>
             <div class="volume-group">
               <span class="vol-label">VOL</span>
               <input type="range" class="vol-slider" id="vol-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
@@ -1126,8 +1099,8 @@ function toggleFullscreen(){
   if(!document.fullscreenElement&&!document.webkitFullscreenElement){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();btn.title='Exit Fullscreen';showNotif('FULLSCREEN ON');}
   else{if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();btn.title='Toggle Fullscreen';showNotif('FULLSCREEN OFF');}
 }
-document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%)':'radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%)';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color='#000';});
-document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%)':'radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%)';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color='#000';});
+document.addEventListener('fullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color=on?'#fff':'#000';});
+document.addEventListener('webkitfullscreenchange',()=>{const btn=document.getElementById('fs-btn');if(!btn)return;const on=!!(document.fullscreenElement||document.webkitFullscreenElement);btn.style.background=on?'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))':'linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark))';btn.style.borderTopColor='var(--orange-dark)';btn.style.borderBottomColor='#6a2808';btn.querySelector('span').style.color=on?'#fff':'#000';});
 
 
 // Real audio analysis
@@ -1546,7 +1519,7 @@ function renderAll(){
   const tracks=getSorted(filteredTracks());
   // sub-all track count display removed
   const tbody=document.getElementById('track-tbody');
-  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="height:60vh;text-align:center;vertical-align:middle;">${library.length===0?'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;"><button class="empty-btn" onclick="triggerFileImport()"><span style="position:relative;z-index:2;">add music files</span><svg viewBox=\"0 0 100 36\" preserveAspectRatio=\"none\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;\"><rect width=\"100\" height=\"36\" fill=\"url(#glossGrad)\" clip-path=\"url(#glossPatch)\"/><rect x=\"0\" y=\"0\" width=\"100\" height=\"2\" fill=\"url(#glossRim)\"/></svg></button></div>':'<div style="font-size:12px;color:var(--text-light);">Try a different search or lower the minimum rating.</div>'}</td></tr>`;return;}
+  if(!tracks.length){tbody.innerHTML=`<tr><td colspan="7" style="height:60vh;text-align:center;vertical-align:middle;">${library.length===0?'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;"><button class="empty-btn" onclick="triggerFileImport()">add music files</button></div>':'<div style="font-size:12px;color:var(--text-light);">Try a different search or lower the minimum rating.</div>'}</td></tr>`;return;}
   tbody.innerHTML=tracks.map(t=>rowHTML(t)).join('');
 
 }
@@ -1601,19 +1574,19 @@ function toggleCueMode(){
   const cueBtn=document.getElementById('cue-switch-wrap');
   if(cueBtn){
     if(cueMode){
-      cueBtn.style.background='radial-gradient(ellipse at 48% 60%,#fffef0 0%,#e0d0a8 45%,#b8a070 100%)';
+      cueBtn.style.background='linear-gradient(180deg,#fffff0,#f0e8d0)';
       cueBtn.style.borderTopColor='#c0a878';
       cueBtn.style.borderBottomColor='#8a6a40';
       cueBtn.style.borderLeftColor='#c0a878';
       cueBtn.style.borderRightColor='#c0a878';
       cueBtn.querySelector('span').style.color='#000';
     } else {
-      cueBtn.style.background='radial-gradient(ellipse at 48% 60%,#f07030 0%,#d04010 45%,#8a2000 100%)';
+      cueBtn.style.background='linear-gradient(180deg,#f07030,#d4621a,#a04010)';
       cueBtn.style.borderTopColor='#a04010';
       cueBtn.style.borderBottomColor='#6a2808';
       cueBtn.style.borderLeftColor='#a04010';
       cueBtn.style.borderRightColor='#a04010';
-      cueBtn.querySelector('span').style.color='#000';
+      cueBtn.querySelector('span').style.color='#fff';
     }
   }
   document.getElementById('content').classList.toggle('cue-mode-on',cueMode);
