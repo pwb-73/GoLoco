@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index219                                            -->
+<!-- GoLoco · index226                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index219</title>
+<title>GoLoco · index226</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -180,7 +180,7 @@ body::before {
 .ctrl-v {
   width: 100%; height: clamp(44px, 12vh, 100px);
   background: transparent;
-  border: none; box-shadow: none;
+  border: none; box-shadow: inset -1px 0 0 rgba(0,0,0,0.22); box-shadow: none;
   color: var(--text-dark); font-size: clamp(32px, 7vh, 68px); line-height: 1;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
@@ -273,12 +273,13 @@ tr.cued.playing td { background: #ffe600 !important; }
 .track-table thead th {
   position: sticky; top: 0;
   background: linear-gradient(180deg, #fffff0, #f0e8d0);
-  border: none;
+  border: none; box-shadow: inset -1px 0 0 rgba(0,0,0,0.22);
   font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1.5px;
-  font-weight: 400; text-transform: lowercase; color: var(--text-dark); padding: 4px 12px;
+  font-weight: 400; text-transform: lowercase; color: #000; padding: 4px 12px;
   text-align: left; cursor: pointer; user-select: none; white-space: nowrap; z-index: 2;
 }
-.track-table thead th:hover { color: var(--text-dark); }
+.track-table thead th:hover { color: #000; }
+.track-table thead th:last-child { box-shadow: none; }
 .track-table thead th.sort-asc::after { content: ' ▲'; color: var(--orange); }
 .track-table thead th.sort-desc::after { content: ' ▼'; color: var(--orange); }
 .sort-priority { display: inline-block; background: var(--orange); color: #fff; font-size: 10px; border-radius: 0; padding: 0 5px; margin-left: 3px; vertical-align: middle; line-height: 16px; min-width: 16px; text-align: center; }
@@ -743,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index219';
+const APP_VERSION = 'index226';
 </script>
 <div id="app">
 
@@ -777,10 +778,10 @@ const APP_VERSION = 'index219';
       <div class="view active" id="view-all">
         <div class="tracks-topbar">
           <div style="display:flex;align-items:center;gap:0;flex-shrink:0;" id="topbar-tab-group">
-            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
+            <button id="fs-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-right:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">full screen</span>
             </button>
-            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
+            <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-right:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">cue</span>
             </button>
             <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
