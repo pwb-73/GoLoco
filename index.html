@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index252                                            -->
+<!-- GoLoco · index253                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index252</title>
+<title>GoLoco · index253</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -810,7 +810,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index252';
+const APP_VERSION = 'index253';
 </script>
 <div id="app">
 
@@ -1566,25 +1566,22 @@ if ('mediaSession' in navigator) {
 }
 
 // Prime the AudioContext on the very first user interaction anywhere on the page.
-// iOS requires a user gesture before audio can play — doing this early means
-// the context is ready the moment a track is tapped, reducing focus latency.
+// iOS requires a user gesture before AudioContext can run — doing this on first
+// touch means the context is already running when a track is tapped.
+// NOTE: We do NOT call setupAudioAnalyser() here because createMediaElementSource
+// must only be called once and we don't want to set it up before a track is chosen.
+// We just create and resume the context; setupAudioAnalyser() will wire the graph later.
 (function primeAudioOnFirstGesture() {
-  const events = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+  const events = ['touchstart', 'mousedown', 'keydown'];
   function primer() {
     events.forEach(e => document.removeEventListener(e, primer, true));
-    if (!_audioCtx) setupAudioAnalyser();
+    if (!_audioCtx) {
+      try {
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) {}
+    }
     if (_audioCtx && _audioCtx.state === 'suspended') {
       _audioCtx.resume().catch(() => {});
-    }
-    // Play a zero-duration silent buffer to unlock audio focus on iOS
-    if (_audioCtx) {
-      try {
-        const buf = _audioCtx.createBuffer(1, 1, 22050);
-        const src = _audioCtx.createBufferSource();
-        src.buffer = buf;
-        src.connect(_audioCtx.destination);
-        src.start(0);
-      } catch(e) {}
     }
   }
   events.forEach(e => document.addEventListener(e, primer, true));
