@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index231                                            -->
+<!-- GoLoco · index233                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index231</title>
+<title>GoLoco · index233</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -692,8 +692,8 @@ tr.cued.playing td { background: #ffe600 !important; }
   font-weight: 700; flex-shrink: 0; width: 18px; text-align: center;
   line-height: 1; transition: color 0.12s;
 }
-.fxo-gain-sign.pos { color: #3a9a30; text-shadow: 0 0 6px rgba(58,154,48,0.6); }
-.fxo-gain-sign.neg { color: #cc2200; text-shadow: 0 0 6px rgba(204,34,0,0.6); }
+.fxo-gain-sign.pos { color: #ffffff; text-shadow: 0 0 6px rgba(58,154,48,0.9); }
+.fxo-gain-sign.neg { color: #ffffff; text-shadow: 0 0 6px rgba(204,34,0,0.9); }
 .fxo-gain-sign.zero { color: var(--text-light); text-shadow: none; }
 
 /* Sliders */
@@ -793,7 +793,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index231';
+const APP_VERSION = 'index233';
 </script>
 <div id="app">
 
@@ -1010,21 +1010,21 @@ const APP_VERSION = 'index231';
           <div class="fxo-band">
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">FREQ</div>
-              <input type="range" class="fxo-slider freq-slider" id="eq-f-100" min="20" max="500" step="1" value="100" oninput="updateEQ()">
               <div id="eq-f-100-flip" class="flip-counter"></div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-100" min="20" max="500" step="1" value="100" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">WIDTH</div>
-              <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
               <div class="fxo-ctrl-val" id="eq-q-100-val">Q 1.4</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
+              <div id="eq-g-100-flip" class="flip-counter"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-100-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-100" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
               </div>
-              <div id="eq-g-100-flip" class="flip-counter"></div>
             </div>
           </div>
 
@@ -1033,21 +1033,21 @@ const APP_VERSION = 'index231';
           <div class="fxo-band">
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">FREQ</div>
-              <input type="range" class="fxo-slider freq-slider" id="eq-f-1k" min="200" max="5000" step="10" value="1000" oninput="updateEQ()">
               <div id="eq-f-1k-flip" class="flip-counter"></div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-1k" min="200" max="5000" step="10" value="1000" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">WIDTH</div>
-              <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
               <div class="fxo-ctrl-val" id="eq-q-1k-val">Q 1.4</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
+              <div id="eq-g-1k-flip" class="flip-counter"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-1k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-1k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
               </div>
-              <div id="eq-g-1k-flip" class="flip-counter"></div>
             </div>
           </div>
 
@@ -1056,21 +1056,21 @@ const APP_VERSION = 'index231';
           <div class="fxo-band">
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">FREQ</div>
-              <input type="range" class="fxo-slider freq-slider" id="eq-f-10k" min="2000" max="20000" step="100" value="10000" oninput="updateEQ()">
               <div id="eq-f-10k-flip" class="flip-counter"></div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-10k" min="2000" max="20000" step="100" value="10000" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">WIDTH</div>
-              <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
               <div class="fxo-ctrl-val" id="eq-q-10k-val">Q 1.4</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
+              <div id="eq-g-10k-flip" class="flip-counter"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-10k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-10k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
               </div>
-              <div id="eq-g-10k-flip" class="flip-counter"></div>
             </div>
           </div>
 
