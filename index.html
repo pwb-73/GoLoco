@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index250                                            -->
+<!-- GoLoco · index252                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index250</title>
+<title>GoLoco · index252</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -810,7 +810,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index250';
+const APP_VERSION = 'index252';
 </script>
 <div id="app">
 
@@ -1555,6 +1555,40 @@ function setupMediaSessionHandlers() {
   });
 }
 setupMediaSessionHandlers();
+
+// Eagerly declare GoLoco as an audio app to iOS even before first play.
+// This improves the chance of getting audio focus when playback starts.
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.playbackState = 'paused';
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: 'GoLoco', artist: '', album: '', artwork: []
+  });
+}
+
+// Prime the AudioContext on the very first user interaction anywhere on the page.
+// iOS requires a user gesture before audio can play — doing this early means
+// the context is ready the moment a track is tapped, reducing focus latency.
+(function primeAudioOnFirstGesture() {
+  const events = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+  function primer() {
+    events.forEach(e => document.removeEventListener(e, primer, true));
+    if (!_audioCtx) setupAudioAnalyser();
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      _audioCtx.resume().catch(() => {});
+    }
+    // Play a zero-duration silent buffer to unlock audio focus on iOS
+    if (_audioCtx) {
+      try {
+        const buf = _audioCtx.createBuffer(1, 1, 22050);
+        const src = _audioCtx.createBufferSource();
+        src.buffer = buf;
+        src.connect(_audioCtx.destination);
+        src.start(0);
+      } catch(e) {}
+    }
+  }
+  events.forEach(e => document.addEventListener(e, primer, true));
+})();
 
 // Update lock screen progress bar
 audio.addEventListener('timeupdate', () => {
@@ -2602,8 +2636,8 @@ function playTrack(idx){
         if(attempts < 3){
           setTimeout(attemptPlay, 300 * attempts);
         } else {
-          showNotif('TAP AGAIN TO PLAY');
           isPlaying=false; updatePlayBtn();
+          showTapResume();
         }
       });
     };
@@ -2951,10 +2985,19 @@ function showTapResume() {
       box-shadow:0 4px 20px rgba(0,0,0,0.5);
       border:1px solid rgba(255,255,255,0.2);
     `;
-    el.textContent = '▶ TAP TO RESUME';
+    el.textContent = '▶ TAP TO PLAY';
     el.addEventListener('click', () => {
       hideTapResume();
-      playTrack(currentIndex);
+      if (audio.src) {
+        // Resume the already-loaded track as a direct user gesture
+        if (_audioCtx && _audioCtx.state === 'suspended') {
+          _audioCtx.resume().then(() => audio.play().then(() => { isPlaying=true; updatePlayBtn(); startKeepAlive(); }).catch(()=>{})).catch(()=>{});
+        } else {
+          audio.play().then(() => { isPlaying=true; updatePlayBtn(); startKeepAlive(); }).catch(()=>{});
+        }
+      } else if (currentIndex >= 0) {
+        playTrack(currentIndex);
+      }
     });
     document.body.appendChild(el);
   }
