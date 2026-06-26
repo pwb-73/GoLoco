@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index234                                            -->
+<!-- GoLoco · index239                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index234</title>
+<title>GoLoco · index239</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -573,14 +573,14 @@ tr.cued.playing td { background: #ffe600 !important; }
   border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 #fx-overlay-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 66px;
+  font-family: 'DM Sans', sans-serif; font-size: 66px; font-weight: 300;
   letter-spacing: 3px; color: var(--text-dark);
 }
 #fx-close-btn {
   background: linear-gradient(180deg, var(--orange-bright), var(--orange-dark));
   border: 1px solid var(--orange-dark); border-radius: 0;
-  padding: 4px 9px; font-family: 'Share Tech Mono', monospace;
-  font-size: 12px; letter-spacing: 1.5px; color: #fff; cursor: pointer;
+  padding: 5px 12px; font-family: 'Share Tech Mono', monospace;
+  font-size: 15px; letter-spacing: 1.5px; color: #fff; cursor: pointer;
 }
 
 #fx-overlay-body {
@@ -599,7 +599,7 @@ tr.cued.playing td { background: #ffe600 !important; }
   padding-bottom: 6px; margin-bottom: 14px;
 }
 .fxo-section-label {
-  font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 2.5px;
+  font-family: 'DM Sans', sans-serif; font-size: 48px; font-weight: 300; letter-spacing: 2.5px;
   color: var(--text-mid);
   border-bottom: none; padding-bottom: 0; margin-bottom: 0;
 }
@@ -607,11 +607,10 @@ tr.cued.playing td { background: #ffe600 !important; }
 .fxo-reset-btn {
   background: linear-gradient(180deg, #d4c8a8, #b8aa88);
   border: 1px solid #8a7a58; border-bottom: 2px solid #6a5a38;
-  border-radius: 0; padding: 2px 12px;
-  font-family: 'Share Tech Mono', monospace; font-size: 30px;
+  border-radius: 0; padding: 1px 9px;
+  font-family: 'Share Tech Mono', monospace; font-size: 22px;
   letter-spacing: 1.5px; color: var(--text-dark); cursor: pointer;
   text-transform: lowercase;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.4);
   transition: all 0.08s; flex-shrink: 0;
 }
 .fxo-reset-btn:active { transform: translateY(1px); border-bottom-width: 1px; }
@@ -640,6 +639,7 @@ tr.cued.playing td { background: #ffe600 !important; }
   border: 1px solid rgba(0,0,0,0.13); border-radius: 3px;
   padding: 6px 6px 7px; background: rgba(0,0,0,0.04);
 }
+.fxo-ctrl .flip-counter { margin-bottom: 4px; }
 .fxo-ctrl-wide { flex: 1; }
 .fxo-ctrl-label {
   font-family: 'Share Tech Mono', monospace; font-size: 22px; letter-spacing: 1px;
@@ -650,13 +650,25 @@ tr.cued.playing td { background: #ffe600 !important; }
   font-weight: 400; text-align: center; min-width: 120px;
 }
 
-/* Flip counter — mechanical odometer style for freq readouts */
+/* Flip counter — mechanical odometer style for freq/gain readouts */
 .flip-counter {
   display: inline-flex; gap: 2px; align-items: center; justify-content: center;
   background: #0e0e12; border-radius: 4px;
   padding: 3px 5px;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.08);
+  cursor: default; transition: background 0.15s;
 }
+/* Positive gain: black digits on ivory */
+.flip-counter.fc-pos { background: #e8dfc8; box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
+.flip-counter.fc-pos .flip-digit { background: #e8dfc8; box-shadow: none; }
+.flip-counter.fc-pos .flip-digit-inner span { color: #1a1008; text-shadow: none; }
+.flip-counter.fc-pos .flip-suffix { color: #5a4030; }
+/* Negative gain: ivory digits on flat orange */
+.flip-counter.fc-neg { background: #d4621a; box-shadow: none; }
+.flip-counter.fc-neg .flip-digit { background: #d4621a; box-shadow: none; }
+.flip-counter.fc-neg .flip-digit::after { background: rgba(0,0,0,0.1); }
+.flip-counter.fc-neg .flip-digit-inner span { color: #e8dfc8; text-shadow: none; }
+.flip-counter.fc-neg .flip-suffix { color: #e8dfc8; }
 .flip-digit {
   display: inline-flex; flex-direction: column;
   width: 22px; height: 34px;
@@ -676,12 +688,12 @@ tr.cued.playing td { background: #ffe600 !important; }
 .flip-digit-inner span {
   display: flex; align-items: center; justify-content: center;
   height: 34px; width: 100%;
-  font-family: 'Share Tech Mono', monospace; font-size: 20px;
-  color: #d8c89a; font-weight: 400; letter-spacing: 0;
+  font-family: 'DM Sans', sans-serif; font-size: 20px;
+  color: #d8c89a; font-weight: 700; letter-spacing: 0;
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 .flip-suffix {
-  font-family: 'Share Tech Mono', monospace; font-size: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
   color: #8a7858; margin-left: 3px; align-self: center;
   letter-spacing: 0.5px;
 }
@@ -795,7 +807,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index234';
+const APP_VERSION = 'index239';
 </script>
 <div id="app">
 
@@ -995,7 +1007,7 @@ const APP_VERSION = 'index234';
   <div id="fx-overlay-bg"></div>
   <div id="fx-overlay-panel">
     <div id="fx-overlay-header">
-      <span id="fx-overlay-title">FX — SOUND SHAPING</span>
+      <span id="fx-overlay-title">FX</span>
       <button id="fx-close-btn" onclick="closeFX()">▾ CLOSE</button>
     </div>
 
@@ -1004,7 +1016,7 @@ const APP_VERSION = 'index234';
       <!-- PARAMETRIC EQ -->
       <div class="fxo-section">
         <div class="fxo-section-label-row">
-          <div class="fxo-section-label">Parametric Equalizer</div>
+          <div class="fxo-section-label">Parametric EQ</div>
           <button class="fxo-reset-btn" onclick="resetEQ()" title="Reset all EQ bands to flat">RESET</button>
         </div>
         <div class="fxo-bands">
@@ -1022,7 +1034,7 @@ const APP_VERSION = 'index234';
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
-              <div id="eq-g-100-flip" class="flip-counter"></div>
+              <div id="eq-g-100-flip" class="flip-counter" style="cursor:pointer" title="Tap to reset gain to 0" onclick="document.getElementById('eq-g-100').value=0;updateEQ()"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-100-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-100" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
@@ -1045,7 +1057,7 @@ const APP_VERSION = 'index234';
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
-              <div id="eq-g-1k-flip" class="flip-counter"></div>
+              <div id="eq-g-1k-flip" class="flip-counter" style="cursor:pointer" title="Tap to reset gain to 0" onclick="document.getElementById('eq-g-1k').value=0;updateEQ()"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-1k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-1k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
@@ -1068,7 +1080,7 @@ const APP_VERSION = 'index234';
             </div>
             <div class="fxo-ctrl">
               <div class="fxo-ctrl-label">GAIN</div>
-              <div id="eq-g-10k-flip" class="flip-counter"></div>
+              <div id="eq-g-10k-flip" class="flip-counter" style="cursor:pointer" title="Tap to reset gain to 0" onclick="document.getElementById('eq-g-10k').value=0;updateEQ()"></div>
               <div class="fxo-gain-row">
                 <span class="fxo-gain-sign" id="eq-g-10k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-10k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
@@ -1357,10 +1369,9 @@ function _setFlipValue(containerId, hz) {
 function _setGainFlip(containerId, db) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  // Format: sign + abs value padded to 2 digits, suffix "dB"
   const abs = Math.abs(db);
   const sign = db > 0 ? '+' : db < 0 ? '-' : ' ';
-  const displayStr = String(Math.round(abs * 10)).padStart(3, '0'); // tenths, 3 digits
+  const displayStr = String(Math.round(abs * 10)).padStart(3, '0');
   const digits = el.querySelectorAll('.flip-digit');
   if (digits.length !== displayStr.length) _buildFlipCounter(containerId, displayStr.length);
   el.querySelectorAll('.flip-digit').forEach((col, i) => {
@@ -1369,6 +1380,10 @@ function _setGainFlip(containerId, db) {
   });
   const sfx = el.querySelector('[data-role="suffix"]');
   if (sfx) sfx.textContent = sign + 'dB';
+  // Pos/neg background theme
+  el.classList.remove('fc-pos', 'fc-neg');
+  if (db > 0) el.classList.add('fc-pos');
+  else if (db < 0) el.classList.add('fc-neg');
 }
 
 function _initFlipCounters() {
