@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index253                                            -->
+<!-- GoLoco · index261                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index253</title>
+<title>GoLoco · index261</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -810,7 +810,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index253';
+const APP_VERSION = 'index261';
 </script>
 <div id="app">
 
@@ -850,8 +850,11 @@ const APP_VERSION = 'index253';
             <button id="cue-switch-wrap" onclick="toggleCueMode()" title="Cue Mode: tap songs to add to cue list" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-right:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">cue</span>
             </button>
-            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
+            <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-right:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;white-space:nowrap;">0 / 0</span>
+            </button>
+            <button id="focus-btn" onclick="grabAudioFocus()" title="Claim audio focus" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,#3a8a30,#1a5a10);border-left:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">get focus</span>
             </button>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;"><button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ clear sort</button></div>
@@ -1565,27 +1568,7 @@ if ('mediaSession' in navigator) {
   });
 }
 
-// Prime the AudioContext on the very first user interaction anywhere on the page.
-// iOS requires a user gesture before AudioContext can run — doing this on first
-// touch means the context is already running when a track is tapped.
-// NOTE: We do NOT call setupAudioAnalyser() here because createMediaElementSource
-// must only be called once and we don't want to set it up before a track is chosen.
-// We just create and resume the context; setupAudioAnalyser() will wire the graph later.
-(function primeAudioOnFirstGesture() {
-  const events = ['touchstart', 'mousedown', 'keydown'];
-  function primer() {
-    events.forEach(e => document.removeEventListener(e, primer, true));
-    if (!_audioCtx) {
-      try {
-        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      } catch(e) {}
-    }
-    if (_audioCtx && _audioCtx.state === 'suspended') {
-      _audioCtx.resume().catch(() => {});
-    }
-  }
-  events.forEach(e => document.addEventListener(e, primer, true));
-})();
+// (audio context is created lazily in setupAudioAnalyser on first play)
 
 // Update lock screen progress bar
 audio.addEventListener('timeupdate', () => {
@@ -2634,7 +2617,7 @@ function playTrack(idx){
           setTimeout(attemptPlay, 300 * attempts);
         } else {
           isPlaying=false; updatePlayBtn();
-          showTapResume();
+          showNotif('TAP PLAY TO START');
         }
       });
     };
@@ -2940,7 +2923,29 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 // Safari suspends AudioContext and sometimes kills blob URLs when backgrounded.
 // We need to handle both visibilitychange (tab switch) and pageshow (back-nav in PWA).
 
-function handleForegroundReturn() {
+function grabAudioFocus() {
+  const btn = document.getElementById('focus-btn');
+  const doResume = () => {
+    if (audio.src && isPlaying && audio.paused) {
+      audio.play().then(() => {
+        startKeepAlive();
+        showNotif('AUDIO FOCUS RESTORED');
+        if (btn) btn.style.background = 'linear-gradient(180deg,#3a8a30,#1a5a10)';
+      }).catch(() => showNotif('COULD NOT RESUME — TAP PLAY'));
+    } else {
+      if (_audioCtx && _audioCtx.state === 'running') showNotif('AUDIO FOCUS OK');
+      else showNotif('FOCUS CLAIMED — TAP PLAY');
+    }
+  };
+  if (_audioCtx && _audioCtx.state === 'suspended') {
+    _audioCtx.resume().then(doResume).catch(doResume);
+  } else if (!_audioCtx) {
+    setupAudioAnalyser();
+    doResume();
+  } else {
+    doResume();
+  }
+}
   // 1. Resume AudioContext — must happen before any audio.play() call
   if (_audioCtx && _audioCtx.state === 'suspended') {
     _audioCtx.resume().catch(() => {});
