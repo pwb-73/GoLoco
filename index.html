@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index261                                            -->
+<!-- GoLoco · index262                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index261</title>
+<title>GoLoco · index262</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -810,7 +810,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index261';
+const APP_VERSION = 'index262';
 </script>
 <div id="app">
 
@@ -2946,6 +2946,8 @@ function grabAudioFocus() {
     doResume();
   }
 }
+
+function handleForegroundReturn() {
   // 1. Resume AudioContext — must happen before any audio.play() call
   if (_audioCtx && _audioCtx.state === 'suspended') {
     _audioCtx.resume().catch(() => {});
