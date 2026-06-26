@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index227                                            -->
+<!-- GoLoco · index231                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index227</title>
+<title>GoLoco · index231</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -634,6 +634,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 .fxo-ctrl-pair {
   display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;
 }
+/* Row variant: WIDTH+GAIN on left, FREQ counter on right — retired index229 */
 .fxo-ctrl {
   display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%;
 }
@@ -646,6 +647,54 @@ tr.cued.playing td { background: #ffe600 !important; }
   font-family: 'Share Tech Mono', monospace; font-size: 30px; color: var(--orange);
   font-weight: 400; text-align: center; min-width: 120px;
 }
+
+/* Flip counter — mechanical odometer style for freq readouts */
+.flip-counter {
+  display: inline-flex; gap: 2px; align-items: center; justify-content: center;
+  background: #0e0e12; border-radius: 4px;
+  padding: 3px 5px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.08);
+}
+.flip-digit {
+  display: inline-flex; flex-direction: column;
+  width: 22px; height: 34px;
+  overflow: hidden; position: relative;
+  background: #181820; border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.8);
+}
+.flip-digit::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: rgba(0,0,0,0.6); z-index: 2; pointer-events: none;
+}
+.flip-digit-inner {
+  position: absolute; top: 0; left: 0; right: 0;
+  transition: transform 0.18s cubic-bezier(0.25,0.8,0.25,1);
+  will-change: transform;
+}
+.flip-digit-inner span {
+  display: flex; align-items: center; justify-content: center;
+  height: 34px; width: 100%;
+  font-family: 'Share Tech Mono', monospace; font-size: 20px;
+  color: #d8c89a; font-weight: 400; letter-spacing: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.flip-suffix {
+  font-family: 'Share Tech Mono', monospace; font-size: 14px;
+  color: #8a7858; margin-left: 3px; align-self: center;
+  letter-spacing: 0.5px;
+}
+.fxo-gain-row {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+}
+.fxo-gain-row .fxo-slider { flex: 1; }
+.fxo-gain-sign {
+  font-family: 'Share Tech Mono', monospace; font-size: 22px;
+  font-weight: 700; flex-shrink: 0; width: 18px; text-align: center;
+  line-height: 1; transition: color 0.12s;
+}
+.fxo-gain-sign.pos { color: #3a9a30; text-shadow: 0 0 6px rgba(58,154,48,0.6); }
+.fxo-gain-sign.neg { color: #cc2200; text-shadow: 0 0 6px rgba(204,34,0,0.6); }
+.fxo-gain-sign.zero { color: var(--text-light); text-shadow: none; }
 
 /* Sliders */
 .fxo-slider {
@@ -744,7 +793,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index227';
+const APP_VERSION = 'index231';
 </script>
 <div id="app">
 
@@ -959,69 +1008,69 @@ const APP_VERSION = 'index227';
         <div class="fxo-bands">
 
           <div class="fxo-band">
-            <div class="fxo-band-freq" id="eq-f-100-label">100 Hz</div>
-            <div class="fxo-ctrl-pair">
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">FREQ</div>
-                <input type="range" class="fxo-slider freq-slider" id="eq-f-100" min="20" max="500" step="1" value="100" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-f-100-val">100 Hz</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">WIDTH</div>
-                <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-q-100-val">Q 1.4</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">GAIN</div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">FREQ</div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-100" min="20" max="500" step="1" value="100" oninput="updateEQ()">
+              <div id="eq-f-100-flip" class="flip-counter"></div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">WIDTH</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+              <div class="fxo-ctrl-val" id="eq-q-100-val">Q 1.4</div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">GAIN</div>
+              <div class="fxo-gain-row">
+                <span class="fxo-gain-sign" id="eq-g-100-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-100" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-g-100-val">0 dB</div>
               </div>
+              <div id="eq-g-100-flip" class="flip-counter"></div>
             </div>
           </div>
 
           <div class="fxo-band-divider"></div>
 
           <div class="fxo-band">
-            <div class="fxo-band-freq" id="eq-f-1k-label">1 kHz</div>
-            <div class="fxo-ctrl-pair">
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">FREQ</div>
-                <input type="range" class="fxo-slider freq-slider" id="eq-f-1k" min="200" max="5000" step="10" value="1000" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-f-1k-val">1 kHz</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">WIDTH</div>
-                <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-q-1k-val">Q 1.4</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">GAIN</div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">FREQ</div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-1k" min="200" max="5000" step="10" value="1000" oninput="updateEQ()">
+              <div id="eq-f-1k-flip" class="flip-counter"></div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">WIDTH</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+              <div class="fxo-ctrl-val" id="eq-q-1k-val">Q 1.4</div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">GAIN</div>
+              <div class="fxo-gain-row">
+                <span class="fxo-gain-sign" id="eq-g-1k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-1k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-g-1k-val">0 dB</div>
               </div>
+              <div id="eq-g-1k-flip" class="flip-counter"></div>
             </div>
           </div>
 
           <div class="fxo-band-divider"></div>
 
           <div class="fxo-band">
-            <div class="fxo-band-freq" id="eq-f-10k-label">10 kHz</div>
-            <div class="fxo-ctrl-pair">
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">FREQ</div>
-                <input type="range" class="fxo-slider freq-slider" id="eq-f-10k" min="2000" max="20000" step="100" value="10000" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-f-10k-val">10 kHz</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">WIDTH</div>
-                <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-q-10k-val">Q 1.4</div>
-              </div>
-              <div class="fxo-ctrl">
-                <div class="fxo-ctrl-label">GAIN</div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">FREQ</div>
+              <input type="range" class="fxo-slider freq-slider" id="eq-f-10k" min="2000" max="20000" step="100" value="10000" oninput="updateEQ()">
+              <div id="eq-f-10k-flip" class="flip-counter"></div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">WIDTH</div>
+              <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
+              <div class="fxo-ctrl-val" id="eq-q-10k-val">Q 1.4</div>
+            </div>
+            <div class="fxo-ctrl">
+              <div class="fxo-ctrl-label">GAIN</div>
+              <div class="fxo-gain-row">
+                <span class="fxo-gain-sign" id="eq-g-10k-sign">●</span>
                 <input type="range" class="fxo-slider gain-slider" id="eq-g-10k" min="-18" max="18" step="0.5" value="0" oninput="updateEQ()">
-                <div class="fxo-ctrl-val" id="eq-g-10k-val">0 dB</div>
               </div>
+              <div id="eq-g-10k-flip" class="flip-counter"></div>
             </div>
           </div>
 
@@ -1079,6 +1128,8 @@ const APP_VERSION = 'index227';
 <script>
 document.getElementById('version-label').textContent = APP_VERSION;
 document.title = 'GoLoco · ' + APP_VERSION;
+// Init flip counters after DOM is ready
+setTimeout(_initFlipCounters, 0);
 
 // ── Migrate old sv_ localStorage keys to gl_ (one-time, silent) ──
 (function(){
@@ -1232,6 +1283,107 @@ function setupAudioAnalyser() {
   }
 }
 
+// ── Flip Counter — mechanical digit display ───────────────────────────────────
+// Each band has its own flip state (array of current digit chars per column)
+const _flipState = { '100': null, '1k': null, '10k': null };
+
+function _buildFlipCounter(containerId, numDigits) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 0; i < numDigits; i++) {
+    const col = document.createElement('div');
+    col.className = 'flip-digit';
+    col.dataset.col = i;
+    // Stack 0-9 as spans inside inner div
+    const inner = document.createElement('div');
+    inner.className = 'flip-digit-inner';
+    for (let d = 0; d <= 9; d++) {
+      const s = document.createElement('span');
+      s.textContent = d;
+      inner.appendChild(s);
+    }
+    col.appendChild(inner);
+    el.appendChild(col);
+  }
+  // suffix label appended after digits
+  const sfx = document.createElement('span');
+  sfx.className = 'flip-suffix';
+  sfx.dataset.role = 'suffix';
+  el.appendChild(sfx);
+}
+
+function _setFlipValue(containerId, hz) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  // Decide display: kHz (1 decimal) or Hz (integer)
+  let displayStr, suffix;
+  if (hz >= 1000) {
+    const khz = hz / 1000;
+    // e.g. 10000 → "10.0", 1500 → "1.5"
+    displayStr = khz.toFixed(khz % 1 === 0 ? 0 : 1).replace('.', '');
+    // pad to match digit count — we always show 3 digit cols for kHz
+    // e.g. "10" → "100" (10.0 kHz shown as 10.0 → digits "100")
+    // Actually encode as fixed-point: multiply by 10, zero-pad to 3 digits
+    const tenths = Math.round(hz / 100); // e.g. 10000→100, 1000→10, 2500→25
+    displayStr = String(tenths).padStart(3, '0'); // "100", "010", "025"
+    suffix = 'kHz';
+  } else {
+    displayStr = String(Math.round(hz)).padStart(3, '0');
+    suffix = 'Hz';
+  }
+
+  // Build counter if needed or if digit count changed
+  const digits = el.querySelectorAll('.flip-digit');
+  if (digits.length !== displayStr.length) {
+    _buildFlipCounter(containerId, displayStr.length);
+  }
+
+  // Animate each digit column
+  el.querySelectorAll('.flip-digit').forEach((col, i) => {
+    const targetDigit = parseInt(displayStr[i], 10);
+    const inner = col.querySelector('.flip-digit-inner');
+    // Each span is 34px tall; offset by targetDigit * -34px
+    inner.style.transform = `translateY(${targetDigit * -34}px)`;
+  });
+
+  // Update suffix
+  const sfx = el.querySelector('[data-role="suffix"]');
+  if (sfx) sfx.textContent = suffix;
+}
+
+function _setGainFlip(containerId, db) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  // Format: sign + abs value padded to 2 digits, suffix "dB"
+  const abs = Math.abs(db);
+  const sign = db > 0 ? '+' : db < 0 ? '-' : ' ';
+  const displayStr = String(Math.round(abs * 10)).padStart(3, '0'); // tenths, 3 digits
+  const digits = el.querySelectorAll('.flip-digit');
+  if (digits.length !== displayStr.length) _buildFlipCounter(containerId, displayStr.length);
+  el.querySelectorAll('.flip-digit').forEach((col, i) => {
+    const d = parseInt(displayStr[i], 10);
+    col.querySelector('.flip-digit-inner').style.transform = `translateY(${d * -34}px)`;
+  });
+  const sfx = el.querySelector('[data-role="suffix"]');
+  if (sfx) sfx.textContent = sign + 'dB';
+}
+
+function _initFlipCounters() {
+  _buildFlipCounter('eq-f-100-flip',  3);
+  _buildFlipCounter('eq-f-1k-flip',   3);
+  _buildFlipCounter('eq-f-10k-flip',  3);
+  _buildFlipCounter('eq-g-100-flip',  3);
+  _buildFlipCounter('eq-g-1k-flip',   3);
+  _buildFlipCounter('eq-g-10k-flip',  3);
+  _setFlipValue('eq-f-100-flip',  100);
+  _setFlipValue('eq-f-1k-flip',   1000);
+  _setFlipValue('eq-f-10k-flip',  10000);
+  _setGainFlip('eq-g-100-flip',  0);
+  _setGainFlip('eq-g-1k-flip',   0);
+  _setGainFlip('eq-g-10k-flip',  0);
+}
+
 // ── Parametric EQ ────────────────────────────────────────────────────────────
 function fmtFreq(hz) {
   return hz >= 1000 ? (hz / 1000).toFixed(hz % 1000 === 0 ? 0 : 1) + ' kHz' : hz + ' Hz';
@@ -1249,13 +1401,17 @@ function updateEQ() {
     const fVal    = parseFloat(fSlider.value);
     const qVal    = parseFloat(qSlider.value);
     const gVal    = parseFloat(gSlider.value);
-    // Update display labels
-    const fLabel  = fmtFreq(fVal);
-    document.getElementById('eq-f-' + id + '-val').textContent   = fLabel;
-    document.getElementById('eq-f-' + id + '-label').textContent = fLabel;
-    document.getElementById('eq-q-' + id + '-val').textContent   = 'Q ' + qVal.toFixed(1);
-    const gLabel = gVal === 0 ? '0 dB' : (gVal > 0 ? '+' + gVal.toFixed(1) + ' dB' : gVal.toFixed(1) + ' dB');
-    document.getElementById('eq-g-' + id + '-val').textContent = gLabel;
+    // Update flip counters
+    _setFlipValue('eq-f-' + id + '-flip', fVal);
+    _setGainFlip('eq-g-' + id + '-flip', gVal);
+    // Sign indicator
+    const signEl = document.getElementById('eq-g-' + id + '-sign');
+    if (signEl) {
+      signEl.className = 'fxo-gain-sign ' + (gVal > 0 ? 'pos' : gVal < 0 ? 'neg' : 'zero');
+      signEl.textContent = gVal > 0 ? '+' : gVal < 0 ? '−' : '●';
+    }
+    // Update Q plain text
+    document.getElementById('eq-q-' + id + '-val').textContent = 'Q ' + qVal.toFixed(1);
     // Apply to filter node if AudioContext is live
     const node = filtVar === '_eq100' ? _eq100 : filtVar === '_eq1k' ? _eq1k : _eq10k;
     if (node) {
