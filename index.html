@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index226                                            -->
+<!-- GoLoco · index227                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index226</title>
+<title>GoLoco · index227</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -744,7 +744,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index226';
+const APP_VERSION = 'index227';
 </script>
 <div id="app">
 
@@ -959,8 +959,13 @@ const APP_VERSION = 'index226';
         <div class="fxo-bands">
 
           <div class="fxo-band">
-            <div class="fxo-band-freq">100 Hz</div>
+            <div class="fxo-band-freq" id="eq-f-100-label">100 Hz</div>
             <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">FREQ</div>
+                <input type="range" class="fxo-slider freq-slider" id="eq-f-100" min="20" max="500" step="1" value="100" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-f-100-val">100 Hz</div>
+              </div>
               <div class="fxo-ctrl">
                 <div class="fxo-ctrl-label">WIDTH</div>
                 <input type="range" class="fxo-slider q-slider" id="eq-q-100" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
@@ -977,8 +982,13 @@ const APP_VERSION = 'index226';
           <div class="fxo-band-divider"></div>
 
           <div class="fxo-band">
-            <div class="fxo-band-freq">1 kHz</div>
+            <div class="fxo-band-freq" id="eq-f-1k-label">1 kHz</div>
             <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">FREQ</div>
+                <input type="range" class="fxo-slider freq-slider" id="eq-f-1k" min="200" max="5000" step="10" value="1000" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-f-1k-val">1 kHz</div>
+              </div>
               <div class="fxo-ctrl">
                 <div class="fxo-ctrl-label">WIDTH</div>
                 <input type="range" class="fxo-slider q-slider" id="eq-q-1k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
@@ -995,8 +1005,13 @@ const APP_VERSION = 'index226';
           <div class="fxo-band-divider"></div>
 
           <div class="fxo-band">
-            <div class="fxo-band-freq">10 kHz</div>
+            <div class="fxo-band-freq" id="eq-f-10k-label">10 kHz</div>
             <div class="fxo-ctrl-pair">
+              <div class="fxo-ctrl">
+                <div class="fxo-ctrl-label">FREQ</div>
+                <input type="range" class="fxo-slider freq-slider" id="eq-f-10k" min="2000" max="20000" step="100" value="10000" oninput="updateEQ()">
+                <div class="fxo-ctrl-val" id="eq-f-10k-val">10 kHz</div>
+              </div>
               <div class="fxo-ctrl">
                 <div class="fxo-ctrl-label">WIDTH</div>
                 <input type="range" class="fxo-slider q-slider" id="eq-q-10k" min="0.2" max="8" step="0.1" value="1.4" oninput="updateEQ()">
@@ -1218,6 +1233,9 @@ function setupAudioAnalyser() {
 }
 
 // ── Parametric EQ ────────────────────────────────────────────────────────────
+function fmtFreq(hz) {
+  return hz >= 1000 ? (hz / 1000).toFixed(hz % 1000 === 0 ? 0 : 1) + ' kHz' : hz + ' Hz';
+}
 function updateEQ() {
   const bands = [
     { filtVar: '_eq100', id: '100' },
@@ -1225,27 +1243,34 @@ function updateEQ() {
     { filtVar: '_eq10k', id: '10k' },
   ];
   bands.forEach(({ filtVar, id }) => {
+    const fSlider = document.getElementById('eq-f-' + id);
     const qSlider = document.getElementById('eq-q-' + id);
     const gSlider = document.getElementById('eq-g-' + id);
+    const fVal    = parseFloat(fSlider.value);
     const qVal    = parseFloat(qSlider.value);
     const gVal    = parseFloat(gSlider.value);
     // Update display labels
-    document.getElementById('eq-q-' + id + '-val').textContent = 'Q ' + qVal.toFixed(1);
+    const fLabel  = fmtFreq(fVal);
+    document.getElementById('eq-f-' + id + '-val').textContent   = fLabel;
+    document.getElementById('eq-f-' + id + '-label').textContent = fLabel;
+    document.getElementById('eq-q-' + id + '-val').textContent   = 'Q ' + qVal.toFixed(1);
     const gLabel = gVal === 0 ? '0 dB' : (gVal > 0 ? '+' + gVal.toFixed(1) + ' dB' : gVal.toFixed(1) + ' dB');
     document.getElementById('eq-g-' + id + '-val').textContent = gLabel;
     // Apply to filter node if AudioContext is live
     const node = filtVar === '_eq100' ? _eq100 : filtVar === '_eq1k' ? _eq1k : _eq10k;
     if (node) {
-      node.Q.value    = qVal;
-      node.gain.value = gVal;
+      node.frequency.value = fVal;
+      node.Q.value         = qVal;
+      node.gain.value      = gVal;
     }
   });
 }
 
 function resetEQ() {
-  [['100','eq-q-100','eq-g-100'], ['1k','eq-q-1k','eq-g-1k'], ['10k','eq-q-10k','eq-g-10k']].forEach(([id, qId, gId]) => {
-    document.getElementById(qId).value = 1.4;
-    document.getElementById(gId).value = 0;
+  [['100', 20, 500, 100], ['1k', 200, 5000, 1000], ['10k', 2000, 20000, 10000]].forEach(([id, , , fDefault]) => {
+    document.getElementById('eq-f-' + id).value = fDefault;
+    document.getElementById('eq-q-' + id).value = 1.4;
+    document.getElementById('eq-g-' + id).value = 0;
   });
   updateEQ();
   showNotif('EQ RESET TO FLAT');
