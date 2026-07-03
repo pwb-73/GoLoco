@@ -10,7 +10,7 @@ I couldn't find anything out there that did this. Perhaps I didn't look hard eno
 
 **To use GoLoco:** Open Safari on your iPad and go to [pwb-73.github.io/GoLoco](https://pwb-73.github.io/GoLoco). Then tap the Share button and select "Add to Home Screen" — this gives you an app-like icon on your iPad that always loads the latest version automatically. You can also use it in Safari just like any web page, no download or installation needed.
 
-To Get the Songs into GoLoco:
+To Get Songs Into GoLoco:
 
 FROM A WINDOWS DESKTOP COMPUTER
 
