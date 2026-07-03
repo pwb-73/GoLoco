@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index264                                            -->
+<!-- GoLoco · index265                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index264</title>
+<title>GoLoco · index265</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -426,13 +426,24 @@ tr.cued.playing td { background: #ffe600 !important; }
 .volume-group { display: flex; align-items: center; gap: 8px; }
 .vol-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 1px; font-weight: 400; flex-shrink: 0; }
 /* [6] Volume slider 2× wider: was 150px → 300px, and taller thumb */
+@keyframes vol-barberscroll {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 0 0, 14px 0; }
+}
 .vol-slider {
   -webkit-appearance: none;
   width: 300px; height: 16px;
   border-radius: 0;
-  background: linear-gradient(90deg, var(--orange) 0%, var(--orange) var(--vol-pct,80%), #3a2818 var(--vol-pct,80%));
+  background-image:
+    linear-gradient(90deg, transparent 0%, transparent var(--vol-pct,80%), #3a2818 var(--vol-pct,80%), #3a2818 100%),
+    repeating-linear-gradient(45deg, var(--orange-bright) 0, var(--orange-bright) 5px, var(--orange-dark) 5px, var(--orange-dark) 10px);
+  background-size: 100% 100%, 14px 14px;
+  background-position: 0 0, 0 0;
   outline: none; cursor: pointer;
+  animation: vol-barberscroll 1.6s linear infinite;
+  animation-play-state: paused;
 }
+.vol-slider.playing { animation-play-state: running; }
 .vol-slider::-webkit-slider-thumb {
   -webkit-appearance: none; width: 36px; height: 36px;
   border-radius: 50%;
@@ -814,7 +825,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index264';
+const APP_VERSION = 'index265';
 </script>
 <div id="app">
 
@@ -2005,6 +2016,11 @@ function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!lib
 function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
 function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
+
+// Barber-pole volume fill scrolls while audio is actually playing, freezes on pause/end
+audio.addEventListener('play', () => document.querySelector('.vol-slider').classList.add('playing'));
+audio.addEventListener('pause', () => document.querySelector('.vol-slider').classList.remove('playing'));
+audio.addEventListener('ended', () => document.querySelector('.vol-slider').classList.remove('playing'));
 
 audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
 audio.addEventListener('ended', () => {
