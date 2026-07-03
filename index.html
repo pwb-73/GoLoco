@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index262                                            -->
+<!-- GoLoco · index264                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index262</title>
+<title>GoLoco · index264</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -418,6 +418,10 @@ tr.cued.playing td { background: #ffe600 !important; }
   color: #fff !important;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
 }
+/* Shuffle now lives in the topbar tab group — muted grey when off, orange (default row look) when on */
+#topbar-tab-group #shuffle-btn:not(.active) {
+  background: linear-gradient(180deg,#8a8a82,#5a5a52) !important;
+}
 /* Volume group: label + slider */
 .volume-group { display: flex; align-items: center; gap: 8px; }
 .vol-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-light); letter-spacing: 1px; font-weight: 400; flex-shrink: 0; }
@@ -810,7 +814,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index262';
+const APP_VERSION = 'index264';
 </script>
 <div id="app">
 
@@ -853,8 +857,8 @@ const APP_VERSION = 'index262';
             <button id="played-count-display" onclick="showAllDonePopup()" title="Tap to reset played tracks" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border:none;border-right:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
               <span id="played-count-num" style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;white-space:nowrap;">0 / 0</span>
             </button>
-            <button id="focus-btn" onclick="grabAudioFocus()" title="Claim audio focus" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,#3a8a30,#1a5a10);border-left:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
-              <span style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">get focus</span>
+            <button id="shuffle-btn" onclick="toggleShuffle()" title="Toggle Shuffle" style="cursor:pointer;border:none;outline:none;background:linear-gradient(180deg,var(--orange-bright),var(--orange),var(--orange-dark));border-left:1px solid rgba(0,0,0,0.25);border-radius:0;padding:0 10px;height:25px;min-width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 0.08s;">
+              <span style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:400;color:#fff;letter-spacing:0.5px;line-height:1;text-transform:lowercase;">shuffle</span>
             </button>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;"><button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ clear sort</button></div>
@@ -963,7 +967,6 @@ const APP_VERSION = 'index262';
         <div class="player-right">
           <div class="shuffle-vol-row">
             <img id="readme-btn" src="cup.png" alt="README" onclick="openReadme()" title="About GoLoco">
-            <button class="sel-btn" id="shuffle-btn" onclick="toggleShuffle()">shuffle</button>
             <div class="volume-group">
               <span class="vol-label">VOL</span>
               <input type="range" class="vol-slider" id="vol-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
@@ -2922,30 +2925,6 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(
 // ── iOS background / foreground recovery ────────────────────────────────────
 // Safari suspends AudioContext and sometimes kills blob URLs when backgrounded.
 // We need to handle both visibilitychange (tab switch) and pageshow (back-nav in PWA).
-
-function grabAudioFocus() {
-  const btn = document.getElementById('focus-btn');
-  const doResume = () => {
-    if (audio.src && isPlaying && audio.paused) {
-      audio.play().then(() => {
-        startKeepAlive();
-        showNotif('AUDIO FOCUS RESTORED');
-        if (btn) btn.style.background = 'linear-gradient(180deg,#3a8a30,#1a5a10)';
-      }).catch(() => showNotif('COULD NOT RESUME — TAP PLAY'));
-    } else {
-      if (_audioCtx && _audioCtx.state === 'running') showNotif('AUDIO FOCUS OK');
-      else showNotif('FOCUS CLAIMED — TAP PLAY');
-    }
-  };
-  if (_audioCtx && _audioCtx.state === 'suspended') {
-    _audioCtx.resume().then(doResume).catch(doResume);
-  } else if (!_audioCtx) {
-    setupAudioAnalyser();
-    doResume();
-  } else {
-    doResume();
-  }
-}
 
 function handleForegroundReturn() {
   // 1. Resume AudioContext — must happen before any audio.play() call
