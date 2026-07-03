@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index265                                            -->
+<!-- GoLoco · index269                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index265</title>
+<title>GoLoco · index269</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -455,8 +455,7 @@ tr.cued.playing td { background: #ffe600 !important; }
 .progress-row { display: flex; align-items: center; gap: 10px; }
 .time-lbl { font-family: 'Share Tech Mono', monospace; font-size: 13px; font-weight: 400; color: var(--text-light); min-width: 40px; }
 .time-lbl.r { text-align: right; }
-.prog-track { flex: 1; height: 10px; background: #1a1008; border-radius: 0; border: 1px solid #0a0804; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); cursor: pointer; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg,var(--orange-bright),var(--orange)); border-radius: 0; width: 0%; transition: width 0.2s linear; pointer-events: none; box-shadow: 0 0 8px rgba(240,112,48,0.6); }
+.prog-track { flex: 1; height: 32px; width: 100%; display: block; background: linear-gradient(180deg,#fffff0,#f0e8d0); border-radius: 0; border: 1px solid var(--tan); box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); cursor: pointer; }
 
 /* RESPONSIVE */
 @media (max-height: 850px) {
@@ -470,7 +469,7 @@ tr.cued.playing td { background: #ffe600 !important; }
   /* responsive handled by clamp */
   .vol-slider { width: 200px; }
   .progress-row { gap: 7px; }
-  .prog-track { height: 8px; }
+  .prog-track { height: 22px; }
   #right-panel { width: 180px; }
 }
 @media (max-height: 700px) {
@@ -825,7 +824,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index265';
+const APP_VERSION = 'index269';
 </script>
 <div id="app">
 
@@ -988,7 +987,7 @@ const APP_VERSION = 'index265';
 
       <div class="progress-row">
         <span class="time-lbl" id="t-cur">0:00</span>
-        <div class="prog-track" onclick="seekTo(event)"><div class="prog-fill" id="prog-fill"></div></div>
+        <canvas id="prog-canvas" class="prog-track" onclick="seekTo(event)"></canvas>
         <span class="time-lbl r" id="t-tot">0:00</span>
       </div>
     </div>
@@ -1890,7 +1889,7 @@ function clearFade(){
   document.getElementById('stop-btn-v').style.opacity='1';
 }
 function stopTrack(){
-  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();document.getElementById('prog-fill').style.width='0%';document.getElementById('t-cur').textContent='0:00';if(window.fadeOutRoadAnim)fadeOutRoadAnim();return;}
+  if(!audio.src||audio.paused){audio.currentTime=0;isPlaying=false;updatePlayBtn();drawWaveform(currentWaveformPeaks,0);document.getElementById('t-cur').textContent='0:00';if(window.fadeOutRoadAnim)fadeOutRoadAnim();return;}
   clearFade();
   isFading=true;
 
@@ -1951,7 +1950,7 @@ function stopTrack(){
         isPlaying=false;updatePlayBtn();
         stopKeepAlive();
         if(window.fadeOutRoadAnim)fadeOutRoadAnim();
-        document.getElementById('prog-fill').style.width='0%';
+        drawWaveform(currentWaveformPeaks,0);
         document.getElementById('t-cur').textContent='0:00';
         document.getElementById('stop-btn-v').style.opacity='1';
         isFading=false;
@@ -2015,14 +2014,85 @@ function nextTrack(){
 function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!library.length)return;let prev;if(queue.length){const qi=queue.indexOf(currentIndex);prev=qi>0?queue[qi-1]:queue[queue.length-1];}else prev=(currentIndex-1+library.length)%library.length;playTrack(prev);}
 function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
 function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
-function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
+function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;drawWaveform(currentWaveformPeaks,audio.currentTime/audio.duration);}
+
+// ── Waveform progress bar ────────────────────────────────────────────────────
+// Decodes the actual audio data of the current track into a min/max envelope
+// per column, drawn as a continuous filled trace (not discrete bars) split into
+// played (bright) / remaining (dark) at the current playback position.
+// Peaks are cached per track ID so replays are instant.
+const waveformCache = new Map();
+let currentWaveformPeaks = null;
+let _waveformDecodeCtx = null;
+function getWaveformDecodeCtx(){
+  if(!_waveformDecodeCtx) _waveformDecodeCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _waveformDecodeCtx;
+}
+function getWaveformPeaks(track){
+  if(!track) return Promise.resolve(null);
+  if(waveformCache.has(track.id)) return Promise.resolve(waveformCache.get(track.id));
+  if(!track.file) return Promise.resolve(null);
+  return track.file.arrayBuffer().then(buf=>getWaveformDecodeCtx().decodeAudioData(buf)).then(audioBuffer=>{
+    const numCols=600;
+    const raw=audioBuffer.getChannelData(0);
+    const blockSize=Math.max(1,Math.floor(raw.length/numCols));
+    const maxV=new Float32Array(numCols), minV=new Float32Array(numCols);
+    for(let i=0;i<numCols;i++){
+      let mx=0,mn=0; const start=i*blockSize; const end=Math.min(start+blockSize,raw.length);
+      for(let j=start;j<end;j++){const v=raw[j];if(v>mx)mx=v;if(v<mn)mn=v;}
+      maxV[i]=mx; minV[i]=mn;
+    }
+    let peakAbs=0;
+    for(let i=0;i<numCols;i++){peakAbs=Math.max(peakAbs,maxV[i],-minV[i]);}
+    if(peakAbs>0){
+      for(let i=0;i<numCols;i++){maxV[i]/=peakAbs;minV[i]/=peakAbs;}
+    }
+    const data={max:maxV,min:minV};
+    waveformCache.set(track.id,data);
+    return data;
+  }).catch(err=>{console.warn('waveform decode failed',err);return null;});
+}
+function drawWaveform(data,progressPct){
+  const canvas=document.getElementById('prog-canvas');
+  if(!canvas) return;
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  const w=rect.width,h=rect.height;
+  if(!w||!h) return;
+  if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){
+    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+  }
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  if(!data||!data.max||!data.max.length){
+    ctx.fillStyle='#3a2818';
+    ctx.fillRect(0,h/2-1,w,2);
+    return;
+  }
+  const maxV=data.max, minV=data.min, n=maxV.length;
+  const centerY=h/2, halfH=h/2-2;
+  const colW=w/n;
+  const playedX=w*(progressPct||0);
+  for(let i=0;i<n;i++){
+    const x=i*colW;
+    const yTop=centerY-Math.max(2,maxV[i]*halfH);
+    const yBot=centerY-Math.min(-2,minV[i]*halfH);
+    ctx.fillStyle = x<playedX ? '#f07030' : '#3a2818';
+    ctx.fillRect(x,yTop,Math.max(1,colW-0.4),yBot-yTop);
+  }
+}
+window.addEventListener('resize', ()=>{
+  const pct = audio.duration ? audio.currentTime/audio.duration : 0;
+  drawWaveform(currentWaveformPeaks,pct);
+});
 
 // Barber-pole volume fill scrolls while audio is actually playing, freezes on pause/end
 audio.addEventListener('play', () => document.querySelector('.vol-slider').classList.add('playing'));
 audio.addEventListener('pause', () => document.querySelector('.vol-slider').classList.remove('playing'));
 audio.addEventListener('ended', () => document.querySelector('.vol-slider').classList.remove('playing'));
 
-audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=(audio.currentTime/audio.duration)*100;document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
+audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const pct=audio.currentTime/audio.duration;drawWaveform(currentWaveformPeaks,pct);document.getElementById('t-cur').textContent=fmtTime(audio.currentTime);document.getElementById('t-tot').textContent=fmtTime(audio.duration);});
 audio.addEventListener('ended', () => {
   // Mark current track as played by ID
   if(currentIndex>=0 && library[currentIndex]){
@@ -2601,6 +2671,14 @@ function playTrack(idx){
   setupAudioAnalyser();
 
   audio.src=t.url;
+  currentWaveformPeaks=null;
+  drawWaveform(null,0);
+  getWaveformPeaks(t).then(peaks=>{
+    if(currentIndex!==idx) return;
+    currentWaveformPeaks=peaks;
+    const pct = audio.duration ? audio.currentTime/audio.duration : 0;
+    drawWaveform(peaks,pct);
+  });
   const vol=parseFloat(document.getElementById('vol-slider').value);
   audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;
   document.getElementById('player-title').textContent=(t.title||t.name).toUpperCase();
