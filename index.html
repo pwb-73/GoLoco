@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index269                                            -->
+<!-- GoLoco · index270                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index269</title>
+<title>GoLoco · index270</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -824,7 +824,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index269';
+const APP_VERSION = 'index270';
 </script>
 <div id="app">
 
@@ -3410,6 +3410,23 @@ document.body.addEventListener('touchmove',function(e){if(e.target===document.bo
     <button class="all-done-btn" onclick="document.getElementById('all-done-overlay').classList.remove('open')" style="margin-top:8px;background:transparent;border-color:var(--text-light);color:var(--text-light);">CANCEL</button>
   </div>
 </div>
+
+<!-- GOATCOUNTER — privacy-friendly visit counter (no cookies, no personal data).
+     Set GC_CODE to your GoatCounter site code (the part before .goatcounter.com).
+     Left as 'YOUR-CODE' it does nothing. Skips silently when offline. -->
+<script>
+(function(){
+  var GC_CODE = 'pwb73';
+  if (!GC_CODE || GC_CODE === 'YOUR-CODE' || !navigator.onLine) return;
+  try {
+    var g = document.createElement('script');
+    g.async = true;
+    g.src = 'https://gc.zgo.at/count.js';
+    g.setAttribute('data-goatcounter', 'https://' + GC_CODE + '.goatcounter.com/count');
+    document.body.appendChild(g);
+  } catch(e) {}
+})();
+</script>
 
 </body>
 </html>
