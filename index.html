@@ -1,5 +1,5 @@
 <!-- ============================================================ -->
-<!-- GoLoco · index270                                            -->
+<!-- GoLoco · index271 REV1                                            -->
 <!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GoLoco">
-<title>GoLoco · index270</title>
+<title>GoLoco · index271 REV1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;900&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -824,7 +824,7 @@ tr.played-row.playing td { opacity: 1; }
 </head>
 <body>
 <script>/* *** BUMP_VERSION_HERE *** */
-const APP_VERSION = 'index270';
+const APP_VERSION = 'index271 REV1';
 </script>
 <div id="app">
 
@@ -844,7 +844,7 @@ const APP_VERSION = 'index270';
         <input type="text" id="search-bar" placeholder="SEARCH..." oninput="onSearch(this.value)">
       </div>
       <div style="margin-left:auto; flex-shrink:0; display:flex; align-items:center; height:100%; padding-right:8px;">
-        <div class="brand" onclick="triggerFileImport()" title="Tap to import music"><span class="gl">G</span><span class="gl">O</span><span class="gl">L</span><span class="gl">O</span><span class="gl">C</span><span class="gl">O</span></div>
+        <div class="brand" onclick="triggerFileImport()" title="Tap to load a new set of songs (replaces the current set)"><span class="gl">G</span><span class="gl">O</span><span class="gl">L</span><span class="gl">O</span><span class="gl">C</span><span class="gl">O</span></div>
       </div>
     </div>
   </div>
@@ -872,6 +872,7 @@ const APP_VERSION = 'index270';
             </button>
           </div>
           <div class="sort-hint" id="sort-hint" style="padding:0;flex:1;"><button class="sort-clear-btn" id="sort-clear-btn" onclick="clearSort()">✕ clear sort</button></div>
+          <span id="storage-label" title="Songs stored in the app" style="font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:400;color:#2a1a08;letter-spacing:1px;flex-shrink:0;margin-right:12px;"></span>
           <span id="version-label" style="font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:400;color:#000000;letter-spacing:1px;flex-shrink:0;"></span>
         </div>
         <div class="track-table-wrap">
@@ -1228,6 +1229,10 @@ function setupAudioAnalyser() {
     // Create context only once
     if (!_audioCtx) {
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // REV1: iOS can suspend/interrupt the context in the background — resume it if we are meant to be playing
+      _audioCtx.onstatechange = () => {
+        if (isPlaying && !isFading && _audioCtx.state !== 'running') _audioCtx.resume().catch(() => {});
+      };
     }
     // createMediaElementSource can only be called once per audio element.
     // Guard strictly — calling it twice throws InvalidStateError and kills audio.
@@ -1425,6 +1430,7 @@ function fmtFreq(hz) {
   return hz >= 1000 ? (hz / 1000).toFixed(hz % 1000 === 0 ? 0 : 1) + ' kHz' : hz + ' Hz';
 }
 function updateEQ() {
+  scheduleSave();
   const bands = [
     { filtVar: '_eq100', id: '100' },
     { filtVar: '_eq1k',  id: '1k'  },
@@ -1500,6 +1506,7 @@ function resetReverb() {
 }
 
 function updateReverb() {
+  scheduleSave();
   const size  = parseFloat(document.getElementById('rv-size').value);
   const wet   = parseFloat(document.getElementById('rv-wet').value);
   const delay = parseFloat(document.getElementById('rv-delay').value);
@@ -1625,7 +1632,7 @@ function showView(view,el){currentView=view;document.querySelectorAll('.view').f
 
 // FILE IMPORT
 function triggerFileImport(){const inp=document.getElementById('file-input');inp.value='';inp.click();}
-function handleFiles(e){const all=Array.from(e.target.files);const files=all.filter(f=>/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name)||f.type.startsWith('audio/'));e.target.value='';if(!files.length){if(all.length)processFileList(all);else showNotif('NO AUDIO FILES FOUND');return;}processFileList(files);}
+function handleFiles(e){const all=Array.from(e.target.files);const files=all.filter(f=>/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name)||f.type.startsWith('audio/'));e.target.value='';if(!files.length&&!all.length){showNotif('NO AUDIO FILES FOUND');return;}loadNewSet(files.length?files:all);}
 function filenameToId(name){let h=0;for(let i=0;i<name.length;i++){h=(Math.imul(31,h)+name.charCodeAt(i))|0;}return String(h>>>0);}
 
 function processFileList(files){
@@ -1635,18 +1642,18 @@ function processFileList(files){
   let renderTimer=null;
   function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(()=>{renderView();},150);}
   const safetyTimer=setTimeout(()=>{showNotif(`✓ LOADED ${added} TRACK(S)`);renderView();},10000);
-  function done(){resolved++;scheduleRender();if(resolved>=total){clearTimeout(safetyTimer);clearTimeout(renderTimer);showNotif(`✓ ADDED ${added} TRACK(S)${skipped?' · '+skipped+' ALREADY IN LIBRARY':''}`);updatePlayedCount();renderView();}}
+  function done(){resolved++;scheduleRender();if(resolved>=total){clearTimeout(safetyTimer);clearTimeout(renderTimer);showNotif(`✓ ADDED ${added} TRACK(S)${skipped?' · '+skipped+' ALREADY IN LIBRARY':''}`);updatePlayedCount();renderView();_dbQueue=_dbQueue.then(()=>{if(_dbOK)showNotif('✓ '+library.length+' TRACKS SAVED');updateStorageLabel();});}}
   files.forEach(file=>{
     const stableId=filenameToId(file.name);
     if(library.find(t=>t.id===stableId)){skipped++;done();return;}
     const url=URL.createObjectURL(file);const ext=(file.name.split('.').pop()||'').toUpperCase();
     const t={id:stableId,url,file,name:file.name.replace(/\.[^.]+$/,''),title:'',artist:'Unknown Artist',album:'Unknown Album',composer:'Unknown',genre:'Unknown',year:'',format:ext,duration:0,art:null};
     const parts=t.name.split(' - ');if(parts.length>=2){t.artist=parts[0].trim();t.title=parts.slice(1).join(' - ').trim();}else t.title=t.name;
-    library.push(t);added++;
+    library.push(t);added++;persistFile(file,stableId,library.length-1);
     extractID3(file,t);
     const tmp=new Audio();tmp.preload='metadata';
     const tmo=setTimeout(()=>done(),6000);
-    tmp.addEventListener('loadedmetadata',()=>{clearTimeout(tmo);t.duration=tmp.duration;done();},{once:true});
+    tmp.addEventListener('loadedmetadata',()=>{clearTimeout(tmo);t.duration=tmp.duration;_cacheDuration(t.id,tmp.duration);done();},{once:true});
     tmp.addEventListener('error',()=>{clearTimeout(tmo);done();},{once:true});
     tmp.src=url;
   });
@@ -1710,13 +1717,15 @@ function extractID3(file,obj){
         pos+=10+fsz;
       }
     }catch(err){console.warn('ID3 parse error',err);}
+    if(library.indexOf(obj)===currentIndex&&typeof refreshPlayerText==='function')refreshPlayerText();
+    if(typeof _scheduleRender==='function')_scheduleRender();
   };
   reader.readAsArrayBuffer(file.slice(0,readSize));
 }
 
 // SORT
-function addSort(col,event){const i=sortCriteria.findIndex(s=>s.col===col);if(i!==-1){if(sortCriteria[i].dir==='asc')sortCriteria[i].dir='desc';else sortCriteria.splice(i,1);}else sortCriteria.push({col,dir:'asc'});updateSortHeaders();renderAll();}
-function clearSort(){sortCriteria=[];document.querySelectorAll('#track-table thead th[data-col]').forEach(th=>{th.className='';const b=th.querySelector('.sort-priority');if(b)b.remove();});updateSortHeaders();renderAll();showNotif('SORT CLEARED');}
+function addSort(col,event){scheduleSave();const i=sortCriteria.findIndex(s=>s.col===col);if(i!==-1){if(sortCriteria[i].dir==='asc')sortCriteria[i].dir='desc';else sortCriteria.splice(i,1);}else sortCriteria.push({col,dir:'asc'});updateSortHeaders();renderAll();}
+function clearSort(){scheduleSave();sortCriteria=[];document.querySelectorAll('#track-table thead th[data-col]').forEach(th=>{th.className='';const b=th.querySelector('.sort-priority');if(b)b.remove();});updateSortHeaders();renderAll();showNotif('SORT CLEARED');}
 function updateSortHeaders(){
   document.querySelectorAll('#track-table thead th[data-col]').forEach(th=>{th.className='';const col=th.getAttribute('data-col');const s=sortCriteria.find(s=>s.col===col);if(s){th.classList.add(s.dir==='asc'?'sort-asc':'sort-desc');const existing=th.querySelector('.sort-priority');if(existing)existing.remove();if(sortCriteria.length>1){const b=document.createElement('span');b.className='sort-priority';b.textContent=sortCriteria.indexOf(s)+1;th.appendChild(b);}}});
   const clearBtn=document.getElementById('sort-clear-btn');if(clearBtn)clearBtn.classList.toggle('visible',sortCriteria.length>0);
@@ -2012,8 +2021,8 @@ function nextTrack(){
   playTrack(next);
 }
 function prevTrack(){if(audio.currentTime>3){audio.currentTime=0;return;}if(!library.length)return;let prev;if(queue.length){const qi=queue.indexOf(currentIndex);prev=qi>0?queue[qi-1]:queue[queue.length-1];}else prev=(currentIndex-1+library.length)%library.length;playTrack(prev);}
-function toggleShuffle(){isShuffle=!isShuffle;document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
-function setVolume(v){clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
+function toggleShuffle(){isShuffle=!isShuffle;scheduleSave();document.getElementById('shuffle-btn').classList.toggle('active',isShuffle);showNotif(isShuffle?'SHUFFLE ON':'SHUFFLE OFF');}
+function setVolume(v){scheduleSave();clearFade();const vol=parseFloat(v);audio.volume=vol;if(_masterGain)_masterGain.gain.value=vol;document.querySelector('.vol-slider').style.setProperty('--vol-pct',(v*100)+'%');}
 function seekTo(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;drawWaveform(currentWaveformPeaks,audio.currentTime/audio.duration);}
 
 // ── Waveform progress bar ────────────────────────────────────────────────────
@@ -2382,6 +2391,252 @@ document.getElementById('shuffle-btn').classList.add('active');
   },{passive:true});
 })();
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REV1 — PERSISTENCE: stored song set (IndexedDB), settings, playback position
+// ═══════════════════════════════════════════════════════════════════════════
+// • The current set of songs is copied into the app's own storage when you load it,
+//   so it survives iOS unloading the page. Loading a new set REPLACES the old one.
+// • EQ / reverb / echo / volume / shuffle / sort / current track + position are saved
+//   whenever they change and whenever the page is hidden or closed.
+// • Add GoLoco to the Home Screen: Safari clears website storage after ~7 days of
+//   non-use, but Home Screen apps are exempt.
+const DB_NAME = 'goloco_set', DB_STORE = 'files';
+const SETTINGS_KEY = 'gl_settings';
+const _SLIDER_IDS = ['eq-f-100','eq-q-100','eq-g-100','eq-f-1k','eq-q-1k','eq-g-1k','eq-f-10k','eq-q-10k','eq-g-10k','rv-size','rv-wet','rv-delay','rv-fb'];
+let _dbPromise = null, _dbQueue = Promise.resolve(), _dbOK = true;
+let _restoreDone = false, _pendingRestore = null, _needLyrics = false;
+
+function dbOpen() {
+  if (_dbPromise) return _dbPromise;
+  _dbPromise = new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(DB_STORE)) r.result.createObjectStore(DB_STORE, { keyPath: 'id' }); };
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.onblocked = () => reject(new Error('IndexedDB blocked'));
+  });
+  _dbPromise.catch(() => { _dbPromise = null; });
+  return _dbPromise;
+}
+function dbWrite(fn) {
+  return dbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    try { fn(tx.objectStore(DB_STORE)); } catch (e) { reject(e); return; }
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error || new Error('IndexedDB aborted'));
+  }));
+}
+function dbPut(rec) { return dbWrite(s => { s.put(rec); }); }
+function dbDelete(id) { return dbWrite(s => { s.delete(id); }); }
+function dbClear() { return dbWrite(s => { s.clear(); }); }
+function dbLoadAll() {
+  return dbOpen().then(db => new Promise((resolve, reject) => {
+    const out = [];
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).openCursor();
+    req.onsuccess = () => { const c = req.result; if (c) { out.push(c.value); c.continue(); } };
+    tx.oncomplete = () => resolve(out.sort((a, b) => a.seq - b.seq));
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error || new Error('IndexedDB aborted'));
+  }));
+}
+
+function requestPersist() {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+}
+
+function persistFile(file, id, seq) {
+  _dbQueue = _dbQueue
+    .then(() => dbPut({ id, seq, name: file.name, type: file.type || '', size: file.size, blob: file }))
+    .catch(err => {
+      console.warn('GoLoco: could not store file', err);
+      if (_dbOK) { _dbOK = false; showNotif('SET NOT SAVED — STORAGE FULL?'); updateStorageLabel(); }
+    });
+}
+
+// ── duration cache (avoids re-probing every file on startup) ────────────────
+let _durCache = null, _durTimer = null;
+function _getDurs() {
+  if (!_durCache) { try { _durCache = JSON.parse(localStorage.getItem('gl_durs') || '{}'); } catch (e) { _durCache = {}; } }
+  return _durCache;
+}
+function _cacheDuration(id, dur) {
+  if (!dur || isNaN(dur)) return;
+  _getDurs()[id] = dur;
+  clearTimeout(_durTimer);
+  _durTimer = setTimeout(() => { try { localStorage.setItem('gl_durs', JSON.stringify(_durCache)); } catch (e) {} }, 800);
+}
+
+let _renderT = null;
+function _scheduleRender() { clearTimeout(_renderT); _renderT = setTimeout(() => renderView(), 200); }
+
+function fmtBytes(b) { return b >= 1073741824 ? (b / 1073741824).toFixed(2) + ' GB' : Math.round(b / 1048576) + ' MB'; }
+function updateStorageLabel() {
+  const el = document.getElementById('storage-label');
+  if (!el) return;
+  if (!library.length) { el.textContent = ''; return; }
+  const used = library.reduce((a, t) => a + ((t.file && t.file.size) || 0), 0);
+  el.textContent = 'SET ' + fmtBytes(used) + (_dbOK ? '' : ' · NOT SAVED');
+  if (_dbOK && navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(e => {
+      if (e && e.quota && _dbOK && library.length) el.textContent = 'SET ' + fmtBytes(used) + ' · ' + fmtBytes(Math.max(0, e.quota - (e.usage || 0))) + ' FREE';
+    }).catch(() => {});
+  }
+}
+
+function refreshPlayerText() {
+  const t = currentIndex >= 0 ? library[currentIndex] : null;
+  if (!t) return;
+  const title = (t.title || t.name).toUpperCase();
+  const artist = t.artist.toUpperCase() + (t.album !== 'Unknown Album' ? ' — ' + t.album.toUpperCase() : '');
+  const pt = document.getElementById('player-title'), pa = document.getElementById('player-artist');
+  if (pt) pt.textContent = title; if (pa) pa.textContent = artist;
+  const nt = document.getElementById('np-title'), na = document.getElementById('np-artist');
+  if (nt) nt.textContent = title; if (na) na.textContent = artist;
+}
+
+// ── Load a NEW set: wipe the old one (memory + storage), then store the new files ──
+function clearCurrentSet() {
+  try { audio.pause(); } catch (e) {}
+  clearFade();
+  audio.removeAttribute('src'); try { audio.load(); } catch (e) {}
+  isPlaying = false; currentIndex = -1; queue = []; isCueQueue = false; _pendingRestore = null; _needLyrics = false;
+  library.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); if (t.art && String(t.art).indexOf('blob:') === 0) URL.revokeObjectURL(t.art); });
+  library = [];
+  Object.keys(artCache).forEach(k => delete artCache[k]); artFetchQueue.length = 0;
+  waveformCache.clear(); currentWaveformPeaks = null; drawWaveform(null, 0);
+  playedThisSession.clear(); savePlayed();
+  _durCache = {}; try { localStorage.removeItem('gl_durs'); } catch (e) {}
+  document.getElementById('player-title').textContent = 'NO TRACK SELECTED';
+  document.getElementById('player-artist').textContent = '— SELECT A TRACK TO BEGIN —';
+  document.getElementById('t-cur').textContent = '0:00'; document.getElementById('t-tot').textContent = '0:00';
+  updatePlayBtn(); updateArtDisplay(); stopKeepAlive();
+  if (window.fadeOutRoadAnim) fadeOutRoadAnim();
+  if (typeof updateLyricsTicker === 'function') updateLyricsTicker(null);
+  _dbOK = true;
+  _dbQueue = _dbQueue.then(() => dbClear()).catch(() => {});
+  saveSettings();
+  updatePlayedCount(); renderView(); updateStorageLabel();
+}
+function loadNewSet(list) {
+  if (library.length) clearCurrentSet();
+  requestPersist();
+  processFileList(list);
+}
+
+// ── Settings persistence ────────────────────────────────────────────────────
+let _saveTimer = null;
+function scheduleSave() { clearTimeout(_saveTimer); _saveTimer = setTimeout(saveSettings, 400); }
+function saveSettings() {
+  try {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch (e) {}
+    s = s || {};
+    s.vol = parseFloat(document.getElementById('vol-slider').value);
+    s.sl = {};
+    _SLIDER_IDS.forEach(id => { const el = document.getElementById(id); if (el) s.sl[id] = el.value; });
+    s.shuffle = isShuffle;
+    s.sort = sortCriteria;
+    // Don't overwrite the remembered track/position until the stored set has been reloaded
+    if (_restoreDone) {
+      const t = currentIndex >= 0 ? library[currentIndex] : null;
+      s.tid = t ? t.id : null;
+      s.pos = !t ? 0 : (_pendingRestore && _pendingRestore.idx === currentIndex) ? _pendingRestore.pos : (audio.currentTime || 0);
+    }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  } catch (e) {}
+}
+function restoreSettings() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch (e) {}
+  if (!s) return;
+  if (s.sl) Object.keys(s.sl).forEach(id => { const el = document.getElementById(id); if (el && s.sl[id] != null) el.value = s.sl[id]; });
+  updateEQ(); updateReverb();
+  if (typeof s.vol === 'number' && !isNaN(s.vol)) { document.getElementById('vol-slider').value = s.vol; setVolume(s.vol); }
+  if (s.shuffle === false) { isShuffle = false; document.getElementById('shuffle-btn').classList.remove('active'); }
+  if (Array.isArray(s.sort) && s.sort.length) {
+    sortCriteria = s.sort.filter(x => x && x.col && (x.dir === 'asc' || x.dir === 'desc'));
+    updateSortHeaders(); renderAll();
+  }
+}
+
+// ── Restore the stored set on startup ───────────────────────────────────────
+function restoreCurrent(idx, pos) {
+  const t = library[idx];
+  if (!t) return;
+  currentIndex = idx;
+  _pendingRestore = { idx, pos };
+  audio.src = t.url;
+  audio.addEventListener('loadedmetadata', () => {
+    if (currentIndex !== idx) return;
+    if (pos > 0 && pos < audio.duration) { try { audio.currentTime = pos; } catch (e) {} }
+    _pendingRestore = null;
+    document.getElementById('t-cur').textContent = fmtTime(audio.currentTime);
+    document.getElementById('t-tot').textContent = fmtTime(audio.duration);
+    drawWaveform(currentWaveformPeaks, audio.duration ? audio.currentTime / audio.duration : 0);
+  }, { once: true });
+  refreshPlayerText();
+  currentWaveformPeaks = null; drawWaveform(null, 0);
+  getWaveformPeaks(t).then(peaks => {
+    if (currentIndex !== idx) return;
+    currentWaveformPeaks = peaks;
+    drawWaveform(peaks, audio.duration ? audio.currentTime / audio.duration : 0);
+  });
+  updateArtDisplay();
+  _needLyrics = true;
+  renderView();
+  setTimeout(() => { if (!userIsScrolling) scrollPlayingRowToCenter(); }, 400);
+}
+
+async function restoreSet() {
+  let recs = [];
+  try { recs = await dbLoadAll(); }
+  catch (e) { console.warn('GoLoco: stored set unavailable', e); _dbOK = false; _restoreDone = true; updateStorageLabel(); return; }
+  if (!recs.length) { _restoreDone = true; return; }
+  showNotif('RESTORING ' + recs.length + ' TRACKS...');
+  const durs = _getDurs();
+  recs.forEach(rec => {
+    if (!rec.blob || library.find(x => x.id === rec.id)) return;
+    let blob = rec.blob;
+    if (!blob.type && rec.type) blob = new Blob([blob], { type: rec.type });
+    const url = URL.createObjectURL(blob);
+    const fname = rec.name || 'Unknown';
+    const t = { id: rec.id, url, file: blob, name: fname.replace(/\.[^.]+$/, ''), title: '', artist: 'Unknown Artist', album: 'Unknown Album', composer: 'Unknown', genre: 'Unknown', year: '', format: (fname.split('.').pop() || '').toUpperCase(), duration: durs[rec.id] || 0, art: null };
+    const parts = t.name.split(' - ');
+    if (parts.length >= 2) { t.artist = parts[0].trim(); t.title = parts.slice(1).join(' - ').trim(); } else t.title = t.name;
+    library.push(t);
+    extractID3(blob, t);
+    if (!t.duration) {
+      const tmp = new Audio(); tmp.preload = 'metadata';
+      tmp.addEventListener('loadedmetadata', () => { t.duration = tmp.duration; _cacheDuration(t.id, tmp.duration); _scheduleRender(); }, { once: true });
+      tmp.src = url;
+    }
+  });
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch (e) {}
+  if (s && s.tid) { const idx = library.findIndex(x => x.id === s.tid); if (idx >= 0) restoreCurrent(idx, s.pos || 0); }
+  _restoreDone = true;
+  updatePlayedCount(); renderView(); updateStorageLabel(); requestPersist();
+  showNotif('✓ RESTORED ' + library.length + ' TRACKS');
+}
+
+// Save on every way of leaving the page + every ~5 s of playback (position)
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveSettings(); });
+window.addEventListener('pagehide', saveSettings);
+let _lastPosSave = 0;
+audio.addEventListener('timeupdate', () => { const n = Date.now(); if (n - _lastPosSave > 5000) { _lastPosSave = n; saveSettings(); } });
+audio.addEventListener('pause', () => saveSettings());
+// Lyrics for a track restored while paused are fetched on first play
+audio.addEventListener('play', () => {
+  if (_needLyrics) { _needLyrics = false; const t = currentIndex >= 0 ? library[currentIndex] : null; if (t && typeof updateLyricsTicker === 'function') updateLyricsTicker(t); }
+});
+
+setTimeout(() => { restoreSettings(); restoreSet(); }, 20);
+// ═══════════════════════════════ end REV1 ═══════════════════════════════════
+
 // NOW PLAYING OVERLAY
 function openNowPlaying(){
   const ov=document.getElementById('np-overlay');
@@ -2636,7 +2891,7 @@ function updatePlayBtn(){
       const t=library[idx];if(!t)return;if(t.url)URL.revokeObjectURL(t.url);if(t.art)URL.revokeObjectURL(t.art);
       if(currentIndex===idx){audio.pause();audio.src='';isPlaying=false;currentIndex=-1;updatePlayBtn();document.getElementById('player-title').textContent='NO TRACK SELECTED';document.getElementById('player-artist').textContent='— SELECT A TRACK TO BEGIN —';updateArtDisplay();if(typeof updateLyricsTicker==='function')updateLyricsTicker(null);}
       else if(currentIndex>idx)currentIndex--;
-      queue=queue.filter(q=>q!==idx).map(q=>q>idx?q-1:q);library.splice(idx,1);renderView();showNotif('TRACK REMOVED');
+      queue=queue.filter(q=>q!==idx).map(q=>q>idx?q-1:q);library.splice(idx,1);_dbQueue=_dbQueue.then(()=>dbDelete(t.id)).catch(()=>{});scheduleSave();updateStorageLabel();updatePlayedCount();renderView();showNotif('TRACK REMOVED');
     },300);
   });
   function attachSwipe(tr){
